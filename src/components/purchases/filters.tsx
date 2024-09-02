@@ -1,21 +1,17 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Select, { selectOption } from "../forms/select";
 import { ENVIROMENT } from "../../constants/enviroment";
-import { generateEncode, request_settings_type } from "../../utils";
+import { generateEncode } from "../../utils";
+import { project_type } from "../../types/project.type";
+import { ProjectContext } from ".";
+import { airtable_request_type } from "../../types/airtable_request.type";
 
 const {AIRTABLE_ACCESS_TOKEN, AIRTABLE_HOST, USA_OPERATIONS_BASE,USA_PROJECTS_TABLE} = ENVIROMENT
 
-export type project_type = {
-  id: string,
-  project_id: string,
-  Status: string,
-  start_date: string,
-  end_date: string,
-  cost_analysis_id
-}
-
 export default function PurchasesReportFilters() {
+  const [projects, setProjects] = useState<project_type[]>()
   const [projectOptions, setProjectOptions] = useState<selectOption[]>([])
+  const [_, setSelectedProject] = useContext(ProjectContext)
 
   const formatProjects = (projects : project_type[]) : selectOption[] => {
     const formatted : selectOption[] = projects.map(({id, Status, project_id}) => ({
@@ -38,10 +34,10 @@ export default function PurchasesReportFilters() {
           'Authorization': 'Bearer ' + AIRTABLE_ACCESS_TOKEN
         },
       }
-      const request_settings : request_settings_type = {
+      const request_settings : airtable_request_type = {
         view : 'BI',
         formula: encodeURI(''),
-        fields: ['project_id','Status','start_date','end_date','cost_analysis_id'],
+        fields: ['project_id','Status','start_date','end_date','cost_analysis_id','customer_name'],
         offset : undefined
       }
       do{
@@ -53,6 +49,7 @@ export default function PurchasesReportFilters() {
         projects_found.push(...records)
         request_settings.offset = page?.offset
       }while(request_settings.offset != undefined)
+      setProjects(projects_found)
       const projects_formatted = formatProjects(projects_found)
       setProjectOptions(projects_formatted)
     } catch (error) { 
@@ -60,16 +57,22 @@ export default function PurchasesReportFilters() {
     }
   }
 
+  const updateProject = (project_id) => {
+    setSelectedProject(projects?.find((project) => project.id === project_id));
+  }
+
+  const handleSelectProject = (selected : selectOption) => {
+    updateProject(selected !== null ? selected.id : undefined);
+  }
+
   useEffect(() => {
     getProjects()
   }, [])
 
   return <>
-    <div className="my-5">
-      <div className="rounded-md border-solid border-4 border-gray-100 bg-gray-100 px-6 py-5 sm:flex sm:items-start sm:justify-between">
-        <div className="sm:flex sm:items-start">
-          <Select label='Project' options={projectOptions} />
-        </div>
+    <div className="rounded-md border-solid border-4 border-gray-100 bg-gray-100 px-6 py-5 sm:flex sm:items-start sm:justify-between">
+      <div className="sm:flex sm:items-start">
+        <Select label='Project' options={projectOptions} onSelectCallback={handleSelectProject} />
       </div>
     </div>
   </>

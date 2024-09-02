@@ -1,10 +1,10 @@
+import { airtable_request_type } from "../types/airtable_request.type";
+
 export function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-export type request_settings_type = { view?: string, fields?: string[], formula?: string, offset: string | undefined}
-
-export const generateEncode = (props: request_settings_type) => {
+export const generateEncode = (props: airtable_request_type) => {
   let encode = '?' + (props?.view != undefined ? `view=${props.view}&`: '') + (props?.formula ? `filterByFormula=${props.formula}&`: '')
   if (props?.fields != undefined) {
     let encoded_fields: string[] = []
@@ -14,3 +14,8 @@ export const generateEncode = (props: request_settings_type) => {
     encode += props.offset != undefined ? `&offset=${props.offset}` : ''
   return encode
 }
+
+export const USDollar = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD'
+})
