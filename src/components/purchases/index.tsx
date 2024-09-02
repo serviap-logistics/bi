@@ -29,7 +29,7 @@ export default function Purchases(){
           'Content-Type': 'application/json'
         },
       }
-      console.log(JSON.stringify(ENVIROMENT))
+      console.log(JSON.stringify(AIRTABLE_ACCESS_TOKEN))
       const request_settings : airtable_request_type = {
         view : 'BI',
         formula: project ? encodeURI(`{project_id}="${project}"`) : undefined,
