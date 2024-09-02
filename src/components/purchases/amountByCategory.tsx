@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
-import { purchase_type } from ".";
-import { classNames } from "../../utils";
+import { classNames, USDollar } from "../../utils";
 import { HomeModernIcon, TruckIcon, UserGroupIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
-
-const USDollar = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD'
-})
+import { purchase_type } from "../../types/purchase.type";
 
 export default function PurchasesAmountsByCategory( props : {purchases : purchase_type[] }) {
   const { purchases } = props
@@ -60,7 +55,7 @@ export default function PurchasesAmountsByCategory( props : {purchases : purchas
   }, [purchases])
 
   return (
-    <div className="mb-6 sm:mb-0">
+    <div className="my-4">
       <h2 className="text-sm font-medium text-gray-500">Summary by category</h2>
       <ul role="list" className="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
         {Object.entries(results).map(([name, result]) => (

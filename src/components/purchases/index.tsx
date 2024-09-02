@@ -1,21 +1,15 @@
 import { createContext, useEffect, useState } from "react"
 import { ENVIROMENT } from "../../constants/enviroment"
-import { generateEncode, request_settings_type } from "../../utils"
+import { generateEncode } from "../../utils"
 import PurchasesReportFilters from "./filters"
 import PurchasesAmountsByCategory from "./amountByCategory"
 import PurchasesAmountsByCategoryGraph from "./amountByCategoryGraph"
 import ProjectDetails from "./projectDetail"
 import { project_type } from "../../types/project.type"
+import { purchase_type } from "../../types/purchase.type"
+import { airtable_request_type } from "../../types/airtable_request.type"
 
 const { AIRTABLE_ACCESS_TOKEN, AIRTABLE_HOST, USA_PURCHASES_BASE, USA_PURCHASES_TABLE } = ENVIROMENT
-export type purchase_type = {
-  id: string,
-  cost_analysis_id: string,
-  project_id: string,
-  status_request: string,
-  Category: string,
-  total_cost: number
-}
 
 export const ProjectContext = createContext<[selected_project: project_type | undefined, setSelectedProject: any]>(
     [undefined, () => {}]
@@ -35,7 +29,7 @@ export default function Purchases(){
           'Content-Type': 'application/json'
         },
       }
-      const request_settings : request_settings_type = {
+      const request_settings : airtable_request_type = {
         view : 'BI',
         formula: project ? encodeURI(`{project_id}="${project}"`) : undefined,
         fields: ['cost_analysis_id','project_id','status_request','Category','total_cost'],
@@ -65,7 +59,7 @@ export default function Purchases(){
       <ProjectContext.Provider value={[project, setProject]}>
         <h3 className="text-base font-semibold leading-6 text-gray-900 mb-4">Purchases Summary</h3>
         <PurchasesReportFilters />
-        <ProjectDetails />
+        <ProjectDetails purchases={purchases} />
         <PurchasesAmountsByCategory purchases={purchases} />
         <PurchasesAmountsByCategoryGraph purchases={purchases} />
       </ProjectContext.Provider>

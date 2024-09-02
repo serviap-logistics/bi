@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import Select, { selectOption } from "../forms/select";
 import { ENVIROMENT } from "../../constants/enviroment";
-import { generateEncode, request_settings_type } from "../../utils";
+import { generateEncode } from "../../utils";
 import { project_type } from "../../types/project.type";
 import { ProjectContext } from ".";
+import { airtable_request_type } from "../../types/airtable_request.type";
 
 const {AIRTABLE_ACCESS_TOKEN, AIRTABLE_HOST, USA_OPERATIONS_BASE,USA_PROJECTS_TABLE} = ENVIROMENT
 
@@ -33,7 +34,7 @@ export default function PurchasesReportFilters() {
           'Authorization': 'Bearer ' + AIRTABLE_ACCESS_TOKEN
         },
       }
-      const request_settings : request_settings_type = {
+      const request_settings : airtable_request_type = {
         view : 'BI',
         formula: encodeURI(''),
         fields: ['project_id','Status','start_date','end_date','cost_analysis_id','customer_name'],
