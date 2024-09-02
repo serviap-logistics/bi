@@ -29,12 +29,10 @@ export default function ProjectDetails(props: { purchases: purchase_type[]}){
       }
       const request_url = `${AIRTABLE_HOST}/${USA_SALES_BASE}/${USA_COST_ANALYSIS_TABLE}${generateEncode(request_settings)}`
       const page = await fetch(request_url , options).then((res) => res.json())
-      console.log('page:', page)
       if(page?.records?.length == 1){
         const ca_found : cost_anaylsis_type = page.records.map(({id, createdTime, fields}) => ({
           id, createdTime, ...fields
         }))[0]
-        console.log(`CA found! ${ca_found}`)
         setCostAnalysis(ca_found)
       }
     } catch (error) { 
@@ -44,7 +42,6 @@ export default function ProjectDetails(props: { purchases: purchase_type[]}){
   }
 
   useEffect(() => {
-    console.log(`PROJECT: ${project}`)
     if(project != undefined) getCostAnalysis();
   }, [project])
 
