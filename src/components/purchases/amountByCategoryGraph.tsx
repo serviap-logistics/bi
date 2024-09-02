@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { purchase_type } from ".";
 import Chart, {Props} from 'react-apexcharts'
+import { purchase_type } from "../../types/purchase.type";
 
 const USDollar = new Intl.NumberFormat('en-US', {
   style: 'currency',
