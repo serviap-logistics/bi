@@ -1,8 +1,7 @@
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, Label } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 import { classNames } from '../../utils'
-import { ProjectContext } from '../purchases'
 
 
 export type selectOption = {
@@ -11,11 +10,10 @@ export type selectOption = {
   status: 'success' | 'warning' | 'error' | 'info'
 }
 
-export default function Select(props: {label: string, options : selectOption[]}) {
-  const {label, options} = props
+export default function Select(props: {label: string, options : selectOption[], onSelectCallback: any }) {
+  const {label, options, onSelectCallback} = props
   const [query, setQuery] = useState('')
   const [selectedOption, setSelectedOption] = useState<selectOption | null>(null)
-  const [_, setProject] = useContext(ProjectContext)
 
   const filteredOptions =
     query === ''
@@ -27,7 +25,7 @@ export default function Select(props: {label: string, options : selectOption[]})
   const handleSelect = (option : selectOption) => {
     setQuery('')
     setSelectedOption(option)
-    setProject(option?.name);
+    onSelectCallback(option)
   }
 
   return (

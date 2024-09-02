@@ -4,6 +4,8 @@ import { generateEncode, request_settings_type } from "../../utils"
 import PurchasesReportFilters from "./filters"
 import PurchasesAmountsByCategory from "./amountByCategory"
 import PurchasesAmountsByCategoryGraph from "./amountByCategoryGraph"
+import ProjectDetails from "./projectDetail"
+import { project_type } from "../../types/project.type"
 
 const { AIRTABLE_ACCESS_TOKEN, AIRTABLE_HOST, USA_PURCHASES_BASE, USA_PURCHASES_TABLE } = ENVIROMENT
 export type purchase_type = {
@@ -15,13 +17,13 @@ export type purchase_type = {
   total_cost: number
 }
 
-export const ProjectContext = createContext<[selected_project: string | undefined, setSelectedProject: any]>(
-    ['', () => {}]
+export const ProjectContext = createContext<[selected_project: project_type | undefined, setSelectedProject: any]>(
+    [undefined, () => {}]
   )
 
 export default function Purchases(){
   const [purchases, setPurchases] = useState<purchase_type[]>([])
-  const [project, setProject] = useState(undefined)
+  const [project, setProject] = useState<project_type | undefined>()
 
   const getPurchases = async () => {
     let purchases_found : purchase_type[] = []
@@ -29,7 +31,8 @@ export default function Purchases(){
       const options = {
         method: 'GET',
         headers: {
-          'Authorization': 'Bearer ' + AIRTABLE_ACCESS_TOKEN
+          'Authorization': 'Bearer ' + AIRTABLE_ACCESS_TOKEN,
+          'Content-Type': 'application/json'
         },
       }
       const request_settings : request_settings_type = {
@@ -49,7 +52,7 @@ export default function Purchases(){
       }while(request_settings.offset != undefined)
       setPurchases(purchases_found)
     } catch (error) { 
-      console.log('Error unexpected')
+      console.log(error)
     }
   }
 
@@ -60,8 +63,9 @@ export default function Purchases(){
   return (
     <div id="purchase__section">
       <ProjectContext.Provider value={[project, setProject]}>
-        <h3 className="text-base font-semibold leading-6 text-gray-900">Purchases Summary</h3>
+        <h3 className="text-base font-semibold leading-6 text-gray-900 mb-4">Purchases Summary</h3>
         <PurchasesReportFilters />
+        <ProjectDetails />
         <PurchasesAmountsByCategory purchases={purchases} />
         <PurchasesAmountsByCategoryGraph purchases={purchases} />
       </ProjectContext.Provider>
