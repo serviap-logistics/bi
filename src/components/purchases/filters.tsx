@@ -53,7 +53,8 @@ export default function PurchasesReportFilters() {
       const projects_formatted = formatProjects(projects_found)
       setProjectOptions(projects_formatted)
     } catch (error) { 
-      console.log('Error unexpected')
+      console.log('Error unexpected, see details...')
+      console.log(error)
     }
   }
 
