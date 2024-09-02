@@ -1,6 +1,6 @@
 export const ENVIROMENT = {
   // Authentication
-  AIRTABLE_ACCESS_TOKEN: import.meta.env.PROD ? import.meta.env.AIRTABLE_ACCESS_TOKEN : import.meta.env.VITE_AIRTABLE_ACCESS_TOKEN,
+  AIRTABLE_ACCESS_TOKEN: import.meta.env.PROD ? import.meta.env.VITE_AIRTABLE_ACCESS_TOKEN : import.meta.env.VITE_AIRTABLE_ACCESS_TOKEN,
   AIRTABLE_HOST: import.meta.env.VITE_AIRTABLE_HOST,
   // Purchases
   USA_PURCHASES_BASE: import.meta.env.VITE_USA_PURCHASES_BASE,
