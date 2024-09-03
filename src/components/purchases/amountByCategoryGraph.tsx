@@ -57,7 +57,7 @@ export default function PurchasesAmountsByCategoryGraph( props : {purchases : pu
           bar: {
             borderRadius: 4,
             borderRadiusApplication: 'end',
-            horizontal: true,
+            horizontal: false,
           }
         },
         dataLabels: {
@@ -65,7 +65,7 @@ export default function PurchasesAmountsByCategoryGraph( props : {purchases : pu
             return USDollar.format(val)
           }
         },
-        xaxis:{
+        yaxis:{
           labels: {
             formatter: (val: any) => {
               return USDollar.format(val)
@@ -109,7 +109,10 @@ export default function PurchasesAmountsByCategoryGraph( props : {purchases : pu
       options: {
         stroke: { colors: ['#fff']},
         fill: { opacity: 0.8 },
-        legend: {show: true, onItemHover: {highlightDataSeries: false}, formatter: (val : any) => USDollar.format(val)},
+        legend: {
+          show: true, onItemHover: {highlightDataSeries: false},
+          // formatter: (val : any) => USDollar.format(val)
+        },
         responsive: [{
           breakpoint: 480,
           options: {
@@ -125,7 +128,7 @@ export default function PurchasesAmountsByCategoryGraph( props : {purchases : pu
           bar: {
             borderRadius: 4,
             borderRadiusApplication: 'end',
-            horizontal: true,
+            horizontal: false,
           }
         },
         dataLabels: {
@@ -133,9 +136,9 @@ export default function PurchasesAmountsByCategoryGraph( props : {purchases : pu
             return USDollar.format(val)
           }
         },
-        xaxis:{
+        yaxis: {
           labels: {
-            formatter: (val: any) => {
+            formatter: (val : number) => {
               return USDollar.format(val)
             }
           }
