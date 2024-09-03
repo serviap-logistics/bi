@@ -1,49 +1,12 @@
-import { useContext, useEffect, useState } from "react";
-import { ProjectContext } from ".";
+import { useContext } from "react";
+import { CostAnalysisContext, ProjectContext } from ".";
 import { purchase_type } from "../../types/purchase.type";
-import { cost_anaylsis_type } from "../../types/cost_analysis.type";
-import { airtable_request_type } from "../../types/airtable_request.type";
-import { generateEncode, USDollar } from "../../utils";
-import { ENVIROMENT } from "../../constants/enviroment";
-
-const {AIRTABLE_ACCESS_TOKEN, AIRTABLE_HOST, USA_SALES_BASE, USA_COST_ANALYSIS_TABLE} = ENVIROMENT
+import { USDollar } from "../../utils";
 
 export default function ProjectDetails(props: { purchases: purchase_type[]}){
   const {purchases} = props
   const [project] = useContext(ProjectContext)
-  const [costAnalysis, setCostAnalysis] = useState<cost_anaylsis_type>()
-
-  const getCostAnalysis = async () => {
-    try {
-      const options = {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Bearer ' + AIRTABLE_ACCESS_TOKEN
-        },
-      }
-      const request_settings : airtable_request_type = {
-        view : 'BI',
-        formula: encodeURI(`{ID}='${project?.cost_analysis_id}'`),
-        fields: ['ID', 'total_cost'],
-        offset : undefined
-      }
-      const request_url = `${AIRTABLE_HOST}/${USA_SALES_BASE}/${USA_COST_ANALYSIS_TABLE}${generateEncode(request_settings)}`
-      const page = await fetch(request_url , options).then((res) => res.json())
-      if(page?.records?.length == 1){
-        const ca_found : cost_anaylsis_type = page.records.map(({id, createdTime, fields}) => ({
-          id, createdTime, ...fields
-        }))[0]
-        setCostAnalysis(ca_found)
-      }
-    } catch (error) { 
-      console.log('Error unexpected, here details...')
-      console.log(error)
-    }
-  }
-
-  useEffect(() => {
-    if(project != undefined) getCostAnalysis();
-  }, [project])
+  const [costAnalysis] = useContext(CostAnalysisContext)
 
   return (
     <div className="overflow-hidden bg-white shadow sm:rounded-md">
