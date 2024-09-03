@@ -29,7 +29,9 @@ dist-ssr
 .env.production
 .env.testing
 .env.production.local
-.env.development# Logs
+.env.development
+
+# Logs
 logs
 *.log
 npm-debug.log*
