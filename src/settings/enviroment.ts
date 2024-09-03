@@ -21,7 +21,7 @@ export const ENVIROMENT = {
   USA_PROJECTS_TABLE: import.meta.env.VITE_USA_PROJECTS_TABLE,
 
   // Microsoft Login
-  MS_CLIENT_ID: import.meta.env.PROD ? import.meta.env.MS_CLIENT_ID : import.meta.env.VITE_MS_CLIENT_ID,
-  MS_REDIRECT_URI: import.meta.env.PROD ? import.meta.env.MS_REDIRECT_URI : import.meta.env.VITE_MS_REDIRECT_URI,
-  MS_TENANT_ID: import.meta.env.PROD ? import.meta.env.MS_TENANT_ID : import.meta.env.VITE_MS_TENANT_ID,
+  MS_CLIENT_ID: import.meta.env.VITE_MS_CLIENT_ID,
+  MS_REDIRECT_URI: import.meta.env.VITE_MS_REDIRECT_URI,
+  MS_TENANT_ID: import.meta.env.VITE_MS_TENANT_ID,
 }
