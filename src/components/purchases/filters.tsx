@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
-import Select, { selectOption } from "../forms/select";
-import { ENVIROMENT } from "../../constants/enviroment";
+import Select, { selectOption } from "../utils/select";
+import { ENVIROMENT } from "../../settings/enviroment";
 import { generateEncode } from "../../utils";
 import { project_type } from "../../types/project.type";
 import { ProjectContext } from ".";
@@ -53,7 +53,7 @@ export default function PurchasesReportFilters() {
       const projects_formatted = formatProjects(projects_found)
       setProjectOptions(projects_formatted)
     } catch (error) { 
-      console.log('Error unexpected')
+      console.error('Error unexpected')
     }
   }
 
@@ -65,9 +65,7 @@ export default function PurchasesReportFilters() {
     updateProject(selected !== null ? selected.id : undefined);
   }
 
-  useEffect(() => {
-    getProjects()
-  }, [])
+  useEffect(() => { getProjects() }, [])
 
   return <>
     <div className="rounded-md border-solid border-4 border-gray-100 bg-gray-100 px-6 py-5 sm:flex sm:items-start sm:justify-between">
