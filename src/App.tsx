@@ -1,9 +1,8 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useState } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import Topbar from './components/layout/Topbar';
 import MainContent from './components/MainContent';
 import Login from './components/login';
-import { ENVIROMENT } from './settings/enviroment';
 
 export const MainContentContext = createContext<[mainContent: string, setMainContent: any]>(
   ['', () => {} ]
@@ -18,11 +17,6 @@ function App() {
   const [mainContent, setMainContent] = useState('PURCHASES');
 
   const [isAuth, setIsAuth] = useState([])
-
-  useEffect(() => {
-    console.log('Mounting app...')
-    console.log(ENVIROMENT)
-  })
 
   return isAuth.length == 0
   ? <Login auth={isAuth} authCallback={setIsAuth} />
