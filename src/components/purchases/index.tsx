@@ -41,7 +41,7 @@ export default function Purchases(){
       }
       const request_settings : airtable_request_type = {
         view : 'BI',
-        formula: project ? encodeURI(`{project_id}="${project}"`) : undefined,
+        formula: project ? encodeURI(`{project_id}="${project.project_id}"`) : undefined,
         fields: ['cost_analysis_id','project_id','status_request','Category','total_cost'],
         offset: undefined
       }
@@ -105,7 +105,7 @@ export default function Purchases(){
           <PurchasesReportFilters />
           <ProjectDetails purchases={purchases} />
           {
-            costAnalysis &&
+            project &&
             <TableByCategory purchases={purchases} />
           }
           <PurchasesAmountsByCategory purchases={purchases} />
