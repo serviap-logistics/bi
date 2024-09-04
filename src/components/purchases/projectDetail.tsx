@@ -48,7 +48,7 @@ export default function ProjectDetails(props: { purchases: purchase_type[]}){
                 <p className="text-base leading-7 font-semibold text-gray-600">% Used</p>
                 <p className="text-lg text-gray-600">
                   { 
-                    (costAnalysis?.total_cost ?? 0) != 0
+                    costAnalysis != undefined && (costAnalysis?.total_cost ?? 0) != 0
                     ?
                       <Toast
                         text={
