@@ -17,10 +17,11 @@ export default function PurchasesReportFilters() {
     const formatted : selectOption[] = projects.map(({id, Status, project_id}) => ({
       id: id,
       name: project_id,
-      status: Status === 'Project Finished' ? 'success' : 
+      color: Status === 'Project Finished' ? 'success' : 
               Status === 'Project in Progress' ? 'warning' :
               Status === 'Preparation' ? 'info' :
-              Status === 'Lost / Cancelled' ? 'error' : 'error'
+              Status === 'Lost / Cancelled' ? 'error' : 'error',
+      toast: Status,
     }))
     return formatted
   }
@@ -70,7 +71,7 @@ export default function PurchasesReportFilters() {
   return <>
     <div className="rounded-md border-solid border-4 border-gray-100 bg-gray-100 px-6 py-5 sm:flex sm:items-start sm:justify-between">
       <div className="sm:flex sm:items-start">
-        <Select label='Project' options={projectOptions} onSelectCallback={handleSelectProject} />
+        <Select label='Project' options={projectOptions} onSelectCallback={handleSelectProject} width="sm:w-[24rem]" />
       </div>
     </div>
   </>

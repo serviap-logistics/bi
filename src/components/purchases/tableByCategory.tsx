@@ -3,6 +3,7 @@ import Table from "../utils/table";
 import { CostAnalysisContext } from ".";
 import { USDollar } from "../../utils";
 import { purchase_type } from "../../types/purchase.type";
+import Toast from "../utils/toast";
 
 export default function TableByCategory(props: {purchases: purchase_type[]}) {
   const { purchases } = props
@@ -64,41 +65,74 @@ export default function TableByCategory(props: {purchases: purchase_type[]}) {
   }
 
   const formatAsTable = () => {
-    setTable({
-      columns: ['Category', 'Budget', 'Real', 'Difference', '% used'],
-      rows: [
-        [ 'Tools / Consumables',
-          USDollar.format(budgets['Tools']), USDollar.format(results['Tools']), // Budget, Real
-          USDollar.format(budgets['Tools'] - results['Tools']), // Difference
-          (budgets['Tools'] > 0 ? (results['Tools']*100)/budgets['Tools'] : 0) + '%' // % used
-        ],
-        [ 'Equipment',
-          USDollar.format(budgets['Equipment']), USDollar.format(results['Equipment']),
-          USDollar.format(budgets['Equipment'] - results['Equipment']),
-          (budgets['Equipment'] > 0 ? (results['Equipment']*100)/budgets['Equipment'] : 0) + '%' // % used
-        ],
-        [ 'Subcontractor',
-          USDollar.format(budgets['Subcontractor']), USDollar.format(results['Subcontractor']),
-          USDollar.format(budgets['Subcontractor'] - results['Subcontractor']),
-          (budgets['Subcontractor'] > 0 ? (results['Subcontractor']*100)/budgets['Subcontractor'] : 0) + '%' // % used
-        ],
-        [ 'Lodge',
-          USDollar.format(budgets['Lodging']), USDollar.format(results['Lodging']),
-          USDollar.format(budgets['Lodging'] - results['Lodging']),
-          (budgets['Lodging'] > 0 ? (results['Lodging']*100)/budgets['Lodging'] : 0) + '%' // % used
-        ],
-        [ 'Travel',
-          USDollar.format(budgets['Travel']), USDollar.format(results['Travel']),
-          USDollar.format(budgets['Travel'] - results['Travel']),
-          (budgets['Travel'] > 0 ? (results['Travel']*100)/budgets['Travel'] : 0) + '%' // % used
-        ],
-        [ 'Staffing',
-          USDollar.format(budgets['Staffing']), USDollar.format(results['Staffing']),
-          USDollar.format(budgets['Staffing'] - results['Staffing']),
-          (budgets['Staffing'] > 0 ? (results['Staffing']*100)/budgets['Staffing'] : 0) + '%' // % used
-        ],
-      ],
-    })
+    const data = {
+      tools : {
+        name: 'Tools / Consumables',
+        budget: budgets['Tools'],
+        real: results['Tools'],
+        difference: budgets['Tools'] - results['Tools'],
+        used: budgets['Tools'] > 0 ? (results['Tools']*100)/budgets['Tools'] : results['Tools'],
+      },
+      equipment : {
+        name: 'Equipment',
+        budget: budgets['Equipment'],
+        real: results['Equipment'],
+        difference: budgets['Equipment'] - results['Equipment'],
+        used: budgets['Equipment'] > 0 ? (results['Equipment']*100)/budgets['Equipment'] : results['Equipment'],
+      },
+      subcontractor : {
+        name: 'Subcontractor',
+        budget: budgets['Subcontractor'],
+        real: results['Subcontractor'],
+        difference: budgets['Subcontractor'] - results['Subcontractor'],
+        used: budgets['Subcontractor'] > 0 ? (results['Subcontractor']*100)/budgets['Subcontractor'] : results['Subcontractor'],
+      },
+      lodging : {
+        name: 'Lodging',
+        budget: budgets['Lodging'],
+        real: results['Lodging'],
+        difference: budgets['Lodging'] - results['Lodging'],
+        used: budgets['Lodging'] > 0 ? (results['Lodging']*100)/budgets['Lodging'] : results['Lodging'],
+      },
+      travel : {
+        name: 'Travel',
+        budget: budgets['Travel'],
+        real: results['Travel'],
+        difference: budgets['Travel'] - results['Travel'],
+        used: budgets['Travel'] > 0 ? (results['Travel']*100)/budgets['Travel'] : results['Travel'],
+      },
+      staffing : {
+        name: 'Staffing',
+        budget: budgets['Staffing'],
+        real: results['Staffing'],
+        difference: budgets['Staffing'] - results['Staffing'],
+        used: budgets['Staffing'] > 0 ? (results['Staffing']*100)/budgets['Staffing'] : results['Staffing'],
+      },
+      others : {
+        name: 'Others',
+        budget: (costAnalysis?.total_cost ?? 0) - Object.values(budgets).reduce((total, budget) => total + budget, 0),
+        real: 0,
+        difference: (costAnalysis?.total_cost ?? 0) - Object.values(budgets).reduce((total, budget) => total + budget, 0),
+        used: 0,
+      },
+    }
+
+    const rows = Object.values(data).map((section) => [
+      section.name,
+      USDollar.format(section.budget),
+      USDollar.format(section.real), // Budget, Real
+      USDollar.format(section.difference), // Difference
+      <Toast
+        text={ section.used.toFixed(2) + '%' } // % used
+        color={
+            section.used <= 50 ? 'success'
+          : section.used <= 70 ? 'info'
+          : section.used <= 90 ? 'warning'
+          : 'error'
+        }
+      />,
+    ])
+    setTable({ columns: ['Category', 'Budget', 'Real', 'Difference', '% used'], rows: rows })
   }
 
   useEffect(() => {
