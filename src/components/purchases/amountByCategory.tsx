@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { classNames, USDollar } from "../../utils";
-import { HomeModernIcon, TruckIcon, UserGroupIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
+import { BriefcaseIcon, ComputerDesktopIcon, HomeModernIcon, TruckIcon, UserGroupIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 import { purchase_type } from "../../types/purchase.type";
 
 export default function PurchasesAmountsByCategory( props : {purchases : purchase_type[] }) {
@@ -9,9 +9,9 @@ export default function PurchasesAmountsByCategory( props : {purchases : purchas
     'Travel' : { amount: 0, icon: TruckIcon, count: 0, unit: '', bgColor: 'bg-pink-600' },
     'Tools' : { amount: 0, icon: WrenchScrewdriverIcon, count: 0, unit: '', bgColor: 'bg-purple-600' },
     'Lodging' : { amount: 0, icon: HomeModernIcon, count: 0, unit: '', bgColor: 'bg-yellow-500' },
-    'Staffing' : { amount: 0, icon: UserGroupIcon, count: 0, unit: '', bgColor: 'bg-green-500' },
-    'Equipment' : { amount: 0, icon: UserGroupIcon, count: 0, unit: '', bgColor: 'bg-green-500' },
-    'Subcontractor' : { amount: 0, icon: UserGroupIcon, count: 0, unit: '', bgColor: 'bg-green-500' },
+    'Staffing' : { amount: 0, icon: UserGroupIcon, count: 0, unit: '', bgColor: 'bg-cyan-500' },
+    'Equipment' : { amount: 0, icon: ComputerDesktopIcon, count: 0, unit: '', bgColor: 'bg-rose-500' },
+    'Subcontractor' : { amount: 0, icon: BriefcaseIcon, count: 0, unit: '', bgColor: 'bg-green-500' },
   })
 
   const updateResults = (purchases) => {
@@ -74,7 +74,7 @@ export default function PurchasesAmountsByCategory( props : {purchases : purchas
   useEffect(() => { updateResults(purchases) }, [purchases])
 
   return (
-    <div className="my-4">
+    <div className="mt-7 mb-4">
       <h2 className="text-sm font-medium text-gray-500">Summary by category</h2>
       <ul role="list" className="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         {Object.entries(results).map(([name, result]) => (

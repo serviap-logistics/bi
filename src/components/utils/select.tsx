@@ -2,16 +2,18 @@ import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOption
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { useState } from 'react'
 import { classNames } from '../../utils'
+import Toast from './toast'
 
 
 export type selectOption = {
   id: number | string;
   name: string,
-  status: 'success' | 'warning' | 'error' | 'info'
+  color: 'success' | 'warning' | 'error' | 'info',
+  toast: string,
 }
 
-export default function Select(props: {label: string, options : selectOption[], onSelectCallback: any }) {
-  const {label, options, onSelectCallback} = props
+export default function Select(props: {label: string, options : selectOption[], onSelectCallback: any, width?: string }) {
+  const {label, options, onSelectCallback, width = 'sm:w-80'} = props
   const [query, setQuery] = useState('')
   const [selectedOption, setSelectedOption] = useState<selectOption | null>(null)
 
@@ -35,7 +37,7 @@ export default function Select(props: {label: string, options : selectOption[], 
       onChange={(option : selectOption) => handleSelect(option)}
     >
       <Label className="block text-sm font-medium leading-6 text-gray-900">{label}</Label>
-      <div className="relative mt-2 w-full sm:w-80 ">
+      <div className={classNames("relative mt-2 w-full", width)}>
         <ComboboxInput
           className="w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-12 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-yellow-400 sm:text-sm sm:leading-6"
           onChange={(event) => setQuery(event.target.value)}
@@ -58,20 +60,20 @@ export default function Select(props: {label: string, options : selectOption[], 
                   <span
                     className={classNames(
                       'inline-block h-2 w-2 flex-shrink-0 rounded-full',
-                      option.status === 'success' ? 'bg-green-400' :
-                      option.status === 'warning' ? 'bg-amber-400' :
-                      option.status === 'info' ? 'bg-sky-400' :
-                      option.status === 'error' ? 'bg-rose-500' : 'bg-gray-400'
+                      option.color === 'success' ? 'bg-green-400' :
+                      option.color === 'warning' ? 'bg-amber-400' :
+                      option.color === 'info' ? 'bg-sky-400' :
+                      option.color === 'error' ? 'bg-rose-500' : 'bg-gray-400'
                     )}
                     aria-hidden="true"
                   />
-                  <span className="ml-3 truncate group-data-[selected]:font-semibold">
+                  <span className="mx-3 truncate group-data-[selected]:font-semibold">
                     {option.name}
-                    <span className="sr-only"> is {option.status ? 'online' : 'offline'}</span>
                   </span>
+                  {option.toast && <Toast text={option.toast} color={option.color} /> }
                 </div>
 
-                <span className="absolute inset-y-0 right-0 hidden items-center pr-4 text-gray-700 group-data-[selected]:flex group-data-[focus]:text-white">
+                <span className="absolute inset-y-0 right-0 hidden items-center pr-3 text-gray-700 group-data-[selected]:flex group-data-[focus]:text-white">
                   <CheckIcon className="h-5 w-5" aria-hidden="true" />
                 </span>
               </ComboboxOption>
