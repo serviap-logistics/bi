@@ -35,7 +35,8 @@ export default function ProjectDetails(props: { purchases: purchase_type[]}){
                     (costAnalysis.total_equipment_cost ?? 0) +
                     (costAnalysis.total_subcontractor_cost ?? 0) +
                     (costAnalysis.total_miscelanea_cost ?? 0) +
-                    (costAnalysis.total_labor_staffing_cost ?? 0)
+                    (costAnalysis.total_labor_staffing_cost ?? 0) +
+                    (costAnalysis.total_lodge_cost ?? 0)
                   : 0)}</p>
                 <p className="text-xs text-gray-600">(Only purchases amounts)</p>
               </div>
@@ -45,6 +46,7 @@ export default function ProjectDetails(props: { purchases: purchase_type[]}){
                 <p className="text-lg text-gray-600">
                   { USDollar.format(purchases.reduce((total, purchase) => total + purchase.total_cost, 0)) }
                 </p>
+                <p className="text-xs text-gray-600">({purchases.length} items)</p>
               </div>
               {/* Difference */}
               <div>
