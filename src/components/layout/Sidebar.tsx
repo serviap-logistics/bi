@@ -1,6 +1,8 @@
 import {
-  ChartPieIcon,
   Cog6ToothIcon,
+  PresentationChartLineIcon,
+  ShoppingBagIcon,
+  UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { Dialog, Transition } from '@headlessui/react';
@@ -10,23 +12,29 @@ import { MainContentContext } from '../../App';
 import IMAGES from '../../images/urls';
 
 const navigation = [
+  // {
+  //   key: 'DASHBOARD',
+  //   name: 'Dashboard',
+  //   icon: PresentationChartLineIcon,
+  //   current: true,
+  // },
   {
     key: 'PURCHASES',
     name: 'Purchases',
-    icon: ChartPieIcon,
+    icon: ShoppingBagIcon,
     current: true,
   },
   {
     key: 'HEADCOUNT',
     name: 'Headcount',
-    icon: ChartPieIcon,
+    icon: UserGroupIcon,
     current: false,
   },
 ];
 export default function Sidebar() {
-  const [SidebarOpen, setSidebarOpen] = useState(false);
+  const [ SidebarOpen, setSidebarOpen ] = useState(false);
   const [ mainContent, setMainContent ] = useContext(MainContentContext);
-  const [currentSection, setCurrentSection] = useState<string>();
+  const [ currentSection, setCurrentSection ] = useState<string>();
 
   const setActiveSection = (key) => navigation.map((section) => (section.current = section.key === key));
 
