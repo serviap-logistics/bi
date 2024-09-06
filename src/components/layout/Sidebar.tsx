@@ -1,6 +1,5 @@
 import {
   Cog6ToothIcon,
-  PresentationChartLineIcon,
   ShoppingBagIcon,
   UserGroupIcon,
   XMarkIcon,
