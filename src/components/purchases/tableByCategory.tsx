@@ -33,7 +33,7 @@ export default function TableByCategory(props: {purchases: purchase_type[]}) {
       'Travel': costAnalysis.total_miscelanea_cost,
       'Tools': costAnalysis.total_material_cost,
       'Lodging': costAnalysis.total_lodge_cost,
-      'Staffing': costAnalysis.total_worker_staffing_cost,
+      'Staffing': costAnalysis.total_labor_staffing_cost,
       'Equipment': costAnalysis.total_equipment_cost,
       'Subcontractor': costAnalysis.total_subcontractor_cost,
     })
@@ -107,13 +107,6 @@ export default function TableByCategory(props: {purchases: purchase_type[]}) {
         real: results['Staffing'],
         difference: budgets['Staffing'] - results['Staffing'],
         used: budgets['Staffing'] > 0 ? (results['Staffing']*100)/budgets['Staffing'] : results['Staffing'],
-      },
-      others : {
-        name: 'Others',
-        budget: (costAnalysis?.total_cost ?? 0) - Object.values(budgets).reduce((total, budget) => total + budget, 0),
-        real: 0,
-        difference: (costAnalysis?.total_cost ?? 0) - Object.values(budgets).reduce((total, budget) => total + budget, 0),
-        used: 0,
       },
     }
 
