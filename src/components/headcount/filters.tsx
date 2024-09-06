@@ -2,9 +2,9 @@ import { useContext, useEffect, useState } from "react";
 import Select, { selectOption } from "../utils/select";
 import { project_type } from "../../types/project.type";
 import { ProjectContext } from ".";
-import {getProjects as getAirtableProjects} from "../../api/projects";
+import {getProjects} from "../../api/projects";
 
-export default function PurchasesReportFilters() {
+export default function HeadcountFilters() {
   const [projects, setProjects] = useState<project_type[]>()
   const [projectOptions, setProjectOptions] = useState<selectOption[]>([])
   const [_, setSelectedProject] = useContext(ProjectContext)
@@ -22,16 +22,12 @@ export default function PurchasesReportFilters() {
     return formatted
   }
 
-  const getProjects = async () => {
-    let projects_found : project_type[] = await getAirtableProjects({
-        view : 'BI',
-        formula: encodeURI(''),
-        fields: ['project_id','Status','start_date','end_date','cost_analysis_id','customer_name'],
-        offset : undefined
+  const updateProjects = async () => {
+    const projects_found: project_type[] = await getProjects({
+      view: 'BI',
+      fields: ['project_id','Status','start_date','end_date','customer_name','cost_analysis_id','hour_registration_start_date','hour_registration_end_date'],
     })
     setProjects(projects_found)
-    const projects_formatted = formatProjects(projects_found)
-    setProjectOptions(projects_formatted)
   }
 
   const updateProject = (project_id) => {
@@ -42,7 +38,11 @@ export default function PurchasesReportFilters() {
     updateProject(selected !== null ? selected.id : undefined);
   }
 
-  useEffect(() => { getProjects() }, [])
+  useEffect(() => { updateProjects() }, [])
+  useEffect(() => {
+    const projects_formatted = formatProjects(projects ?? [])
+    setProjectOptions(projects_formatted)
+  }, [projects])
 
   return <>
     <div className="rounded-md border-solid border-4 border-gray-100 bg-gray-100 px-6 py-5 sm:flex sm:items-start sm:justify-between">

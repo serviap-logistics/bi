@@ -26,16 +26,27 @@ export default function ProjectDetails(props: { purchases: purchase_type[]}){
           project &&
           <li className="px-4 py-4 sm:px-6 flex grap-y-4 justify-evenly">
             <>
+              {/* Cost Analysis TOTAL */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">Cost Analysis</p>
-                <p className="text-lg text-gray-600">{USDollar.format(costAnalysis?.total_cost ?? 0)}</p>
+                <p className="text-lg text-gray-600">{USDollar.format(
+                  costAnalysis != undefined
+                  ? (costAnalysis.total_material_cost ?? 0) +
+                    (costAnalysis.total_equipment_cost ?? 0) +
+                    (costAnalysis.total_subcontractor_cost ?? 0) +
+                    (costAnalysis.total_miscelanea_cost ?? 0) +
+                    (costAnalysis.total_labor_staffing_cost ?? 0)
+                  : 0)}</p>
+                <p className="text-xs text-gray-600">(Only purchases amounts)</p>
               </div>
+              {/* Purchases TOTAL */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">Purchases</p>
                 <p className="text-lg text-gray-600">
                   { USDollar.format(purchases.reduce((total, purchase) => total + purchase.total_cost, 0)) }
                 </p>
               </div>
+              {/* Difference */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">Difference</p>
                 <p className="text-lg text-gray-600">
@@ -44,6 +55,7 @@ export default function ProjectDetails(props: { purchases: purchase_type[]}){
                     ) }
                 </p>
               </div>
+              {/* % Used */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">% Used</p>
                 <p className="text-lg text-gray-600">
