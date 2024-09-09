@@ -7,6 +7,7 @@ import Purchases from "../components/purchases";
 import Headcount from "../components/headcount";
 
 export const DEFAULT_MAIN_CONTENT = 'PURCHASES'
+export const LOGIN_NEEDED = false
 
 export type app_navigation_option = {
   key: string,
