@@ -5,10 +5,12 @@ import { cost_analysis_type } from "../../types/cost_analysis.type";
 import { CostAnalysisContext, ProjectContext } from ".";
 import { ReportTypeContext } from "./reportByType";
 import { registration_time_type } from "../../types/registration_time.type";
-import { getDateByTimestamp, getDatesBeetween, getPercentage, groupListBy, USDollar } from "../../utils";
+import { getDateByTimestamp, groupListBy,
+  // USDollar, getDatesBeetween, getPercentage
+} from "../../utils";
 import { getCALaborDetails } from "../../api/ca_labor_details";
 import { ca_labor_detail_type } from "../../types/ca_labor_detail.type";
-import Toast from "../utils/toast";
+// import Toast from "../utils/toast";
 import { project_type } from "../../types/project.type";
 import Alert from "../utils/alert";
 
@@ -32,7 +34,7 @@ export default function HeadcountTableByRole() {
   const [reals, setReals] = useState<row_data[]>([])
   const [rows, setRows] = useState<any[]>([])
   const [columns, setColumns] = useState<string[]>(['Role'])
-  const [results, setResults] = useState<row_data[]>()
+  const [results, setResults] = useState<row_data[]>([])
 
   const updateBudget = async (costAnalysis : cost_analysis_type) => {
     const budget_times : ca_labor_detail_type[] = await getCALaborDetails({
@@ -63,7 +65,9 @@ export default function HeadcountTableByRole() {
         total_hours: records.reduce((total, record) => total + record.hours, 0),
       })
     )
+    console.log(totals_by_role)
     // setBudgets(totals_by_date)
+    setBudgets([])
   }
 
   const updateRealByDate = async (project_id) => {
@@ -85,9 +89,12 @@ export default function HeadcountTableByRole() {
     )
     totals_by_date = totals_by_date.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     // setReals(totals_by_date)
+    setReals([])
   }
 
   const mergeResults = (project : project_type) => {
+    console.log(project)
+    setResults([])
     /*
     const start_date = project.hour_registration_start_date ?? project.start_date
     const end_date = project.hour_registration_end_date ?? project.end_date
@@ -119,11 +126,15 @@ export default function HeadcountTableByRole() {
 
       results.push(day_results)
     }
-    setIndicators(results)
+    setResults(results)
     */
   }
 
-  const formatAsTable = (results : any[]) => {
+  const formatAsTable = (results : row_data[]) => {
+    console.log(results)
+    setColumns([])
+    setRows(reportType?[]: [])
+    /*
     const rows = results.map((result) =>
       reportType === 'HOURS' ? [
         result.date, result.budget_total_hours, result.real_total_hours.toFixed(2),
@@ -187,12 +198,16 @@ export default function HeadcountTableByRole() {
         }
       />,
     ])
-    setRows(rows)
+    */
   }
 
   useEffect(() => {
+    formatAsTable(results)
+  }, [results])
+
+  useEffect(() => {
     if((budgets.length > 0 || reals.length > 0) && project){
-      // mergeResults(project)
+      mergeResults(project)
     }
   }, [budgets, reals])
 
@@ -209,7 +224,7 @@ export default function HeadcountTableByRole() {
       {
         project?.start_date && project.end_date &&
         <Table
-          columns={['Date', 'Budget', 'Real','Difference', '% Used']}
+          columns={columns}
           rows={rows}
           styles={{
             vertical_lines: true, full_width: true, row_height: 'xs', rows:{remark_label: true},
