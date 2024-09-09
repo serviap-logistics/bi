@@ -3,7 +3,7 @@ import Sidebar from './components/layout/Sidebar';
 import Topbar from './components/layout/Topbar';
 import Login from './components/login';
 import { useMsal } from '@azure/msal-react';
-import { APP_NAVIGATION, app_navigation_option, DEFAULT_MAIN_CONTENT } from './settings/appSettings';
+import { APP_NAVIGATION, app_navigation_option, DEFAULT_MAIN_CONTENT, LOGIN_NEEDED } from './settings/appSettings';
 
 export const MainContentContext = createContext<string>('');
 export const SideBarContext = createContext<boolean>(false);
@@ -22,6 +22,10 @@ function App() {
 
   const [isAuth, setIsAuth] = useState(false)
   const checkLogin = async () => {
+    if(!LOGIN_NEEDED){
+      setIsAuth(true)
+      return
+    }
     try {
       if(accounts.length > 0) {
         const silent_request = {
