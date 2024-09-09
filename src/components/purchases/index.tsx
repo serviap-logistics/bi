@@ -10,13 +10,9 @@ import TableByCategory from "./tableByCategory"
 import { getPurchases as getAirtablePurchases } from "../../api/purchases"
 import { getCostAnalysis as getAirtableCostAnalysis } from "../../api/cost_analysis"
 
-export const ProjectContext = createContext<[selected_project: project_type | undefined, setSelectedProject: any]>(
-    [undefined, () => {}]
-  )
+export const ProjectContext = createContext<project_type | undefined>(undefined)
 
-export const CostAnalysisContext = createContext<[cost_analysis: cost_analysis_type | undefined, setCostAnalysis: any]>(
-    [undefined, () => {}]
-  )
+export const CostAnalysisContext = createContext<cost_analysis_type | undefined>(undefined)
 
 export default function Purchases(){
   const [purchases, setPurchases] = useState<purchase_type[]>([])
@@ -49,8 +45,12 @@ export default function Purchases(){
     }
   }
 
+  const handleSelectProject = (project: project_type) => {
+    setProject(project)
+  }
+
   useEffect(() => {
-    console.log(project?.project_id)
+    console.log('Project: ', project?.project_id)
     getPurchases()
     if(project?.cost_analysis_id){ getCostAnalysis() }
     else { setCostAnalysis(undefined) };
@@ -58,10 +58,10 @@ export default function Purchases(){
 
   return (
     <div id="purchase__section">
-      <ProjectContext.Provider value={[project, setProject]}>
-        <CostAnalysisContext.Provider value={[costAnalysis, setCostAnalysis]}>
+      <ProjectContext.Provider value={project}>
+        <CostAnalysisContext.Provider value={costAnalysis}>
           <h3 className="text-base font-semibold leading-6 text-gray-900 mb-4">Purchases Summary</h3>
-          <PurchasesReportFilters />
+          <PurchasesReportFilters onSelectCallback={handleSelectProject} />
           <ProjectDetails purchases={purchases} />
           {
             project &&

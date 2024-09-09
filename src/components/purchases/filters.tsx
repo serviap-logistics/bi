@@ -1,13 +1,12 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Select, { selectOption } from "../utils/select";
 import { project_type } from "../../types/project.type";
-import { ProjectContext } from ".";
 import {getProjects as getAirtableProjects} from "../../api/projects";
 
-export default function PurchasesReportFilters() {
+export default function PurchasesReportFilters(props: {onSelectCallback: any}) {
+  const {onSelectCallback} = props;
   const [projects, setProjects] = useState<project_type[]>()
   const [projectOptions, setProjectOptions] = useState<selectOption[]>([])
-  const [_, setSelectedProject] = useContext(ProjectContext)
 
   const formatProjects = (projects : project_type[]) : selectOption[] => {
     const formatted : selectOption[] = projects.map(({id, Status, project_id}) => ({
@@ -35,7 +34,7 @@ export default function PurchasesReportFilters() {
   }
 
   const updateProject = (project_id) => {
-    setSelectedProject(projects?.find((project) => project.id === project_id));
+    onSelectCallback(projects?.find((project) => project.id === project_id));
   }
 
   const handleSelectProject = (selected : selectOption) => {

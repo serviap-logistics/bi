@@ -7,7 +7,7 @@ import Toast from "../utils/toast";
 
 export default function TableByCategory(props: {purchases: purchase_type[]}) {
   const { purchases } = props
-  const [costAnalysis] = useContext(CostAnalysisContext)
+  const costAnalysis = useContext(CostAnalysisContext)
   const [table, setTable] = useState<{columns: string[], rows: any[]}>({ columns: [], rows: [] })
   const defaultBudgets = {
     'Travel': 0,

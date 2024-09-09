@@ -1,31 +1,74 @@
-import { createContext, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import Topbar from './components/layout/Topbar';
-import MainContent from './components/MainContent';
 import Login from './components/login';
+import { useMsal } from '@azure/msal-react';
+import { APP_NAVIGATION, app_navigation_option, DEFAULT_MAIN_CONTENT } from './settings/appSettings';
 
-export const MainContentContext = createContext<[mainContent: string, setMainContent: any]>(
-  ['', () => {} ]
-);
-
-export const SideBarContext = createContext<[showSideBar: boolean, setShowSideBar: any]>(
-  [ false, () => {} ]
-);
+export const MainContentContext = createContext<string>('');
+export const SideBarContext = createContext<boolean>(false);
 
 function App() {
   const [showSideBar, setShowSideBar] = useState(false);
-  const [mainContent, setMainContent] = useState('PURCHASES');
+  const [mainContent, setMainContent] = useState(DEFAULT_MAIN_CONTENT);
+  const [navigation, setNavigation] = useState<app_navigation_option[]>(
+    APP_NAVIGATION.map((option) => ({...option, current: option.key === DEFAULT_MAIN_CONTENT}))
+  );
 
-  const [isAuth, setIsAuth] = useState([])
+  const [content, setContent] = useState<{component: any}>(
+    {component: navigation.find((option) => option.key === DEFAULT_MAIN_CONTENT)?.main_component}
+  );
+  const { instance, accounts } = useMsal();
 
-  return isAuth.length == 0
-  ? <Login auth={isAuth} authCallback={setIsAuth} />
+  const [isAuth, setIsAuth] = useState(false)
+  const checkLogin = async () => {
+    try {
+      if(accounts.length > 0) {
+        const silent_request = {
+          account: accounts[0],
+          scopes: ["user.read"]
+        }
+        const auth_reponse = await instance.acquireTokenSilent(silent_request)
+        if(auth_reponse.accessToken){
+          setIsAuth(true)
+        }
+      }
+      
+    } catch (error) {
+      setIsAuth(false)
+    }
+
+  }
+
+  const updateNavigation = (key) => {
+    setNavigation(
+      navigation.map((section) => ({...section, current: section.key === key}))
+    );
+  }
+
+  const handleSideBarChange = (key: string) => {
+    updateNavigation(key)
+    setMainContent(key)
+    setContent({component: navigation.find((option) => option.key === key)?.main_component})
+  }
+
+  useEffect(() => { checkLogin() })
+
+  return !isAuth
+  ? <Login authCallback={setIsAuth} />
   : (
-    <MainContentContext.Provider value={[mainContent, setMainContent]}>
-      <SideBarContext.Provider value={[ showSideBar, setShowSideBar ]}>
+    <MainContentContext.Provider value={mainContent}>
+      <SideBarContext.Provider value={showSideBar}>
         <Topbar showSideBar={showSideBar} setShowSideBar={setShowSideBar} />
-        <Sidebar/>
-        <MainContent />
+        <Sidebar navigation={navigation} onSelectCallback={handleSideBarChange} />
+        <div className="lg:pl-60">
+          {/* Main section */}
+          <section className="py-5">
+            <div className="px-4 sm:px-6 lg:px-8">
+              { content?.component && <content.component /> }
+            </div>
+          </section>
+        </div>
       </SideBarContext.Provider>
     </MainContentContext.Provider>
   )

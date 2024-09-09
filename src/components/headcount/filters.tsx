@@ -1,13 +1,12 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Select, { selectOption } from "../utils/select";
 import { project_type } from "../../types/project.type";
-import { ProjectContext } from ".";
 import {getProjects} from "../../api/projects";
 
-export default function HeadcountFilters() {
+export default function HeadcountFilters(props: {onChangeCallback: any}) {
+  const {onChangeCallback} = props;
   const [projects, setProjects] = useState<project_type[]>()
   const [projectOptions, setProjectOptions] = useState<selectOption[]>([])
-  const [_, setSelectedProject] = useContext(ProjectContext)
 
   const formatProjects = (projects : project_type[]) : selectOption[] => {
     const formatted : selectOption[] = projects.map(({id, Status, project_id}) => ({
@@ -31,7 +30,7 @@ export default function HeadcountFilters() {
   }
 
   const updateProject = (project_id) => {
-    setSelectedProject(projects?.find((project) => project.id === project_id));
+    onChangeCallback(projects?.find((project) => project.id === project_id))
   }
 
   const handleSelectProject = (selected : selectOption) => {
@@ -45,7 +44,7 @@ export default function HeadcountFilters() {
   }, [projects])
 
   return <>
-    <div className="rounded-md border-solid border-4 border-gray-100 bg-gray-100 px-6 py-5 sm:flex sm:items-start sm:justify-between">
+    <div className="rounded-md border-solid border-4 border-gray-100 bg-gray-100 px-6 py-5 sm:flex sm:items-start sm:justify-between z-20">
       <div className="sm:flex sm:items-start">
         <Select label='Project' options={projectOptions} onSelectCallback={handleSelectProject} width="sm:w-[24rem]" />
       </div>

@@ -6,14 +6,16 @@ import Toast from "../utils/toast";
 
 export default function ProjectDetails(props: { purchases: purchase_type[]}){
   const {purchases} = props
-  const [project] = useContext(ProjectContext)
-  const [costAnalysis] = useContext(CostAnalysisContext)
+  const project = useContext(ProjectContext)
+  const costAnalysis = useContext(CostAnalysisContext)
 
   return (
     <div className="overflow-hidden bg-white shadow sm:rounded-md">
       <ul role="list" className="divide-y divide-gray-200 text-center flex justify-center flex-col align-middle">
-        <li className="px-4 py-4 sm:px-6 flex flex-col grap-y-4">
-          <p className="order-first text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">{project?.project_id ? project?.project_id : 'ALL PROJECTS'}</p>
+        <li className="px-4 py-4 sm:px-6 flex flex-row grap-y-4">
+          <p className="order-first text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
+            {project?.project_id ? project?.project_id : 'ALL PROJECTS'}
+          </p>
           {
             project && project.customer_name &&
             <div>
@@ -21,7 +23,7 @@ export default function ProjectDetails(props: { purchases: purchase_type[]}){
               <p className="text-xs text-gray-600">{project.start_date} - {project.end_date}</p>
             </div>
           }
-        </li>  
+        </li>
         {
           project &&
           <li className="px-4 py-4 sm:px-6 flex grap-y-4 justify-evenly">

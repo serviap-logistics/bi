@@ -2,8 +2,8 @@ import { useMsal } from '@azure/msal-react';
 import logo from '../../images/favicon-ico.png'
 import { InteractionStatus } from '@azure/msal-browser';
 
-export default function Login(props: {auth: any, authCallback: any}) {
-  const { instance, accounts, inProgress } = useMsal();
+export default function Login(props: {authCallback: any}) {
+  const { instance, inProgress } = useMsal()
   const { authCallback } = props
 
   const handleLogin = () => {
@@ -14,7 +14,7 @@ export default function Login(props: {auth: any, authCallback: any}) {
     // Si el proceso de Login no ha comenzado, se abre el Popup.
     instance.loginPopup({ scopes: ["user.read"] })
       .then(() => {
-        authCallback(accounts)
+        authCallback(true)
       })
       .catch((error) => {
         if(error.name === "BrowserAuthError" && error.errorCode === "interaction_in_progress"){
@@ -22,8 +22,10 @@ export default function Login(props: {auth: any, authCallback: any}) {
         }
         if(error.name === "BrowserAuthError" && error.errorCode === "user_cancelled") {
           resetAuthState();
+          authCallback(false);
         } else {
           console.error("Login failed ):", error)
+          authCallback(false);
         }
       })
   }

@@ -5,13 +5,9 @@ import HeadcountFilters from "./filters"
 import { getCostAnalysis } from "../../api/cost_analysis"
 import HeadcountReportByType from "./reportByType"
 
-export const ProjectContext = createContext<[selected_project: project_type | undefined, setSelectedProject: any]>(
-    [undefined, () => {}]
-  )
+export const ProjectContext = createContext<project_type | undefined>(undefined)
 
-export const CostAnalysisContext = createContext<[cost_analysis: cost_analysis_type | undefined, setCostAnalysis: any]>(
-    [undefined, () => {}]
-  )
+export const CostAnalysisContext = createContext<cost_analysis_type | undefined>(undefined)
 
 export default function Headcount(){
   const [project, setProject] = useState<project_type | undefined>()
@@ -32,17 +28,17 @@ export default function Headcount(){
   }
 
   useEffect(() => {
-    console.log(project?.project_id)
+    console.log('Project: ', project?.project_id)
     if(project?.cost_analysis_id){ updateCostAnalysis(project.cost_analysis_id) }
     else { setCostAnalysis(undefined) };
   },[project])
 
   return (
     <div id="purchase__section">
-      <ProjectContext.Provider value={[project, setProject]}>
-        <CostAnalysisContext.Provider value={[costAnalysis, setCostAnalysis]}>
+      <ProjectContext.Provider value={project}>
+        <CostAnalysisContext.Provider value={costAnalysis}>
           <h3 className="text-base font-semibold leading-6 text-gray-900 mb-4">Headcount</h3>
-          <HeadcountFilters />
+          <HeadcountFilters onChangeCallback={setProject} />
           {
             project && <HeadcountReportByType />
           }
