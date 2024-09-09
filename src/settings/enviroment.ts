@@ -23,5 +23,6 @@ export const ENVIROMENT = {
   // Microsoft Login
   MS_CLIENT_ID: import.meta.env.VITE_MS_CLIENT_ID,
   MS_REDIRECT_URI: import.meta.env.VITE_MS_REDIRECT_URI,
+  MS_LOGOUT_URI: import.meta.env.VITE_MS_LOGOUT_URI,
   MS_TENANT_ID: import.meta.env.VITE_MS_TENANT_ID,
 }

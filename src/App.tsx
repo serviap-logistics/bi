@@ -3,7 +3,7 @@ import Sidebar from './components/layout/Sidebar';
 import Topbar from './components/layout/Topbar';
 import Login from './components/login';
 import { useMsal } from '@azure/msal-react';
-import { APP_NAVIGATION, app_navigation_option, DEFAULT_MAIN_CONTENT, LOGIN_NEEDED } from './settings/appSettings';
+import { APP_NAVIGATION, app_navigation_option, DEFAULT_MAIN_CONTENT } from './settings/appSettings';
 
 export const MainContentContext = createContext<string>('');
 export const SideBarContext = createContext<boolean>(false);
@@ -22,10 +22,6 @@ function App() {
 
   const [isAuth, setIsAuth] = useState(false)
   const checkLogin = async () => {
-    if(!LOGIN_NEEDED){
-      setIsAuth(true)
-      return
-    }
     try {
       if(accounts.length > 0) {
         const silent_request = {
@@ -56,15 +52,22 @@ function App() {
     setContent({component: navigation.find((option) => option.key === key)?.main_component})
   }
 
+  const handleShowSideBar = (open: boolean) => {
+    setShowSideBar(open)
+  }
+
   useEffect(() => { checkLogin() })
+  useEffect(() => { 
+    if(accounts.length == 0) setIsAuth(false)
+   }, [instance, accounts])
 
   return !isAuth
   ? <Login authCallback={setIsAuth} />
   : (
     <MainContentContext.Provider value={mainContent}>
       <SideBarContext.Provider value={showSideBar}>
-        <Topbar showSideBar={showSideBar} setShowSideBar={setShowSideBar} />
-        <Sidebar navigation={navigation} onSelectCallback={handleSideBarChange} />
+        <Topbar showSideBar={showSideBar} onChangeShowSideBar={handleShowSideBar} />
+        <Sidebar navigation={navigation} onSelectCallback={handleSideBarChange} onChangeShowSideBar={handleShowSideBar} />
         <div className="lg:pl-60">
           {/* Main section */}
           <section className="py-5">

@@ -1,32 +1,35 @@
 import { Cog6ToothIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment, useContext, useState } from 'react';
+import { Fragment, useContext } from 'react';
 import { classNames } from '../../utils';
 import IMAGES from '../../images/urls';
 import { app_navigation_option } from '../../settings/appSettings';
-import { MainContentContext } from '../../App';
+import { MainContentContext, SideBarContext } from '../../App';
 
 export default function Sidebar(props: {
-  navigation: app_navigation_option[], onSelectCallback: any
+  navigation: app_navigation_option[], onSelectCallback: any,
+  onChangeShowSideBar: (open: boolean) => void
 }) {
-  const { navigation, onSelectCallback } = props;
-  const [ SidebarOpen, setSidebarOpen ] = useState(false);
+  const { navigation, onSelectCallback, onChangeShowSideBar } = props;
+  const showSideBar = useContext(SideBarContext)
   const currentSection = useContext(MainContentContext)
 
   const handleOptionClick = (key: string) => {
     if(key !== currentSection){
       onSelectCallback(key);
-      // setSidebarOpen(false);
     }
   };
 
+  const handleCloseFloatingSideBar = () => onChangeShowSideBar(false)
+
   return (
     <>
-      <Transition.Root show={SidebarOpen} as={Fragment}>
+      {/* FLOATING SIDE BAR */}
+      <Transition.Root show={showSideBar} as={Fragment}>
         <Dialog
-          as="div"
+          as="aside"
           className="relative z-50 lg:hidden"
-          onClose={setSidebarOpen}
+          onClose={handleCloseFloatingSideBar}
         >
           <Transition.Child
             as={Fragment}
@@ -64,7 +67,7 @@ export default function Sidebar(props: {
                     <button
                       type="button"
                       className="-m-2.5 p-2.5"
-                      onClick={() => setSidebarOpen(false)}
+                      onClick={handleCloseFloatingSideBar}
                     >
                       <span className="sr-only">Close sidebar</span>
                       <XMarkIcon
@@ -96,6 +99,10 @@ export default function Sidebar(props: {
                                     : 'text-gray-400 hover:text-white hover:bg-gray-800',
                                   'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
                                 )}
+                                onClick={() => {
+                                  handleOptionClick(item.key)
+                                  handleCloseFloatingSideBar()
+                                }}
                               >
                                 <item.icon
                                   className="h-6 w-6 shrink-0"
@@ -127,6 +134,8 @@ export default function Sidebar(props: {
           </div>
         </Dialog>
       </Transition.Root>
+
+      {/* STATIC SIDE BAR */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-60 lg:flex-col">
         {/* Sidebar component, swap this element with another sidebar if you like */}
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-800 px-6 pb-4">
