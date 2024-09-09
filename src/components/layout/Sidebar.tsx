@@ -1,53 +1,23 @@
-import {
-  Cog6ToothIcon,
-  ShoppingBagIcon,
-  UserGroupIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment, useContext, useEffect, useState } from 'react';
+import { Fragment, useContext, useState } from 'react';
 import { classNames } from '../../utils';
-import { MainContentContext } from '../../App';
 import IMAGES from '../../images/urls';
+import { app_navigation_option } from '../../settings/appSettings';
+import { MainContentContext } from '../../App';
 
-const navigation = [
-  // {
-  //   key: 'DASHBOARD',
-  //   name: 'Dashboard',
-  //   icon: PresentationChartLineIcon,
-  //   current: true,
-  // },
-  {
-    key: 'PURCHASES',
-    name: 'Purchases',
-    icon: ShoppingBagIcon,
-    current: true,
-  },
-  {
-    key: 'HEADCOUNT',
-    name: 'Headcount',
-    icon: UserGroupIcon,
-    current: false,
-  },
-];
-export default function Sidebar() {
+export default function Sidebar(props: {
+  navigation: app_navigation_option[], onSelectCallback: any
+}) {
+  const { navigation, onSelectCallback } = props;
   const [ SidebarOpen, setSidebarOpen ] = useState(false);
-  const [ mainContent, setMainContent ] = useContext(MainContentContext);
-  const [ currentSection, setCurrentSection ] = useState<string>();
+  const currentSection = useContext(MainContentContext)
 
-  const setActiveSection = (key) => navigation.map((section) => (section.current = section.key === key));
-
-  useEffect(() => {
-    setActiveSection(mainContent)
-    setCurrentSection(mainContent)
-  }, [mainContent])
-
-  const handleClick = (key: string) => {
-    if (currentSection !== key) {
-      const sectionSelected = navigation.find((section) => section.key === key);
-      setMainContent(sectionSelected?.key);
+  const handleOptionClick = (key: string) => {
+    if(key !== currentSection){
+      onSelectCallback(key);
+      // setSidebarOpen(false);
     }
-    setSidebarOpen(false);
   };
 
   return (
@@ -137,31 +107,6 @@ export default function Sidebar() {
                           ))}
                         </ul>
                       </li>
-                      {/* <li>
-                        <div className="text-xs font-semibold leading-6 text-gray-400">
-                          Your teams
-                        </div>
-                        <ul role="list" className="-mx-2 mt-2 space-y-1">
-                          {teams.map((team) => (
-                            <li key={team.name}>
-                              <a
-                                href={team.href}
-                                className={classNames(
-                                  team.current
-                                    ? 'bg-gray-800 text-white'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                                  'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
-                                )}
-                              >
-                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
-                                  {team.initial}
-                                </span>
-                                <span className="truncate">{team.name}</span>
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </li> */}
                       <li className="mt-auto">
                         <a
                           href="#"
@@ -204,8 +149,9 @@ export default function Sidebar() {
                             ? 'bg-gray-800 text-white'
                             : 'text-gray-400 hover:text-white hover:bg-gray-800',
                           'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
+                          'hover:cursor-pointer',
                         )}
-                        onClick={() => handleClick(item.key)}
+                        onClick={() => handleOptionClick(item.key)}
                       >
                         <item.icon
                           className="h-6 w-6 shrink-0"
@@ -217,31 +163,6 @@ export default function Sidebar() {
                   ))}
                 </ul>
               </li>
-              {/* <li>
-                <div className="text-xs font-semibold leading-6 text-gray-400">
-                  Your teams
-                </div>
-                <ul role="list" className="-mx-2 mt-2 space-y-1">
-                  {teams.map((team) => (
-                    <li key={team.name}>
-                      <a
-                        href={team.href}
-                        className={classNames(
-                          team.current
-                            ? 'bg-gray-800 text-white'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                          'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
-                        )}
-                      >
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
-                          {team.initial}
-                        </span>
-                        <span className="truncate">{team.name}</span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </li> */}
               <li className="mt-auto">
                 <a
                   href="#"

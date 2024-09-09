@@ -2,7 +2,7 @@ import { useState } from "react"
 import { classNames } from "../../utils"
 
 export type tabs_menu_option_type = {
-  key: string, current: boolean, name: string, icon?: any, content: any
+  key: string, current: boolean, name: string, icon?: any,
 }
 export default function TabsMenu(props: {label?: string, tabs: tabs_menu_option_type[], onSelectCallback: any, colorOnSelect?: string}){
   const {label, tabs, onSelectCallback, colorOnSelect= 'indigo'} = props

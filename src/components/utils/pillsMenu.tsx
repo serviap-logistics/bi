@@ -2,7 +2,7 @@ import { useState } from "react"
 import { classNames } from "../../utils"
 
 export type tabs_menu_option_type = {
-  key: string, current: boolean, name: string, icon?: any, content: any
+  key: string, current: boolean, name: string, icon?: any,
 }
 
 export default function PillsMenu(props: {
@@ -23,7 +23,7 @@ export default function PillsMenu(props: {
   }
 
   return (
-    <div>
+    <div className="py-0.5">
       <div className="sm:hidden">
         <label htmlFor="tabs" className="sr-only">
           Select a tab
