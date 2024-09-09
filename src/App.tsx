@@ -52,9 +52,7 @@ function App() {
     setContent({component: navigation.find((option) => option.key === key)?.main_component})
   }
 
-  const handleShowSideBar = (open: boolean) => {
-    setShowSideBar(open)
-  }
+  const handleShowSideBar = (open: boolean) => { setShowSideBar(open) }
 
   useEffect(() => { checkLogin() })
   useEffect(() => { 
