@@ -50,7 +50,6 @@ export default function Purchases(){
   }
 
   useEffect(() => {
-    console.log('Project: ', project?.project_id)
     getPurchases()
     if(project?.cost_analysis_id){ getCostAnalysis() }
     else { setCostAnalysis(undefined) };

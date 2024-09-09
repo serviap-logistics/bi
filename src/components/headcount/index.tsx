@@ -28,7 +28,6 @@ export default function Headcount(){
   }
 
   useEffect(() => {
-    console.log('Project: ', project?.project_id)
     if(project?.cost_analysis_id){ updateCostAnalysis(project.cost_analysis_id) }
     else { setCostAnalysis(undefined) };
   },[project])
