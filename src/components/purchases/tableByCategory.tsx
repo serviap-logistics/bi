@@ -149,6 +149,6 @@ export default function TableByCategory(props: {purchases: purchase_type[]}) {
   }, [budgets, results])
 
   return (
-    <Table columns={table.columns} rows={table.rows} />
+    <Table columns={table.columns} rows={table.rows} styles={{static_headers: false, static_bottom: false}} />
   )
 }
