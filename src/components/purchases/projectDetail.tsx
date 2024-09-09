@@ -12,7 +12,7 @@ export default function ProjectDetails(props: { purchases: purchase_type[]}){
   return (
     <div className="overflow-hidden bg-white shadow sm:rounded-md">
       <ul role="list" className="divide-y divide-gray-200 text-center flex justify-center flex-col align-middle">
-        <li className="px-4 py-4 sm:px-6 flex flex-row grap-y-4">
+        <li className="px-4 py-4 sm:px-6 flex flex-col grap-y-4">
           <p className="order-first text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
             {project?.project_id ? project?.project_id : 'ALL PROJECTS'}
           </p>
