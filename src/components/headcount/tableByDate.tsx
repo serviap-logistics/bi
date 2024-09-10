@@ -9,24 +9,24 @@ import { getDateByTimestamp, getDatesBeetween, getPercentage, groupListBy, USDol
 import { getCALaborDetails } from "../../api/ca_labor_details";
 import { ca_labor_detail_type } from "../../types/ca_labor_detail.type";
 import Toast from "../utils/toast";
-import { project_type } from "../../types/project.type";
 import Alert from "../utils/alert";
+
+type report_data = {date: string, total_cost: number, total_hours: number, records?: any[]}
+type day_result_type = {
+  date: string, budget_total_cost: number, budget_total_hours: number, real_total_cost: number, real_total_hours: number,
+  difference_cost: number, difference_hours: number, percentage_cost: any, percentage_hours: any,
+  records?: report_data[],
+}
 
 export default function HeadcountTableByDate() {
   const project = useContext(ProjectContext)
   const costAnalysis = useContext(CostAnalysisContext)
   const reportType = useContext(ReportTypeContext)
 
-  type report_data = {date: string, total_cost: number, total_hours: number, records?: any[]}
   const [budgets, setBudgets] = useState<report_data[]>([])
   const [reals, setReals] = useState<report_data[]>([])
   const [rows, setRows] = useState<any[]>([])
 
-  type day_result_type = {
-    date: string, budget_total_cost: number, budget_total_hours: number, real_total_cost: number, real_total_hours: number,
-    difference_cost: number, difference_hours: number, percentage_cost: any, percentage_hours: any,
-    records?: report_data[],
-  }
   const [indicators, setIndicators] = useState<day_result_type[]>([])
 
   const updateBudget = async (costAnalysis : cost_analysis_type) => {
@@ -70,39 +70,61 @@ export default function HeadcountTableByDate() {
     setReals(totals_by_date)
   }
 
-  const mergeResults = (project : project_type) => {
-    const start_date = project.hour_registration_start_date ?? project.start_date
-    const end_date = project.hour_registration_end_date ?? project.end_date
-    const dates_beetween = getDatesBeetween(start_date, end_date)
-    const results : day_result_type[] = []
-    let count = 0;
-    const worked_records : any[]= []
-    for(let pivot_date of dates_beetween){
-      let day_results : day_result_type = {
-        date: pivot_date, budget_total_cost: 0, budget_total_hours: 0, real_total_cost: 0, real_total_hours: 0,
-        difference_cost: 0, difference_hours: 0, percentage_cost: 0, percentage_hours: 0, records: []
-      }
-      const budget_totals = budgets.find((budget) => budget.date === pivot_date )
-      if(budget_totals){
-        day_results.budget_total_cost = budget_totals.total_cost
-        day_results.budget_total_hours= budget_totals.total_hours
-      }
-      const real_totals = reals.find((real) => real.date === pivot_date )
-      if(real_totals){
-        count++;
-        worked_records.push(real_totals)
-        day_results.real_total_cost = real_totals.total_cost
-        day_results.real_total_hours = real_totals.total_hours
-      }
-      day_results.difference_cost = day_results.budget_total_cost - day_results.real_total_cost
-      day_results.difference_hours = day_results.budget_total_hours - day_results.real_total_hours
-      day_results.percentage_cost = getPercentage(day_results.budget_total_cost, day_results.real_total_cost)
-      day_results.percentage_hours = getPercentage(day_results.budget_total_hours, day_results.real_total_hours)
+  const mergeResults = () => {
+    console.log('Trying merge with:')
+    console.table([['PY', project],['CA', costAnalysis]])
+    // El reporte por defecto comienza en al inicio del registro de horas reales,
+    // si no existe, se utiliza la fecha de inicio del analisis de costos.
+    // si no existe, se utiliza la fecha de inicio del proyecto.
+    let start_date = project?.hour_registration_start_date ?? costAnalysis?.start_date ?? project?.start_date
+    // Por defecto termina al final del analisis de costos o en al final del registro de horas reales,
+    // la fecha mas reciente.
+    const project_end_date = 
+      (
+        // Se calcula la fecha mas "grande" entre las horas reales, el end_date del proyecto.
+        new Date(project?.hour_registration_end_date ?? '').getTime() > new Date(project?.end_date ?? '').getTime()
+          ? project?.hour_registration_end_date : project?.end_date
+      )
+    // Se calcula la fecha mas "grande" entre el end_date del proyecto o el end_date del CA.
+    const end_date =
+      (
+        // Se calcula la fecha mas "grande" entre las horas reales, el end_date del proyecto o el end_date del analisis de costos.
+        new Date(project_end_date ?? '').getTime() > new Date(costAnalysis?.end_date ?? '').getTime() ? project_end_date : costAnalysis?.end_date ?? project_end_date
+      )
+    if (!start_date || !end_date){
+      console.log('ALERT: Some date is needed.')
+    } else {
+      const dates_beetween = getDatesBeetween(start_date, end_date)
+      const results : day_result_type[] = []
+      let count = 0;
+      const worked_records : any[]= []
+      for(let pivot_date of dates_beetween){
+        let day_results : day_result_type = {
+          date: pivot_date, budget_total_cost: 0, budget_total_hours: 0, real_total_cost: 0, real_total_hours: 0,
+          difference_cost: 0, difference_hours: 0, percentage_cost: 0, percentage_hours: 0, records: []
+        }
+        const budget_totals = budgets.find((budget) => budget.date === pivot_date )
+        if(budget_totals){
+          day_results.budget_total_cost = budget_totals.total_cost
+          day_results.budget_total_hours= budget_totals.total_hours
+        }
+        const real_totals = reals.find((real) => real.date === pivot_date )
+        if(real_totals){
+          count++;
+          worked_records.push(real_totals)
+          day_results.real_total_cost = real_totals.total_cost
+          day_results.real_total_hours = real_totals.total_hours
+        }
+        day_results.difference_cost = day_results.budget_total_cost - day_results.real_total_cost
+        day_results.difference_hours = day_results.budget_total_hours - day_results.real_total_hours
+        day_results.percentage_cost = getPercentage(day_results.budget_total_cost, day_results.real_total_cost)
+        day_results.percentage_hours = getPercentage(day_results.budget_total_hours, day_results.real_total_hours)
 
-      day_results.records = []
-      results.push(day_results)
+        day_results.records = []
+        results.push(day_results)
+      }
+      setIndicators(results)
     }
-    setIndicators(results)
   }
 
   const formatAsTable = (results : day_result_type[]) => {
@@ -180,7 +202,7 @@ export default function HeadcountTableByDate() {
 
   useEffect(() => {
     if((budgets.length > 0 || reals.length > 0) && project){
-      mergeResults(project)
+      mergeResults()
     }
   }, [budgets, reals])
 
