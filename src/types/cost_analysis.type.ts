@@ -6,7 +6,7 @@ export type cost_analysis_type = {
   ca_start_date?: string,
   start_date?: string,
   end_date?: string,
-  total_cost?: number,
+  total_cost: number,
   // Labor
   total_labor_perdiem_count?: number,
   total_labor_perdiem_cost?: number,
