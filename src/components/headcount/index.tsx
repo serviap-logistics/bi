@@ -16,12 +16,12 @@ export default function Headcount(){
   const updateCostAnalysis = async (cost_analysis_id : string) => {
     const cost_analysis: cost_analysis_type[] = await getCostAnalysis({
       view: 'BI',
-      fields: ['cost_analysis_id', 'total_labor_cost', 'total_labor_hours'],
+      fields: ['cost_analysis_id', 'total_labor_cost', 'total_labor_hours', 'start_date','end_date'],
       formula: encodeURI(`cost_analysis_id='${cost_analysis_id}'`),
     })
     if(cost_analysis.length == 1){
+      console.log('NEW CA: ', cost_analysis[0])
       setCostAnalysis(cost_analysis[0])
-      console.log('New CA', cost_analysis[0])
     } else if(cost_analysis.length > 1){
       console.log('More than 1 CA found! Send alert...')
     }

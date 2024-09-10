@@ -8,7 +8,7 @@ export const generateEncode = (props: airtable_request_type) => {
     props.fields.map((field) => encoded_fields.push(`fields=${field}`))
     encode += encoded_fields.join('&')
   }
-    encode += props.offset != undefined ? `&offset=${props.offset}` : ''
+  encode += props.offset != undefined ? `&offset=${props.offset}` : ''
   return encode
 }
 

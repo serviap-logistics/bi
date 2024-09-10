@@ -6,5 +6,6 @@ import airtableRequest from "./utils/run_airtable_request"
 const {AIRTABLE_HOST, USA_SALES_BASE, USA_COST_ANALYSIS_TABLE} = ENVIROMENT
 
 export async function getCostAnalysis(settings: airtable_request_type): Promise<cost_analysis_type[]>  {
-  return await airtableRequest(`${AIRTABLE_HOST}/${USA_SALES_BASE}/${USA_COST_ANALYSIS_TABLE}`, settings)
+  const response = await airtableRequest(`${AIRTABLE_HOST}/${USA_SALES_BASE}/${USA_COST_ANALYSIS_TABLE}`, settings)
+  return response;
 }

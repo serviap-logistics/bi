@@ -1,42 +1,87 @@
 import { useContext, useEffect, useState } from "react";
 import Table from "../utils/table";
 import { getRegistrationTimes } from "../../api/registration_times";
-import { cost_analysis_type } from "../../types/cost_analysis.type";
 import { CostAnalysisContext, ProjectContext } from ".";
 import { ReportTypeContext } from "./reportByType";
 import { registration_time_type } from "../../types/registration_time.type";
-import { getDateByTimestamp, groupListBy,
-  // USDollar, getDatesBeetween, getPercentage
-} from "../../utils";
+import { getDateByTimestamp, getDatesBeetween, groupListBy } from "../../utils";
 import { getCALaborDetails } from "../../api/ca_labor_details";
 import { ca_labor_detail_type } from "../../types/ca_labor_detail.type";
-// import Toast from "../utils/toast";
-import { project_type } from "../../types/project.type";
 import Alert from "../utils/alert";
+
+type result_data = {
+  'HEADERS': string[], // Table labels
+
+  'Worked': (string | number)[],
+  'Worked Overtime': (string | number)[],
+  'Travel': (string | number)[],
+  'Travel Overtime': (string | number)[],
+}
+
+type group_data = {
+  'Worked': {},
+  'Worked Overtime': {},
+  'Travel': {},
+  'Travel Overtime': {},
+}
 
 export default function HeadcountTableByRole() {
   const project = useContext(ProjectContext)
   const costAnalysis = useContext(CostAnalysisContext)
   const reportType = useContext(ReportTypeContext)
-
-  type row_data = {
-    employee_role: string,
-    days: {
-      date: string,
-      worked_hours: number, travel_hours: number,
-      subtotal_worked_hours: number, subtotal_travel_hours: number,
-      worked_overtime: number, travel_overtime:number
-      overtime_worked_hours: number, overtime_travel_hours: number,
-      people_quantity?: number,
-    }[]
-  }
-  const [budgets, setBudgets] = useState<row_data[]>([])
-  const [reals, setReals] = useState<row_data[]>([])
   const [rows, setRows] = useState<any[]>([])
-  const [columns, setColumns] = useState<string[]>(['Role'])
-  const [results, setResults] = useState<row_data[]>([])
+  const [columns, setColumns] = useState<string[]>([])
+  const [reportDates, setReportDates] = useState<{ start_date: string | undefined, end_date: string | undefined }>()
 
-  const updateBudget = async (costAnalysis : cost_analysis_type) => {
+  const [budgets, setBudgets] = useState<group_data>({
+    'Worked': [], 'Worked Overtime': [],
+    'Travel': [], 'Travel Overtime': [],
+  })
+  const [reals, setReals] = useState<group_data>({
+    'Worked': [], 'Worked Overtime': [],
+    'Travel': [], 'Travel Overtime': [],
+  })
+  const [results, setResults] = useState<result_data>({
+    'HEADERS': ['Role', 'People Quantity'],
+    'Worked': [], 'Worked Overtime': [],
+    'Travel': [], 'Travel Overtime': [],
+  })
+
+  const updateReportDates = () => {
+    // El reporte por defecto comienza en al inicio del registro de horas reales,
+    // si no existe, se utiliza la fecha de inicio del analisis de costos.
+    // si no existe, se utiliza la fecha de inicio del proyecto.
+    const start_date = project?.hour_registration_start_date ?? costAnalysis?.start_date ?? project?.start_date
+
+    // Por defecto termina al final del analisis de costos o en al final del registro de horas reales,
+    // la fecha mas reciente.
+    const project_end_date = 
+      (
+        // Se calcula la fecha mas "grande" entre las horas reales, el end_date del proyecto.
+        new Date(project?.hour_registration_end_date ?? '').getTime() > new Date(project?.end_date ?? '').getTime()
+          ? project?.hour_registration_end_date : project?.end_date
+      )
+      
+    // Se calcula la fecha mas "grande" entre el end_date del proyecto o el end_date del CA.
+    const end_date =
+      (
+        // Se calcula la fecha mas "grande" entre las horas reales, el end_date del proyecto o el end_date del analisis de costos.
+        new Date(project_end_date ?? '').getTime() > new Date(costAnalysis?.end_date ?? '').getTime() ? project_end_date : costAnalysis?.end_date ?? project_end_date
+      )
+
+    setReportDates({start_date: start_date, end_date: end_date})
+  }
+
+  const updateBudget = async () => {
+    if(!costAnalysis?.cost_analysis_id || !reportDates?.start_date || !reportDates?.end_date) {
+      setBudgets({
+        'Worked' : {},
+        'Worked Overtime' : {},
+        'Travel' : {},
+        'Travel Overtime' : {},
+      })
+      return
+    }
     const budget_times : ca_labor_detail_type[] = await getCALaborDetails({
       view: 'BI',
       fields: [
@@ -57,80 +102,124 @@ export default function HeadcountTableByRole() {
       })
     )
     let grouped_by_role = groupListBy('employee_role', times_formatted)
-    console.log(grouped_by_role)
-    let totals_by_role = Object.entries(grouped_by_role).map(
-      ([date, records] : [string, any]) => ({
-        date: date,
-        total_cost: records.reduce((total, record) => total + record.cost,0),
-        total_hours: records.reduce((total, record) => total + record.hours, 0),
+    let worked_by_role = {}
+    Object.entries(grouped_by_role).map(([role, records] : [string, any]) => worked_by_role[role] =
+      records.map((record) => ({
+        date: record.date, people_quantity: record.people_quantity,
+        hour_cost: record.worked_hour_cost,
+        hours: record.worked_hours,
+        subtotal: record.subtotal_worked_hours,
       })
+    ))
+    let worked_overtime_by_role = {}
+    Object.entries(grouped_by_role).map( ([role, records] : [string, any]) => worked_overtime_by_role[role] =
+      records.map((record) => ({
+        date: record.date, people_quantity: record.people_quantity,
+        hour_cost: record.worked_overtime_hour_cost,
+        hours: record.worked_overtime_hours,
+        subtotal: record.subtotal_worked_overtime,
+      }))
     )
-    console.log(totals_by_role)
-    // setBudgets(totals_by_date)
-    setBudgets([])
-  }
-
-  const updateRealByDate = async (project_id) => {
-    const real_times: registration_time_type[] = await getRegistrationTimes({
-      worked: true, travel: true, waiting: true, project_id: project_id
+    let travel_by_role = {}
+    Object.entries(grouped_by_role).map( ([role, records] : [string, any]) => travel_by_role[role] =
+      records.map((record) => ({
+        date: record.date, people_quantity: record.people_quantity,
+        hour_cost: record.travel_hour_cost,
+        hours: record.travel_hours,
+        subtotal: record.subtotal_travel_hours,
+      }))
+    )
+    let travel_overtime_by_role = {}
+    Object.entries(grouped_by_role).map(([role, records] : [string, any]) => travel_overtime_by_role[role] = 
+      records.map((record) => ({
+        date: record.date, people_quantity: record.people_quantity,
+        hour_cost: record.travel_overtime_hour_cost,
+        hours: record.travel_overtime_hours,
+        subtotal: record.subtotal_travel_overtime,
+      }))
+    )
+    setBudgets({
+      'Worked' : worked_by_role,
+      'Worked Overtime' : worked_overtime_by_role,
+      'Travel' : travel_by_role,
+      'Travel Overtime' : travel_overtime_by_role,
     })
-    let times_formatted = real_times.map(
-      ({total_cost, total_hours, start_date, category}) => ({
-        cost: total_cost, hours: total_hours, date: getDateByTimestamp(start_date), category: category
-      })
-    )
-    let grouped_by_date = groupListBy('date', times_formatted)
-    let totals_by_date = Object.entries(grouped_by_date).map(
-      ([date, records] : [string, any]) => ({
-        date: date,
-        total_cost: records.reduce((total, record) => total + record.cost,0),
-        total_hours: records.reduce((total, record) => total + record.hours, 0),
-      })
-    )
-    totals_by_date = totals_by_date.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    // setReals(totals_by_date)
-    setReals([])
   }
 
-  const mergeResults = (project : project_type) => {
-    console.log(project)
-    setResults([])
-    /*
-    const start_date = project.hour_registration_start_date ?? project.start_date
-    const end_date = project.hour_registration_end_date ?? project.end_date
-    const dates_beetween = getDatesBeetween(start_date, end_date)
-    const results : day_result_type[] = []
-    let count = 0;
-    const worked_records : any[]= []
-    for(let pivot_date of dates_beetween){
-      let day_results : day_result_type = {
-        date: pivot_date, budget_total_cost: 0, budget_total_hours: 0, real_total_cost: 0, real_total_hours: 0,
-        difference_cost: 0, difference_hours: 0, percentage_cost: 0, percentage_hours: 0,
-      }
-      const budget_totals = budgets.find((budget) => budget.date === pivot_date )
-      if(budget_totals){
-        day_results.budget_total_cost = budget_totals.total_cost
-        day_results.budget_total_hours= budget_totals.total_hours
-      }
-      const real_totals = reals.find((real) => real.date === pivot_date )
-      if(real_totals){
-        count++;
-        worked_records.push(real_totals)
-        day_results.real_total_cost = real_totals.total_cost
-        day_results.real_total_hours = real_totals.total_hours
-      }
-      day_results.difference_cost = day_results.budget_total_cost - day_results.real_total_cost
-      day_results.difference_hours = day_results.budget_total_hours - day_results.real_total_hours
-      day_results.percentage_cost = getPercentage(day_results.budget_total_cost, day_results.real_total_cost)
-      day_results.percentage_hours = getPercentage(day_results.budget_total_hours, day_results.real_total_hours)
-
-      results.push(day_results)
+  const updateRealByDate = async () => {
+    if(!project?.project_id) {
+      setReals({
+        'Worked' : {},
+        'Worked Overtime' : {},
+        'Travel' : {},
+        'Travel Overtime' : {},
+      })
+      return
+    } else {
+      const real_times: registration_time_type[] = await getRegistrationTimes({
+        worked: true, travel: true, waiting: true, project_id: project.project_id
+      })
+      let times_formatted = real_times.map(
+        ({total_cost, total_hours, start_date, category}) => ({
+          cost: total_cost, hours: total_hours, date: getDateByTimestamp(start_date), category: category
+        })
+      )
+      let grouped_by_date = groupListBy('date', times_formatted)
+      let totals_by_date = Object.entries(grouped_by_date).map(
+        ([date, records] : [string, any]) => ({
+          date: date,
+          total_cost: records.reduce((total, record) => total + record.cost,0),
+          total_hours: records.reduce((total, record) => total + record.hours, 0),
+        })
+      )
+      totals_by_date = totals_by_date.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      // setReals(totals_by_date)
+      setReals({
+        'Worked': {},
+        'Worked Overtime': {},
+        'Travel': {},
+        'Travel Overtime': {},
+      })
     }
-    setResults(results)
-    */
   }
 
-  const formatAsTable = (results : row_data[]) => {
+  const mergeResults = (budgets: group_data, reals: group_data) => {
+    console.log('Trying merge with:')
+    console.log('Budgets:')
+    console.log(budgets)
+    console.log('Reals:')
+    console.log(reals)
+    if (!reportDates?.start_date || !reportDates.end_date){
+      console.log('ALERT: Some date is needed.')
+    } else {
+      const dates_beetween = getDatesBeetween(reportDates.start_date, reportDates.end_date)
+      // Para este momento, budgets deberia existir con al menos un role y con todo en 0.
+      const roles_available = Object.values(budgets).map((roles) => Object.keys(roles))[0]
+      const groups_available = Object.keys(results)
+      console.log(groups_available)
+      if(roles_available.length === 0){
+        console.log('Nothing to show...')
+        setResults({
+          ...results
+        })
+      } else {
+        console.log('Roles available... ', roles_available)
+        const worked_results = []; 
+        const worked_dates : string[] = budgets['Worked'][roles_available[0]].map((record) => record.date)
+        console.log('Report dates: ', dates_beetween.length)
+        console.log('Budget dates: ', worked_dates.length)
+        console.log(worked_dates)
+        const dates_to_create = dates_beetween.filter((date) => !worked_dates.includes(date))
+        console.log(dates_to_create)
+        for(let pivot_date of dates_beetween){
+          console.log(pivot_date)
+        }
+        console.log(worked_results)
+      }
+    }
+  }
+
+  const formatAsTable = (results : result_data) => {
     console.log(results)
     setColumns([])
     setRows(reportType?[]: [])
@@ -202,22 +291,26 @@ export default function HeadcountTableByRole() {
   }
 
   useEffect(() => {
-    formatAsTable(results)
+    const {HEADERS, ...values} = results
+    if(Object.values(values).flat(Infinity).length > 0) formatAsTable(results);
   }, [results])
 
   useEffect(() => {
-    if((budgets.length > 0 || reals.length > 0) && project){
-      mergeResults(project)
+    const budgetsCheck = Object.values(budgets).flat(Infinity).length > 0
+    const realsCheck = Object.values(reals).flat(Infinity).length > 0
+    if( budgetsCheck && realsCheck ){
+      mergeResults(budgets, reals)
     }
   }, [budgets, reals])
 
   useEffect(() => {
-    if(costAnalysis?.cost_analysis_id) updateBudget(costAnalysis);
-  }, [costAnalysis])
+    if(reportDates?.start_date != '' && reportDates?.end_date != ''){
+      updateBudget();
+      updateRealByDate();
+    }
+  }, [reportDates])
 
-  useEffect(() => {
-    if(project?.project_id) updateRealByDate(project.project_id);
-  }, [project]) 
+  useEffect(() => { updateReportDates() }, [costAnalysis, project]) 
 
   return (
     <div className="mx-auto max-w-full relative">
