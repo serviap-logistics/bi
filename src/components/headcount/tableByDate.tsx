@@ -26,6 +26,7 @@ export default function HeadcountTableByDate() {
   const [budgets, setBudgets] = useState<report_data[]>([])
   const [reals, setReals] = useState<report_data[]>([])
   const [rows, setRows] = useState<any[]>([])
+  const [showTable, setShowTable] = useState(false)
 
   const [indicators, setIndicators] = useState<day_result_type[]>([])
 
@@ -71,8 +72,8 @@ export default function HeadcountTableByDate() {
   }
 
   const mergeResults = () => {
-    console.log('Trying merge with:')
-    console.table([['PY', project],['CA', costAnalysis]])
+    console.log('Triying mergin with: ')
+    console.table([['Budget', budgets], ['Real', reals]])
     // El reporte por defecto comienza en al inicio del registro de horas reales,
     // si no existe, se utiliza la fecha de inicio del analisis de costos.
     // si no existe, se utiliza la fecha de inicio del proyecto.
@@ -123,12 +124,13 @@ export default function HeadcountTableByDate() {
         day_results.records = []
         results.push(day_results)
       }
+      console.log('New RESULTS: ', results)
       setIndicators(results)
     }
   }
 
-  const formatAsTable = (results : day_result_type[]) => {
-    const rows = results.map((result) =>
+  const formatAsTable = () => {
+    const rows = indicators.map((result) =>
       reportType === 'HOURS' ? [
         result.date, result.budget_total_hours, result.real_total_hours.toFixed(2),
         result.difference_hours.toFixed(2), 
@@ -160,22 +162,22 @@ export default function HeadcountTableByDate() {
     )
     const summary_row = {
       budget: reportType === 'HOURS'
-        ? results.reduce((total, result) => total + result.budget_total_hours,0)
-        : USDollar.format(results.reduce((total, result) => total + result.budget_total_cost,0)),
+        ? indicators.reduce((total, result) => total + result.budget_total_hours,0)
+        : USDollar.format(indicators.reduce((total, result) => total + result.budget_total_cost,0)),
       real: reportType === 'HOURS'
-        ? results.reduce((total, result) => total + result.real_total_hours,0).toFixed(2)
-        : USDollar.format(results.reduce((total, result) => total + result.real_total_cost,0)),
+        ? indicators.reduce((total, result) => total + result.real_total_hours,0).toFixed(2)
+        : USDollar.format(indicators.reduce((total, result) => total + result.real_total_cost,0)),
       difference: reportType === 'HOURS'
-        ? results.reduce((total, result) => total + result.difference_hours,0).toFixed(2)
-        : USDollar.format(results.reduce((total, result) => total + result.difference_cost,0)),
+        ? indicators.reduce((total, result) => total + result.difference_hours,0).toFixed(2)
+        : USDollar.format(indicators.reduce((total, result) => total + result.difference_cost,0)),
       percentage: reportType === 'HOURS'
         ? getPercentage(
-          results.reduce((total, result) => total + result.budget_total_hours,0),
-          results.reduce((total, result) => total + result.real_total_hours,0)
+          indicators.reduce((total, result) => total + result.budget_total_hours,0),
+          indicators.reduce((total, result) => total + result.real_total_hours,0)
         )
         : getPercentage(
-            results.reduce((total, result) => total + result.budget_total_cost,0),
-            results.reduce((total, result) => total + result.real_total_cost,0)
+            indicators.reduce((total, result) => total + result.budget_total_cost,0),
+            indicators.reduce((total, result) => total + result.real_total_cost,0)
         ),
     }
     rows.push([
@@ -192,17 +194,18 @@ export default function HeadcountTableByDate() {
       />,
     ])
     setRows(rows)
+    setShowTable(true)
   }
 
   useEffect(() => {
-    if(indicators.length>0){
-      formatAsTable(indicators)
-    }
+    if(indicators.length>0){ formatAsTable() }
   }, [indicators, reportType])
 
   useEffect(() => {
-    if((budgets.length > 0 || reals.length > 0) && project){
+    if((budgets.length > 0 && reals.length > 0)){
       mergeResults()
+    } else {
+      console.log('Falta algo...')
     }
   }, [budgets, reals])
 
@@ -217,7 +220,7 @@ export default function HeadcountTableByDate() {
   return (
     <div className="mx-auto max-w-full relative">
       {
-        project?.start_date && project.end_date &&
+        showTable && rows &&
         <Table
           columns={['Date', 'Budget', 'Real','Difference', '% Used']}
           rows={rows}

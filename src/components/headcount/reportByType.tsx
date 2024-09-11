@@ -7,59 +7,60 @@ import PillsMenu from "../utils/pillsMenu";
 import HeadcountTableByRole from "./tableByRole";
 
 type report_types_available = 'HOURS' | 'COST' | 'ALL';
-const tabs : tabs_menu_option_type[] = [
-  {key: 'HOURS', current: true, name: 'Hours', icon: undefined},
-  {key: 'COST', current: false, name: 'Cost', icon: undefined},
-  {key: 'ALL', current: false, name: 'Hours & Cost', icon: undefined},
-]
-
 type summary_types_available = 'BY_DAY' | 'BY_ROLE' ;
-const summary_tabs : tabs_menu_option_type[] = [
-  {key: 'BY_DAY', current: true, name: 'By Day', icon: undefined},
-  {key: 'BY_ROLE', current: false, name: 'By Role', icon: undefined},
-]
 
-export const ReportTypeContext = createContext<report_types_available>('HOURS');
-export const SummaryTypeContext = createContext<summary_types_available>('BY_DAY');
+const DEFAULT_REPORT_TYPE = 'HOURS'
+const DEFAULT_SUMMARY_TYPE = 'BY_DAY'
+
+export const ReportTypeContext = createContext<report_types_available>(DEFAULT_REPORT_TYPE);
+export const SummaryTypeContext = createContext<summary_types_available>(DEFAULT_SUMMARY_TYPE);
 
 export default function HeadcountReportByType(){
-  const [currentTab, setCurrentTab] = useState<report_types_available>('HOURS');
-  const [summaryTab, setSummaryTab] = useState<summary_types_available>('BY_DAY');
+  const [reportTypes, setReportTypes] = useState<tabs_menu_option_type[]>([
+    {key: 'HOURS', current: true, name: 'Hours', icon: undefined},
+    {key: 'COST', current: false, name: 'Cost', icon: undefined},
+    {key: 'ALL', current: false, name: 'Hours & Cost', icon: undefined},
+  ]);
+  const [summaryTabs, setSummaryTypes] = useState<tabs_menu_option_type[]>([
+    {key: 'BY_DAY', current: true, name: 'By Day', icon: undefined},
+    {key: 'BY_ROLE', current: false, name: 'By Role', icon: undefined},
+  ]);
 
-  const setActiveTab = (tabs, key) => tabs.map((tab) => (tab.current = tab.key === key));
+  const [reportType, setReportType] = useState<report_types_available>(DEFAULT_REPORT_TYPE);
+  const [summaryType, setSummaryType] = useState<summary_types_available>(DEFAULT_SUMMARY_TYPE);
 
-  const handleChangeTab = (tab : tabs_menu_option_type) => {
-    if (currentTab !== tab.key) {
-      setActiveTab(tabs, tab.key)
-      setCurrentTab(tab.key as report_types_available)
+  const handleChangeReport = (tab : tabs_menu_option_type) => {
+    if (reportType !== tab.key) {
+      setReportTypes(reportTypes.map((option) => ({...option, current: option.key === tab.key})))
+      setReportType(tab.key as report_types_available)
     }
   }
-  const handleChangeSummaryTab = (tab : tabs_menu_option_type) => {
-    if (summaryTab !== tab.key) {
-      setActiveTab(summary_tabs, tab.key)
-      setSummaryTab(tab.key as summary_types_available)
+  const handleChangeSummary = (tab : tabs_menu_option_type) => {
+    if (summaryType !== tab.key) {
+      setSummaryTypes(summaryTabs.map((option) => ({...option, current: option.key === tab.key})))
+      setSummaryType(tab.key as summary_types_available)
     }
   }
 
   return (
     <>
       <div className="sticky top-16 bg-white z-10">
-        <TabsMenu label="Report Type" tabs={tabs} onSelectCallback={handleChangeTab} />
+        <TabsMenu label="Report Type" tabs={reportTypes} onSelectCallback={handleChangeReport} />
       </div>
-      <ReportTypeContext.Provider value={currentTab}>
+      <ReportTypeContext.Provider value={reportType}>
         <HeadcountProjectDetails />
         {
-          (currentTab === 'HOURS' || currentTab === 'COST') &&
+          (reportType === 'HOURS' || reportType === 'COST') &&
           <>
             <div className="sticky top-[8rem] bg-white z-10">
-              <PillsMenu tabs={summary_tabs} onSelectCallback={handleChangeSummaryTab} default_key="BY_DAY" />
+              <PillsMenu tabs={summaryTabs} onSelectCallback={handleChangeSummary} default_key="BY_DAY" />
             </div>
-            <Divider label={"Summary " + summary_tabs.find((tab) => tab.current)?.name.toLowerCase()}/>
+            <Divider label={"Summary " + summaryTabs.find((tab) => tab.current)?.name.toLowerCase()}/>
             {
-              summaryTab === 'BY_DAY' && <HeadcountTableByDate />
+              summaryType === 'BY_DAY' && <HeadcountTableByDate />
             }
             {
-              summaryTab === 'BY_ROLE' && <HeadcountTableByRole />
+              summaryType === 'BY_ROLE' && <HeadcountTableByRole />
             }
           </>
         }
