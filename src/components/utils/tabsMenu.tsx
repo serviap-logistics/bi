@@ -1,30 +1,41 @@
-import { useState } from "react"
-import { classNames } from "../../utils"
+import { useState } from 'react';
+import { classNames } from '../../utils';
 
 export type tabs_menu_option_type = {
-  key: string, current: boolean, name: string, icon?: any,
-}
-export default function TabsMenu(props: {label?: string, tabs: tabs_menu_option_type[], onSelectCallback: any, colorOnSelect?: string}){
-  const {label, tabs, onSelectCallback, colorOnSelect= 'indigo'} = props
-  const [selectedTab, setSelectedTab] = useState<string>()
+  key: string;
+  current: boolean;
+  name: string;
+  icon?: any;
+};
+export default function TabsMenu(props: {
+  label?: string;
+  tabs: tabs_menu_option_type[];
+  onSelectCallback: any;
+  colorOnSelect?: string;
+}) {
+  const { label, tabs, onSelectCallback, colorOnSelect = 'indigo' } = props;
+  const [selectedTab, setSelectedTab] = useState<string>();
 
-  const setActiveTab = (key) => tabs.map((tab) => (tab.current = tab.key === key));
+  const setActiveTab = (key) =>
+    tabs.map((tab) => (tab.current = tab.key === key));
 
-  const handleSelect = (key : string) => {
+  const handleSelect = (key: string) => {
     if (selectedTab !== key) {
-      const selected = tabs.find((tab) => tab.key === key) 
-      setActiveTab(key)
-      setSelectedTab(selected?.key)
-      onSelectCallback(selected)
+      const selected = tabs.find((tab) => tab.key === key);
+      setActiveTab(key);
+      setSelectedTab(selected?.key);
+      onSelectCallback(selected);
     }
-  }
+  };
 
   return (
     <div className="border-b border-gray-200 pt-3">
       <div className="sm:flex sm:items-baseline">
-        {
-          label && <h3 className="text-base font-semibold leading-6 text-gray-900">{label}</h3>
-        }
+        {label && (
+          <h3 className="text-base font-semibold leading-6 text-gray-900">
+            {label}
+          </h3>
+        )}
         <div className="mt-4 sm:ml-10 sm:mt-0">
           <nav className="-mb-px flex space-x-8">
             {tabs.map((tab) => (
@@ -46,5 +57,5 @@ export default function TabsMenu(props: {label?: string, tabs: tabs_menu_option_
         </div>
       </div>
     </div>
-  )
+  );
 }
