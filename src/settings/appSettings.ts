@@ -1,21 +1,21 @@
 import {
   // PresentationChartLineIcon,
   ShoppingBagIcon,
-  UserGroupIcon
-} from "@heroicons/react/24/outline";
-import Purchases from "../components/purchases";
-import Headcount from "../components/headcount";
+  UserGroupIcon,
+} from '@heroicons/react/24/outline';
+import Purchases from '../components/purchases';
+import Headcount from '../components/headcount';
 
-export const DEFAULT_MAIN_CONTENT = 'HEADCOUNT'
-export const LOGIN_NEEDED = false
+export const DEFAULT_MAIN_CONTENT = 'HEADCOUNT';
+export const LOGIN_NEEDED = false;
 
 export type app_navigation_option = {
-  key: string,
-  name: string,
-  icon?: any,
-  current: boolean,
-  main_component?: any,
-}
+  key: string;
+  name: string;
+  icon?: any;
+  current: boolean;
+  main_component?: any;
+};
 export const APP_NAVIGATION = [
   // {
   //   key: 'DASHBOARD',
