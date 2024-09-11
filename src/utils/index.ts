@@ -52,3 +52,6 @@ export const isObjectArray = (arr) => {
     )
   );
 };
+
+import { v4 } from 'uuid';
+export const generateUUID = () => v4();

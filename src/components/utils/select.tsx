@@ -48,7 +48,7 @@ export default function Select(props: {
       as="div"
       value={selectedOption}
       onChange={(option: selectOption) => handleSelect(option)}
-      className="z-50"
+      className="z-40"
     >
       <Label className="block text-sm font-medium leading-6 text-gray-900">
         {label}
