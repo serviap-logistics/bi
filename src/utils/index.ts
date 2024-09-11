@@ -39,3 +39,9 @@ export const getDatesBeetween = (start : string, end: string) => {
 }
 
 export const getPercentage = (budget, real) : number => budget !== 0 ? (real*100/budget) : real;
+
+export const cloneObject = (object) => JSON.parse(JSON.stringify(object))
+
+export const isObjectArray = (arr) => {
+  return Array.isArray(arr) && arr.every((item) => typeof item === 'object' && !Array.isArray(item) && item !== null)
+}
