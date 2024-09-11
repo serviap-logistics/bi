@@ -1,26 +1,38 @@
-import { useState } from "react"
-import { classNames } from "../../utils"
+import { useState } from 'react';
+import { classNames } from '../../utils';
 
 export type tabs_menu_option_type = {
-  key: string, current: boolean, name: string, icon?: any,
-}
+  key: string;
+  current: boolean;
+  name: string;
+  icon?: any;
+};
 
 export default function PillsMenu(props: {
-    tabs: tabs_menu_option_type[], onSelectCallback: any, colorOnSelect?: string, default_key: string
-  }){
-  const {tabs, onSelectCallback, default_key, colorOnSelect = 'indigo'} = props
-  const [selectedTab, setSelectedTab] = useState<string>()
+  tabs: tabs_menu_option_type[];
+  onSelectCallback: any;
+  colorOnSelect?: string;
+  default_key: string;
+}) {
+  const {
+    tabs,
+    onSelectCallback,
+    default_key,
+    colorOnSelect = 'indigo',
+  } = props;
+  const [selectedTab, setSelectedTab] = useState<string>();
 
-  const setActiveTab = (key) => tabs.map((tab) => (tab.current = tab.key === key));
+  const setActiveTab = (key) =>
+    tabs.map((tab) => (tab.current = tab.key === key));
 
-  const handleSelect = (key : string) => {
+  const handleSelect = (key: string) => {
     if (selectedTab !== key) {
-      const selected = tabs.find((tab) => tab.key === key) 
-      setActiveTab(key)
-      setSelectedTab(selected?.key)
-      onSelectCallback(selected)
+      const selected = tabs.find((tab) => tab.key === key);
+      setActiveTab(key);
+      setSelectedTab(selected?.key);
+      onSelectCallback(selected);
     }
-  }
+  };
 
   return (
     <div className="py-0.5">
@@ -48,7 +60,9 @@ export default function PillsMenu(props: {
               onClick={() => handleSelect(tab.key)}
               aria-current={tab.current ? 'page' : undefined}
               className={classNames(
-                tab.current ? 'bg-gray-200 text-gray-800' : 'text-gray-600 hover:text-gray-800',
+                tab.current
+                  ? 'bg-gray-200 text-gray-800'
+                  : 'text-gray-600 hover:text-gray-800',
                 'rounded-md px-3 py-2 text-sm font-medium',
               )}
             >
@@ -58,5 +72,5 @@ export default function PillsMenu(props: {
         </nav>
       </div>
     </div>
-  )
+  );
 }

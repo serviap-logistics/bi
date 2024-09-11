@@ -1,45 +1,54 @@
 import { useMsal } from '@azure/msal-react';
-import logo from '../../images/favicon-ico.png'
+import logo from '../../images/favicon-ico.png';
 import { InteractionStatus } from '@azure/msal-browser';
 
-export default function Login(props: {authCallback: any}) {
-  const { instance, inProgress } = useMsal()
-  const { authCallback } = props
+export default function Login(props: { authCallback: any }) {
+  const { instance, inProgress } = useMsal();
+  const { authCallback } = props;
 
   const handleLogin = () => {
-    // El proceso de Login solo inicia si no hay ninguna interacción (flujo de autenticación) en progreso 
+    // El proceso de Login solo inicia si no hay ninguna interacción (flujo de autenticación) en progreso
     if (inProgress !== InteractionStatus.None) {
       return Error('Login is already in progress...');
     }
     // Si el proceso de Login no ha comenzado, se abre el Popup.
-    instance.loginPopup({ scopes: ["user.read"] })
+    instance
+      .loginPopup({ scopes: ['user.read'] })
       .then(() => {
-        authCallback(true)
+        authCallback(true);
       })
       .catch((error) => {
-        if(error.name === "BrowserAuthError" && error.errorCode === "interaction_in_progress"){
-          console.error("Interaction already in progress...", error)
+        if (
+          error.name === 'BrowserAuthError' &&
+          error.errorCode === 'interaction_in_progress'
+        ) {
+          console.error('Interaction already in progress...', error);
         }
-        if(error.name === "BrowserAuthError" && error.errorCode === "user_cancelled") {
+        if (
+          error.name === 'BrowserAuthError' &&
+          error.errorCode === 'user_cancelled'
+        ) {
           resetAuthState();
           authCallback(false);
         } else {
-          console.error("Login failed ):", error)
+          console.error('Login failed ):', error);
           authCallback(false);
         }
-      })
-  }
+      });
+  };
 
   const handleLogout = () => {
-    if(inProgress !== InteractionStatus.None) {
-      console.log("Logout or other interaction in progress...")
+    if (inProgress !== InteractionStatus.None) {
+      console.log('Logout or other interaction in progress...');
       return;
     }
     sessionStorage.clear();
     localStorage.clear();
-  }
+  };
 
-  const resetAuthState = () => { handleLogout() }
+  const resetAuthState = () => {
+    handleLogout();
+  };
 
   return (
     <div className="flex min-h-full h-screen flex-1">
@@ -56,7 +65,10 @@ export default function Login(props: {authCallback: any}) {
             </h2>
             <p className="mt-2 text-sm leading-6 text-gray-500">
               Having trouble signing in?{' '}
-              <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
+              <a
+                href="#"
+                className="font-semibold text-indigo-600 hover:text-indigo-500"
+              >
                 Contact support
               </a>
             </p>
@@ -82,10 +94,10 @@ export default function Login(props: {authCallback: any}) {
                     <rect x="12" y="12" width="10" height="10" fill="#FFB900" />
                   </svg>
                   <span className="text-sm font-semibold leading-6">
-                    {inProgress === InteractionStatus.None || inProgress === InteractionStatus.Logout
-                      ? "Log in with Microsoft"
-                      : "Verifying..."
-                    }
+                    {inProgress === InteractionStatus.None ||
+                    inProgress === InteractionStatus.Logout
+                      ? 'Log in with Microsoft'
+                      : 'Verifying...'}
                   </span>
                 </button>
               </div>
@@ -101,5 +113,5 @@ export default function Login(props: {authCallback: any}) {
         />
       </div>
     </div>
-  )
+  );
 }

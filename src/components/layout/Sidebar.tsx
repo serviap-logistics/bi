@@ -1,5 +1,10 @@
 import { Cog6ToothIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
+import {
+  Dialog,
+  DialogPanel,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
 import { Fragment, useContext } from 'react';
 import { classNames } from '../../utils';
 import IMAGES from '../../images/urls';
@@ -7,20 +12,21 @@ import { app_navigation_option } from '../../settings/appSettings';
 import { MainContentContext, SideBarContext } from '../../App';
 
 export default function Sidebar(props: {
-  navigation: app_navigation_option[], onSelectCallback: any,
-  onChangeShowSideBar: (open: boolean) => void
+  navigation: app_navigation_option[];
+  onSelectCallback: any;
+  onChangeShowSideBar: (open: boolean) => void;
 }) {
   const { navigation, onSelectCallback, onChangeShowSideBar } = props;
-  const currentSection = useContext(MainContentContext)
-  const showSideBar = useContext(SideBarContext)
+  const currentSection = useContext(MainContentContext);
+  const showSideBar = useContext(SideBarContext);
 
   const handleOptionClick = (key: string) => {
-    if(key !== currentSection){
+    if (key !== currentSection) {
       onSelectCallback(key);
     }
   };
 
-  const handleCloseFloatingSideBar = () => onChangeShowSideBar(false)
+  const handleCloseFloatingSideBar = () => onChangeShowSideBar(false);
 
   return (
     <>
@@ -101,8 +107,8 @@ export default function Sidebar(props: {
                                   'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
                                 )}
                                 onClick={() => {
-                                  handleOptionClick(item.key)
-                                  handleCloseFloatingSideBar()
+                                  handleOptionClick(item.key);
+                                  handleCloseFloatingSideBar();
                                 }}
                               >
                                 <item.icon

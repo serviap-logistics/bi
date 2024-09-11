@@ -1,4 +1,10 @@
-import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Transition,
+} from '@headlessui/react';
 import { classNames } from '../../utils';
 import { Bars3Icon, BellIcon } from '@heroicons/react/24/outline';
 import {
@@ -15,33 +21,35 @@ export default function Topbar(props: {
   onChangeShowSideBar: (open: boolean) => void;
 }) {
   const { onChangeShowSideBar } = props;
-  const { instance, accounts } = useMsal()
+  const { instance, accounts } = useMsal();
 
   const logout = async () => {
     try {
       const activeAccount = instance.getActiveAccount() || accounts[0];
-      if(activeAccount){
+      if (activeAccount) {
         await instance.logoutPopup({
           account: activeAccount,
-          postLogoutRedirectUri: ENVIROMENT.MS_LOGOUT_URI
-        })
+          postLogoutRedirectUri: ENVIROMENT.MS_LOGOUT_URI,
+        });
       }
     } catch (error) {
-      console.log('Error during logout...')
-      console.error(error)
+      console.log('Error during logout...');
+      console.error(error);
     }
-  }
+  };
 
-  const handleLogout = async () => { await logout() }
+  const handleLogout = async () => {
+    await logout();
+  };
 
-  const handleProfile= () => {}
+  const handleProfile = () => {};
 
   const userNavigation = [
-    { name: 'Your profile', action: handleProfile},
-    { name: 'Sign out', action: handleLogout},
+    { name: 'Your profile', action: handleProfile },
+    { name: 'Sign out', action: handleLogout },
   ];
 
-  const handleShowSideBar = () => onChangeShowSideBar(true)
+  const handleShowSideBar = () => onChangeShowSideBar(true);
 
   return (
     <>
@@ -122,9 +130,7 @@ export default function Topbar(props: {
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
               >
-                <MenuItems
-                  className="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
-                >
+                <MenuItems className="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
                   {userNavigation.map((item) => (
                     <MenuItem key={item.name}>
                       {({ active }) => (
