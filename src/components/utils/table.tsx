@@ -243,7 +243,7 @@ export default function Table(props: {
                                 <Fragment>
                                   {cell_num === 0 && (
                                     <td
-                                      key={generateUUID()}
+                                      key={generateUUID() + cell_num}
                                       className={classNames(
                                         'whitespace-nowrap px-4 sm:pl-6 text-sm text-gray-500',
                                         row_height,
@@ -255,7 +255,7 @@ export default function Table(props: {
                                   )}
                                   {cell_num > 0 && (
                                     <td
-                                      key={generateUUID()}
+                                      key={generateUUID() + cell_num}
                                       className={classNames(
                                         'whitespace-nowrap px-2 text-sm text-gray-500',
                                         row_height,
@@ -270,13 +270,12 @@ export default function Table(props: {
                                         {Array.isArray(
                                           (cell as cell_object).data,
                                         ) &&
-                                          (cell as cell_object).data.map(
-                                            (value) => (
-                                              <div className="px-3">
-                                                {value}
-                                              </div>
-                                            ),
-                                          )}
+                                          (
+                                            (cell as cell_object)
+                                              .data as cell_data[]
+                                          ).map((value) => (
+                                            <div className="px-3">{value}</div>
+                                          ))}
                                       </div>
                                     </td>
                                   )}

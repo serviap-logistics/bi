@@ -3,7 +3,7 @@ import { classNames } from '../../utils';
 export default function Toast(props: {
   text: string;
   text_size?: string;
-  color: 'success' | 'warning' | 'info' | 'error' | 'secondary';
+  color: 'success' | 'warning' | 'info' | 'error' | 'secondary' | 'none';
 }) {
   const { text, color, text_size = 'text-xs' } = props;
   return (
