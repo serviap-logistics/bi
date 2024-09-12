@@ -62,6 +62,19 @@ export const isObjectArray = (arr) => {
 import { v4 } from 'uuid';
 export const generateUUID = () => v4();
 
+export const getToastColor = (
+  value: number,
+): 'success' | 'warning' | 'info' | 'error' | 'secondary' | 'none' => {
+  return value === 0
+    ? 'none'
+    : value <= 50
+      ? 'success'
+      : value <= 70
+        ? 'info'
+        : value <= 95
+          ? 'warning'
+          : 'error';
+};
 export const generateColorStatus = (value: number) => {
   return value === 0
     ? ''

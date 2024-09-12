@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
 import { CostAnalysisContext, ProjectContext } from '.';
 import {
-  generateColorStatus,
   getPercentageUsed,
+  getToastColor,
   groupListBy,
   USDollar,
 } from '../../utils';
@@ -174,7 +174,7 @@ export default function HeadcountSummary() {
                       ).toFixed(2) + '%'
                     }
                     text_size="text-base"
-                    color={generateColorStatus(
+                    color={getToastColor(
                       reportType === 'HOURS'
                         ? indicators.hours_percentage_used
                         : reportType === 'COST'
