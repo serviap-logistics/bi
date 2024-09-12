@@ -1,13 +1,15 @@
 import { classNames, generateUUID, isObjectArray } from '../../utils';
 import { Fragment, useEffect, useState } from 'react';
 
-export type table_cell = number | string | JSX.Element;
-export type table_row = table_cell[][];
-export type table_group = { name: string; rows: table_row[] };
+export type cell_data = number | string | JSX.Element;
+export type cell_object = { color: string; data: cell_data | cell_data[] };
+export type cell = cell_data | cell_object;
+export type row = cell[];
+export type group = { name: string; rows: row[] };
 
 export default function Table(props: {
   columns: string[];
-  rows: table_row[] | table_group[];
+  rows: row[] | group[];
   styles?: {
     static_headers?: boolean;
     static_bottom?: boolean;
@@ -35,22 +37,18 @@ export default function Table(props: {
     remark_label: styles?.rows?.remark_label ? 'font-medium' : '',
   };
   const num_columns = props.columns.length;
-  const [data, setData] = useState<table_group[]>();
+  const [data, setData] = useState<group[]>();
 
   useEffect(() => {
     if (rows) {
-      console.log('Rows from table...');
-      console.log(rows);
+      console.log('New ROWS! ', rows);
+      setAsGroups(isObjectArray(rows));
       setData(
-        asGroups
-          ? ((rows as table_group[]) ?? [])
-          : [{ name: '', rows: (rows as table_row[]) ?? [] }],
+        isObjectArray(rows)
+          ? ((rows ?? []) as group[])
+          : ([{ name: 'Default', rows: rows as row[] }] as group[]),
       );
     }
-  }, [asGroups]);
-
-  useEffect(() => {
-    if (rows) setAsGroups(isObjectArray(rows));
   }, [rows]);
 
   return (
@@ -63,11 +61,16 @@ export default function Table(props: {
       >
         <div className="mt-4 flow-root">
           <div
-            className={`${!styles?.full_width ? '-mx-4 sm:-mx-6 lg:-mx-8' : ''} -my-2 overflow-x-auto ${styles?.max_height ? 'overscroll-none' : ''} `}
+            className={classNames(
+              `${!styles?.full_width ? '-mx-4 sm:-mx-6 lg:-mx-8' : ''}`,
+              `-my-2 overflow-x-auto`,
+              `${styles?.max_height ? 'overscroll-none' : ''} `,
+            )}
           >
             <div
               className={classNames(
-                `inline-block min-w-full py-2 align-middle ${!styles?.full_width ? 'px-2 sm:px-4' : ''}`,
+                `inline-block min-w-full py-2 align-middle`,
+                `${!styles?.full_width ? 'px-2 sm:px-4' : ''}`,
                 styles?.max_height ?? '',
                 styles?.max_height ? 'overflow-y-scroll' : '',
               )}
@@ -89,12 +92,15 @@ export default function Table(props: {
                         `${styles?.static_headers ? `grid grid-cols-${num_columns}` : ''}`,
                       )}
                     >
-                      {columns.map((column_name) => (
+                      {columns.map((column_name, column_num) => (
                         <th
                           key={generateUUID()}
                           scope="col"
                           className={classNames(
-                            'py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6',
+                            'py-3.5 text-left text-sm font-semibold text-gray-900',
+                            column_num === 0
+                              ? 'pl-4 pr-3 sm:pl-6'
+                              : 'px-3 text-center',
                             styles?.static_headers ? 'sticky top-0' : '',
                           )}
                         >
@@ -105,14 +111,13 @@ export default function Table(props: {
                   </thead>
                   <tbody
                     className={classNames(
-                      'divide-y divide-gray-200 bg-white',
+                      'divide-y divide-gray-200 bg-white mb-14',
                       styles?.static_headers
                         ? 'flex flex-col mt-10 w-full'
                         : '',
-                      'mb-14',
                     )}
                   >
-                    {data?.map((group) => (
+                    {data?.map((group: group) => (
                       <Fragment key={group.name}>
                         {/* Formato SIN GRUPOS */}
                         {/* Todas las filas excepto la ultima (si se indica un static_bottom) */}
@@ -120,7 +125,7 @@ export default function Table(props: {
                           group.rows
                             .slice(0, static_bottom ? -2 : undefined)
                             .map(
-                              (row: table_row) =>
+                              (row: row) =>
                                 row.length > 0 && (
                                   <tr
                                     key={generateUUID()}
@@ -141,7 +146,7 @@ export default function Table(props: {
                                         rows_styles.remark_label,
                                       )}
                                     >
-                                      {row[0]}
+                                      {row[0] as cell_data}
                                     </td>
                                     {row.slice(1).map((value) => (
                                       <td
@@ -151,7 +156,7 @@ export default function Table(props: {
                                           row_height,
                                         )}
                                       >
-                                        {value}
+                                        {value as cell_data}
                                       </td>
                                     ))}
                                   </tr>
@@ -161,7 +166,7 @@ export default function Table(props: {
                         {!asGroups &&
                           static_bottom &&
                           group.rows.slice(-1).map(
-                            (row: table_row) =>
+                            (row: row) =>
                               row.length > 0 && (
                                 <tr
                                   key={generateUUID()}
@@ -189,7 +194,7 @@ export default function Table(props: {
                                         rows_styles.remark_label,
                                       )}
                                     >
-                                      {row[0]}
+                                      {row[0] as cell_data}
                                     </div>
                                     {row.slice(1).map((value) => (
                                       <div
@@ -199,7 +204,7 @@ export default function Table(props: {
                                           row_height,
                                         )}
                                       >
-                                        {value}
+                                        {value as cell_data}
                                       </div>
                                     ))}
                                   </td>
@@ -222,54 +227,63 @@ export default function Table(props: {
                         )}
                         {/* Formato para cada renglon del grupo */}
                         {asGroups &&
-                          group.rows.map(
-                            (group_rows) =>
-                              group_rows.length > 0 && (
+                          group.rows.map((group_row: cell[]) => (
+                            <tr
+                              key={generateUUID()}
+                              className={classNames(
+                                styles?.vertical_lines
+                                  ? 'divide-x divide-gray-500 '
+                                  : '',
+                                styles?.static_headers
+                                  ? `grid grid-cols-${num_columns}`
+                                  : '',
+                              )}
+                            >
+                              {group_row.map((cell, cell_num) => (
                                 <Fragment>
-                                  {group_rows.map((rows, index) => (
-                                    <tr
-                                      key={generateUUID() + index}
+                                  {cell_num === 0 && (
+                                    <td
+                                      key={generateUUID()}
                                       className={classNames(
-                                        styles?.vertical_lines
-                                          ? 'divide-x divide-gray-200 '
-                                          : '',
-                                        styles?.static_headers
-                                          ? `grid grid-cols-${num_columns}`
-                                          : '',
+                                        'whitespace-nowrap px-4 sm:pl-6 text-sm text-gray-500',
+                                        row_height,
+                                        rows_styles.remark_label,
                                       )}
                                     >
-                                      {rows.map((cell, cell_num) => (
-                                        <Fragment>
-                                          {cell_num === 0 && (
-                                            <td
-                                              key={generateUUID()}
-                                              className={classNames(
-                                                'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500',
-                                                row_height,
-                                                rows_styles.remark_label,
-                                              )}
-                                            >
-                                              {cell}
-                                            </td>
+                                      {(cell as cell_object).data}
+                                    </td>
+                                  )}
+                                  {cell_num > 0 && (
+                                    <td
+                                      key={generateUUID()}
+                                      className={classNames(
+                                        'whitespace-nowrap px-2 text-sm text-gray-500',
+                                        row_height,
+                                        (cell as cell_object).color,
+                                      )}
+                                    >
+                                      <div
+                                        className={classNames(
+                                          'flex justify-center divide-x',
+                                        )}
+                                      >
+                                        {Array.isArray(
+                                          (cell as cell_object).data,
+                                        ) &&
+                                          (cell as cell_object).data.map(
+                                            (value) => (
+                                              <div className="px-3">
+                                                {value}
+                                              </div>
+                                            ),
                                           )}
-                                          {cell_num > 0 && (
-                                            <td
-                                              key={generateUUID()}
-                                              className={classNames(
-                                                'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500',
-                                                row_height,
-                                              )}
-                                            >
-                                              {cell}
-                                            </td>
-                                          )}
-                                        </Fragment>
-                                      ))}
-                                    </tr>
-                                  ))}
+                                      </div>
+                                    </td>
+                                  )}
                                 </Fragment>
-                              ),
-                          )}
+                              ))}
+                            </tr>
+                          ))}
                       </Fragment>
                     ))}
                   </tbody>

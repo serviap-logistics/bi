@@ -38,8 +38,14 @@ export const getDatesBeetween = (start: string, end: string) => {
   return dates;
 };
 
-export const getPercentage = (budget, real): number =>
-  budget !== 0 ? (real * 100) / budget : real;
+export const getPercentageUsed = (budget: number, real: number): number => {
+  // Si el real es 0, exista o no presupuesto, el uso es de 0.
+  if (real === 0) return 0;
+  // Si el presupuesto NO es 0 y el real NO es 0, el calculo de porcentaje es normal.
+  if (budget !== 0) return (real * 100) / budget;
+  // SI existe real y NO hay presupuesto, se entiende que el 100% del presupuesto seria 1.
+  return real * 100;
+};
 
 export const cloneObject = (object) => JSON.parse(JSON.stringify(object));
 
@@ -55,3 +61,15 @@ export const isObjectArray = (arr) => {
 
 import { v4 } from 'uuid';
 export const generateUUID = () => v4();
+
+export const generateColorStatus = (value: number) => {
+  return value === 0
+    ? ''
+    : value <= 50
+      ? 'bg-green-300'
+      : value <= 70
+        ? 'bg-blue-300'
+        : value <= 95
+          ? 'bg-amber-300'
+          : 'bg-red-300';
+};
