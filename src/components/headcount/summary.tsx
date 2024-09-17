@@ -84,7 +84,7 @@ export default function HeadcountSummary() {
     });
     const total_cost = real_times
       .map((record) => record.total_cost)
-      .reduce((total, cost) => total + cost, 0);
+      .reduce((total: number, cost: any) => total + cost, 0);
     const total_hours = real_times
       .map((record) => record.total_hours)
       .reduce((total, hours) => total + hours, 0);
