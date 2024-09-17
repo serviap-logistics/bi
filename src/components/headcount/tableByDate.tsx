@@ -84,6 +84,7 @@ export default function HeadcountTableByDate() {
         ),
       }),
     );
+    console.log('BUDGET: ', totals_by_date);
     setBudgets(totals_by_date);
   };
 
@@ -118,6 +119,7 @@ export default function HeadcountTableByDate() {
     totals_by_date = totals_by_date.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
+    console.log('REALS: ', totals_by_date);
     setReals(totals_by_date);
   };
 
@@ -337,7 +339,7 @@ export default function HeadcountTableByDate() {
   }, [indicators, reportType]);
 
   useEffect(() => {
-    if (budgets.length > 0 && reals.length > 0) {
+    if (budgets.length > 0 || reals.length > 0) {
       mergeResults();
     }
   }, [budgets, reals]);
