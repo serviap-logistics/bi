@@ -56,22 +56,27 @@ export default function HeadcountSummary() {
       formula: encodeURI(`cost_analysis_id='${costAnalysis.cost_analysis_id}'`),
     });
     const people_by_role: object = groupListBy('employee_role', budget_times);
-    // Por cada role encontrado, se determina la cantidad de personas involucradas (buscando el maximo)
-    Object.entries(people_by_role).map(
-      ([role, records]) =>
-        (people_by_role[role] = records.reduce(
-          (total, record) =>
-            record.people_quantity > total ? record.people_quantity : total,
-          0,
-        )),
-    );
+    if (Object.entries(people_by_role).length > 0) {
+      // Por cada role encontrado, se determina la cantidad de personas involucradas (buscando el maximo)
+      Object.entries(people_by_role).map(
+        ([role, records]) =>
+          (people_by_role[role] = records.reduce(
+            (total, record) =>
+              record.people_quantity > total ? record.people_quantity : total,
+            0,
+          )),
+      );
+    }
     setBudget({
       hours: costAnalysis.total_labor_hours ?? 0,
       cost: costAnalysis.total_labor_cost ?? 0,
       // La candidad de personas esperadas sera el total por cada uno de los tipos de role.
-      people: Object.values(people_by_role).reduce(
-        (total, quantity) => total + quantity,
-      ),
+      people:
+        Object.values(people_by_role).length > 0
+          ? Object.values(people_by_role).reduce(
+              (total, quantity) => total + quantity,
+            )
+          : 0,
     });
   };
 
