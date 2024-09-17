@@ -15,6 +15,8 @@ export type worked_time = {
 
   start_date: string;
   end_date: string;
+  week: string;
+  week_hours_accumulated;
 
   regular_hour_cost: number;
   regular_hours: number;
