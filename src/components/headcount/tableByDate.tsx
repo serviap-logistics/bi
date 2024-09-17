@@ -95,13 +95,15 @@ export default function HeadcountTableByDate() {
       project_id: project_id,
     });
     const times_formatted = real_times.map(
-      ({ total_cost, total_hours, start_date, category, employee_id }) => ({
-        date: getDateByTimestamp(start_date),
-        category: category,
-        hours: total_hours,
-        cost: total_cost,
-        employee: employee_id,
-      }),
+      ({ total_cost, total_hours, start_date, category, employee_id }) => {
+        return {
+          date: getDateByTimestamp(start_date),
+          category: category,
+          hours: total_hours,
+          cost: total_cost,
+          employee: employee_id,
+        };
+      },
     );
     const grouped_by_date = groupListBy('date', times_formatted);
     let totals_by_date = Object.entries(grouped_by_date).map(
