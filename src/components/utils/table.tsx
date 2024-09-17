@@ -123,7 +123,7 @@ export default function Table(props: {
                         {/* Todas las filas excepto la ultima (si se indica un static_bottom) */}
                         {!asGroups &&
                           group.rows
-                            .slice(0, static_bottom ? -2 : undefined)
+                            .slice(0, static_bottom ? -1 : undefined)
                             .map(
                               (row: row) =>
                                 row.length > 0 && (
