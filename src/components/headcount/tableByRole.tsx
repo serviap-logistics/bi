@@ -239,66 +239,169 @@ export default function HeadcountTableByRole() {
       const times_formatted = real_times.map(
         (record: registration_time_type) => ({
           date: getDateByTimestamp(record.start_date),
+          week: record.week,
           category: record.category,
           employee_id: record.employee_id,
           employee_role: record.employee_role,
           // Regular
           regular_hour_cost: record.regular_hour_cost,
-          regular_hours: record.regular_hours,
-          total_regular_cost: record.regular_cost,
+          regular_hours: undefined,
+          regular_cost: undefined,
           // Overtime
           overtime_hour_cost: record.overtime_hour_cost,
-          overtime_hours: record.overtime_hours,
-          total_overtime_cost: record.overtime_cost,
+          overtime_cost: undefined,
+          // Total
+          hour_cost: undefined, // El valor de costo por hora depende si es overtime o no.
+          total_hours: record.total_hours,
+          total_cost: undefined,
+          week_hours_accumulated: undefined,
         }),
       );
+      // Recalcular horas de acuerdo al acumulado por semana...
+      // Travel & Worked < 40 = Regular, > 40 = Overtime
       const worked: any[] = [];
-      const worked_overtime: any[] = [];
       const travel: any[] = [];
-      const travel_overtime: any[] = [];
-      // const waiting: any[] = [];
+      // Separacion de datos por categoria WORKED y TRAVEL.
       times_formatted.map((record: any) => {
         if (record.category === 'WORKED') {
           worked.push({
             date: record.date,
+            week: record.week,
             employee_id: record.employee_id,
             employee_role: record.employee_role,
-            hour_cost: record.regular_hour_cost,
-            hours: record.regular_hours,
-            subtotal: record.total_regular_cost,
+            regular_hour_cost: record.regular_hour_cost,
+            overtime_hour_cost: record.overtime_hour_cost,
+            hours: record.total_hours,
+            week_hours: undefined,
+            subtotal: undefined,
           });
-          if (record.overtime_hours > 0) {
-            worked_overtime.push({
-              date: record.date,
-              employee_id: record.employee_id,
-              employee_role: record.employee_role,
-              hour_cost: record.overtime_hour_cost,
-              hours: record.overtime_hours,
-              subtotal: record.total_overtime_cost,
-            });
-          }
         }
         if (record.category === 'TRAVEL') {
           travel.push({
             date: record.date,
+            week: record.week,
             employee_id: record.employee_id,
             employee_role: record.employee_role,
-            hour_cost: record.regular_hour_cost,
-            hours: record.regular_hours,
-            subtotal: record.total_regular_cost,
+            regular_hour_cost: record.regular_hour_cost,
+            overtime_hour_cost: record.overtime_hour_cost,
+            hours: record.total_hours,
+            week_hours: undefined,
+            subtotal: undefined,
           });
-          if (record.overtime_hours > 0) {
-            travel_overtime.push({
-              date: record.date,
-              employee_id: record.employee_id,
-              employee_role: record.employee_role,
-              hour_cost: record.overtime_hour_cost,
-              hours: record.overtime_hours,
-              subtotal: record.total_overtime_cost,
-            });
-          }
         }
       });
+      // Calculo de overtimes por semana (WORKED)
+      // Nota: Todas las asignaciones se hacen por referencia.
+      const worked_by_week = groupListBy('week', worked);
+      Object.values(worked_by_week).map((records: any) => {
+        const worked_by_employee = groupListBy('employee_id', records);
+        Object.values(worked_by_employee).map((week_times: any) => {
+          week_times.reduce((week_hours, record) => {
+            if (week_hours === 0 || week_hours + record.hours <= 40) {
+              // Es el primer registro de la semana, todas las horas son regulares.
+              // O
+              // La suma de las horas no pasa las 40 horas, siguen siendo horas regulares.
+              record.regular_hours = record.hours;
+              record.subtotal = record.regular_hour_cost * record.regular_hours;
+            } else {
+              // La suma de las horas si pasa las 40 horas, se busca la diferencia de horas para que
+              // se cumplan 40 regulares y el resto pasan a ser overtime.
+              if (week_hours < 40) {
+                // Si antes de la suma con las horas del dia, aun no se cumplen las 40 horas, se busca la diferencia.
+                const difference = 40 - week_hours;
+                record.regular_hours = difference;
+                record.overtime_hours = record.hours - difference;
+                record.subtotal =
+                  record.regular_hour_cost * record.regular_hours +
+                  record.overtime_hour_cost * record.overtime_hours;
+              } else {
+                // Ya se cumplieron las 40 horas desde dias anteriores.
+                record.regular_hours = 0;
+                record.overtime_hours = record.hours;
+                record.subtotal =
+                  record.overtime_hour_cost * record.overtime_hours;
+              }
+            }
+            record.week_hours = week_hours + record.hours;
+            return (week_hours += record.hours);
+          }, 0);
+        });
+      });
+      // Calculo de overtimes por semana (TRAVEL)
+      const travel_by_week = groupListBy('week', travel);
+      Object.values(travel_by_week).map((times: any) => {
+        const travel_by_employee = groupListBy('employee_id', times);
+        Object.values(travel_by_employee).map((week_times: any) => {
+          week_times.reduce((week_hours, record) => {
+            if (week_hours === 0 || week_hours + record.hours <= 40) {
+              // Es el primer registro de la semana, todas las horas son regulares.
+              // O
+              // La suma de las horas no pasa las 40 horas, siguen siendo horas regulares.
+              record.regular_hours = record.hours;
+              record.subtotal = record.regular_hour_cost * record.regular_hours;
+            } else {
+              // La suma de las horas si pasa las 40 horas, se busca la diferencia de horas para que
+              // se cumplan 40 regulares y el resto pasan a ser overtime.
+              if (week_hours < 40) {
+                // Si antes de la suma con las horas del dia, aun no se cumplen las 40 horas, se busca la diferencia.
+                const difference = 40 - week_hours;
+                record.regular_hours = difference;
+                record.overtime_hours = record.hours - difference;
+                record.subtotal =
+                  record.regular_hour_cost * record.regular_hours +
+                  record.overtime_hour_cost * record.overtime_hours;
+              } else {
+                // Ya se cumplieron las 40 horas desde dias anteriores.
+                record.regular_hours = 0;
+                record.overtime_hours = record.hours;
+                record.subtotal =
+                  record.overtime_hour_cost * record.overtime_hours;
+              }
+            }
+            record.week_hours = week_hours + record.hours;
+            return (week_hours += record.hours);
+          }, 0);
+        });
+      });
+      console.log('worked (after): ', worked);
+      console.log('travel (after): ', travel);
+
+      const worked_overtime: any[] = [];
+      worked
+        .filter((times) => times.overtime_hours !== undefined)
+        .map((record) => {
+          worked_overtime.push({
+            date: record.date,
+            week: record.week,
+            employee_id: record.employee_id,
+            employee_role: record.employee_role,
+            regular_hour_cost: record.regular_hour_cost,
+            overtime_hour_cost: record.overtime_hour_cost,
+            overtime_hours: record.overtime_hours,
+            week_hours: record.week_hours,
+            subtotal: record.overtime_hour_cost * record.overtime_hours,
+          });
+        });
+      console.log('Worked OT: ', worked_overtime);
+      const travel_overtime: any[] = [];
+      travel
+        .filter((times) => times.overtime_hours !== undefined)
+        .map((record) => {
+          travel_overtime.push({
+            date: record.date,
+            week: record.week,
+            employee_id: record.employee_id,
+            employee_role: record.employee_role,
+            regular_hour_cost: record.regular_hour_cost,
+            overtime_hour_cost: record.overtime_hour_cost,
+            overtime_hours: record.overtime_hours,
+            week_hours: record.week_hours,
+            subtotal: record.overtime_hour_cost * record.overtime_hours,
+          });
+        });
+      console.log('Travel OT: ', travel_overtime);
+
+      // Formateando registros para enviarlos a la tabla de datos.
       const worked_by_role = worked.reduce((totals_by_role, record) => {
         const role = record.employee_role;
         const date = record.date;
@@ -317,7 +420,7 @@ export default function HeadcountTableByRole() {
         totals_by_role[role][date] = {
           date: date,
           people: [...totals_by_role[role][date].people, record.employee_id],
-          hours: totals_by_role[role][date].hours + record.hours,
+          hours: totals_by_role[role][date].hours + record.regular_hours, // Valor acumulado + horas regulares del registro actual.
           subtotal: totals_by_role[role][date].subtotal + record.subtotal,
         };
         return totals_by_role;
@@ -351,7 +454,7 @@ export default function HeadcountTableByRole() {
           totals_by_role[role][date] = {
             date: date,
             people: [...totals_by_role[role][date].people, record.employee_id],
-            hours: totals_by_role[role][date].hours + record.hours,
+            hours: totals_by_role[role][date].hours + record.overtime_hours, // Valor acumulado en horas + overtime del registro actual.
             subtotal: totals_by_role[role][date].subtotal + record.subtotal,
           };
           return totals_by_role;
@@ -386,7 +489,7 @@ export default function HeadcountTableByRole() {
         totals_by_role[role][date] = {
           date: date,
           people: [...totals_by_role[role][date].people, record.employee_id],
-          hours: totals_by_role[role][date].hours + record.hours,
+          hours: totals_by_role[role][date].hours + record.regular_hours,
           subtotal: totals_by_role[role][date].subtotal + record.subtotal,
         };
         return totals_by_role;
@@ -420,7 +523,7 @@ export default function HeadcountTableByRole() {
           totals_by_role[role][date] = {
             date: date,
             people: [...totals_by_role[role][date].people, record.employee_id],
-            hours: totals_by_role[role][date].hours + record.hours,
+            hours: totals_by_role[role][date].hours + record.overtime_hours,
             subtotal: totals_by_role[role][date].subtotal + record.subtotal,
           };
           return totals_by_role;
@@ -531,8 +634,12 @@ export default function HeadcountTableByRole() {
                 ),
               ),
               data: [
-                budgets[group][role][date].hours.toFixed(2),
-                reals[group][role][date].hours.toFixed(2),
+                budgets[group][role][date].hours
+                  ? budgets[group][role][date].hours.toFixed(2)
+                  : 0,
+                reals[group][role][date].hours
+                  ? reals[group][role][date].hours.toFixed(2)
+                  : 0,
               ],
             });
           if (reportType === 'COST')
@@ -544,8 +651,8 @@ export default function HeadcountTableByRole() {
                 ),
               ),
               data: [
-                USDollar.format(budgets[group][role][date].subtotal),
-                USDollar.format(reals[group][role][date].subtotal),
+                USDollar.format(budgets[group][role][date].subtotal ?? 0),
+                USDollar.format(reals[group][role][date].subtotal ?? 0),
               ],
             });
           if (reportType === 'PEOPLE')
@@ -565,7 +672,6 @@ export default function HeadcountTableByRole() {
         final_results[group].push(row);
       }
     }
-    console.log('FINAL! ', final_results);
     setDisplayResults(final_results);
   };
 

@@ -6,14 +6,20 @@ export type registration_time_type = {
   project_id: string;
   employee_id: string;
   employee_role: string;
+  week: string;
   start_date: string;
   end_date: string;
+  // Regular
   regular_hour_cost: number;
+  regular_hours: number | undefined;
+  regular_cost: number | undefined;
+  // Overtime
   overtime_hour_cost: number;
-  regular_hours: number;
-  overtime_hours: number;
+  overtime_hours: number | undefined;
+  overtime_cost: number | undefined;
+  // Total
   total_hours: number;
-  regular_cost: number;
-  overtime_cost: number;
-  total_cost: number;
+  total_cost: number | undefined;
+  // Week
+  week_hours_accumulated: number | undefined;
 };
