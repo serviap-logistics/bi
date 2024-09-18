@@ -96,22 +96,76 @@ export default function HeadcountTableByDate() {
       project_id: project_id,
     });
     const times_formatted = real_times.map(
-      ({ total_cost, total_hours, start_date, category, employee_id }) => {
+      (time_registered: registration_time_type) => {
         return {
-          date: getDateByTimestamp(start_date),
-          category: category,
-          hours: total_hours,
-          cost: total_cost,
-          employee: employee_id,
+          date: getDateByTimestamp(time_registered.start_date),
+          category: time_registered.category,
+          week: time_registered.week,
+          employee: time_registered.employee_id,
+          // Regular time = NO Overtime
+          regular_hour_cost: time_registered.regular_hour_cost,
+          regular_hours: undefined,
+          regular_cost: undefined,
+          // Overtime
+          overtime_hour_cost: time_registered.overtime_hour_cost,
+          overtime_hours: undefined,
+          overtime_cost: undefined,
+          // Total Time
+          hours: time_registered.total_hours,
+          cost: time_registered.total_cost,
+          week_hours: undefined,
         };
       },
     );
+    console.log('Initial data: ', times_formatted);
+    const grouped_by_category = groupListBy('category', times_formatted);
+    Object.values(grouped_by_category).map((times: any) => {
+      const times_by_week = groupListBy('week', times);
+      Object.values(times_by_week).map((week_times: any) => {
+        const times_by_employee = groupListBy('employee', week_times);
+        Object.values(times_by_employee).map((employee_week_times: any) => {
+          employee_week_times.reduce((week_hours, record) => {
+            if (week_hours === 0 || week_hours + record.hours <= 40) {
+              // Es el primer registro de la semana, todas las horas son regulares.
+              // O
+              // La suma de las horas no pasa las 40 horas, siguen siendo horas regulares.
+              record.regular_hours = record.hours;
+              record.subtotal = record.regular_hour_cost * record.regular_hours;
+            } else {
+              // La suma de las horas si pasa las 40 horas, se busca la diferencia de horas para que
+              // se cumplan 40 regulares y el resto pasan a ser overtime.
+              if (week_hours < 40) {
+                // Si antes de la suma con las horas del dia, aun no se cumplen las 40 horas, se busca la diferencia.
+                const difference = 40 - week_hours;
+                record.regular_hours = difference;
+                record.overtime_hours = record.hours - difference;
+                record.subtotal =
+                  record.regular_hour_cost * record.regular_hours +
+                  record.overtime_hour_cost * record.overtime_hours;
+              } else {
+                // Ya se cumplieron las 40 horas desde dias anteriores.
+                record.regular_hours = 0;
+                record.overtime_hours = record.hours;
+                record.subtotal =
+                  record.overtime_hour_cost * record.overtime_hours;
+              }
+            }
+            record.week_hours = week_hours + record.hours;
+            return (week_hours += record.hours);
+          }, 0);
+        });
+      });
+    });
+    console.log('Final data: ', times_formatted);
     const grouped_by_date = groupListBy('date', times_formatted);
     let totals_by_date = Object.entries(grouped_by_date).map(
       ([date, records]: [string, any]): report_data => ({
         date: date,
         total_hours: records.reduce((total, record) => total + record.hours, 0),
-        total_cost: records.reduce((total, record) => total + record.cost, 0),
+        total_cost: records.reduce(
+          (total, record) => total + record.subtotal,
+          0,
+        ),
         total_people: [...new Set(records.map((record) => record.employee))]
           .length,
       }),
