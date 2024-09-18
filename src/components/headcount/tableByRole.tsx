@@ -254,7 +254,7 @@ export default function HeadcountTableByRole() {
           hour_cost: undefined, // El valor de costo por hora depende si es overtime o no.
           total_hours: record.total_hours,
           total_cost: undefined,
-          week_hours_accumulated: undefined,
+          week_hours: undefined,
         }),
       );
       // Recalcular horas de acuerdo al acumulado por semana...
