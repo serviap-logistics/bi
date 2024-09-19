@@ -105,7 +105,7 @@ export default function Table(props: {
                               : 'px-3 text-center',
                             styles?.static_headers ? 'sticky top-0' : '',
                             column_num === 0 && styles?.static_headers
-                              ? 'w-40'
+                              ? 'w-44'
                               : '',
                             column_num !== 0 && styles?.static_headers
                               ? 'min-w-36'
@@ -200,7 +200,7 @@ export default function Table(props: {
                                     <div
                                       key={generateUUID()}
                                       className={classNames(
-                                        'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500 w-40',
+                                        'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500 w-44',
                                         row_height,
                                         rows_styles.remark_label,
                                       )}
@@ -236,7 +236,7 @@ export default function Table(props: {
                               scope="colgroup"
                               colSpan={num_columns}
                               className={classNames(
-                                'bg-gray-50 py-2 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3 w-40',
+                                'bg-gray-50 py-2 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3 w-44',
                                 styles?.rows?.static_label
                                   ? 'sticky left-0 border-r-2 border-gray-400'
                                   : '',
@@ -266,7 +266,7 @@ export default function Table(props: {
                                     <td
                                       key={generateUUID() + cell_num}
                                       className={classNames(
-                                        'whitespace-nowrap px-4 sm:pl-6 text-sm text-gray-500 w-40',
+                                        'whitespace-nowrap px-4 sm:pl-6 text-sm text-gray-500 w-44',
                                         row_height,
                                         rows_styles.remark_label,
                                         styles?.rows?.static_label
