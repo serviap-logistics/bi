@@ -16,7 +16,7 @@ export type travel_time = {
   start_date: string;
   end_date: string;
   week: string;
-  week_hours_accumulated;
+  week_hours: number;
 
   regular_hour_cost: number;
   regular_hours: number;
@@ -28,6 +28,7 @@ export type travel_time = {
 
   total_cost: number;
   total_hours: number;
+  subtotal: number;
 };
 
 export async function getTravelTimes(
