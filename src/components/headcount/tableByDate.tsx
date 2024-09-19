@@ -131,7 +131,6 @@ export default function HeadcountTableByDate() {
     totals_by_date = totals_by_date.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
-    console.log('REALS: ', totals_by_date);
     setReals(totals_by_date);
   };
 
