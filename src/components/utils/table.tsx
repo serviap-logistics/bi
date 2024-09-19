@@ -14,10 +14,13 @@ export default function Table(props: {
     static_headers?: boolean;
     static_bottom?: boolean;
     vertical_lines?: boolean;
-    full_width?: boolean;
+    max_width?: string;
     row_height?: 'xs' | 'sm' | 'base';
     rows?: {
       remark_label: boolean;
+      static_label: boolean;
+      label_width?: string;
+      cell_width?: string;
     };
     max_height?: string;
   };
@@ -40,6 +43,7 @@ export default function Table(props: {
   const [data, setData] = useState<group[]>();
 
   useEffect(() => {
+    if (columns) console.log('COLUMNS: ', columns, num_columns);
     if (rows) {
       console.log('New ROWS! ', rows);
       setAsGroups(isObjectArray(rows));
@@ -56,40 +60,38 @@ export default function Table(props: {
     data?.length > 0 && (
       <div
         className={classNames(
-          `${!styles?.full_width ? 'px-4 sm:px-6 lg:px-8' : ''}`,
+          `${!styles?.max_width ? 'px-4 sm:px-6 lg:px-8' : ''}`,
         )}
       >
         <div className="mt-4 flow-root">
-          <div
-            className={classNames(
-              `${!styles?.full_width ? '-mx-4 sm:-mx-6 lg:-mx-8' : ''}`,
-              `-my-2 overflow-x-auto`,
-              `${styles?.max_height ? 'overscroll-none' : ''} `,
-            )}
-          >
+          <div className={classNames(`relative`)}>
             <div
               className={classNames(
-                `inline-block min-w-full py-2 align-middle`,
-                `${!styles?.full_width ? 'px-2 sm:px-4' : ''}`,
-                styles?.max_height ?? '',
-                styles?.max_height ? 'overflow-y-scroll' : '',
+                `inline-block py-2 align-middle w-full -px-8`,
+                `${!styles?.max_width ? 'px-2 sm:px-4' : ''}`,
               )}
             >
-              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+              <div
+                className={classNames(
+                  'shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg',
+                  styles?.max_height ?? '',
+                  styles?.max_height ? 'overflow-y-scroll' : '',
+                )}
+              >
                 <table
-                  className={`min-w-full divide-y divide-gray-300 min-h-[30rem]`}
+                  className={`min-w-full divide-y divide-gray-400 min-h-[30rem]`}
                 >
                   <thead
                     className={classNames(
                       'bg-gray-50',
                       styles?.static_headers
-                        ? 'absolute w-full -mt-2 pr-[16px]'
+                        ? 'sticky top-0 -mt-2 pr-[16px] z-10'
                         : '',
                     )}
                   >
                     <tr
                       className={classNames(
-                        `${styles?.static_headers ? `grid grid-cols-${num_columns}` : ''}`,
+                        `${styles?.static_headers ? `grid grid-flow-col` : ''}`,
                       )}
                     >
                       {columns.map((column_name, column_num) => (
@@ -102,6 +104,15 @@ export default function Table(props: {
                               ? 'pl-4 pr-3 sm:pl-6'
                               : 'px-3 text-center',
                             styles?.static_headers ? 'sticky top-0' : '',
+                            column_num === 0 && styles?.static_headers
+                              ? 'w-40'
+                              : '',
+                            column_num !== 0 && styles?.static_headers
+                              ? 'min-w-36'
+                              : '',
+                            column_num === 0 && styles?.rows?.static_label
+                              ? 'sticky left-0 z-20 bg-gray-50 border-r-2 border-gray-400'
+                              : '',
                           )}
                         >
                           {column_name}
@@ -111,10 +122,8 @@ export default function Table(props: {
                   </thead>
                   <tbody
                     className={classNames(
-                      'divide-y divide-gray-200 bg-white mb-14',
-                      styles?.static_headers
-                        ? 'flex flex-col mt-10 w-full'
-                        : '',
+                      'divide-y divide-gray-200 bg-white mb-10',
+                      styles?.static_headers ? 'flex flex-col' : '',
                     )}
                   >
                     {data?.map((group: group) => (
@@ -134,14 +143,15 @@ export default function Table(props: {
                                         ? 'divide-x divide-gray-200 '
                                         : '',
                                       styles?.static_headers
-                                        ? `grid grid-cols-${num_columns}`
+                                        ? // ? `grid grid-cols-${num_columns}`
+                                          `grid grid-flow-col`
                                         : '',
                                     )}
                                   >
                                     <td
                                       key={generateUUID()}
                                       className={classNames(
-                                        'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500',
+                                        'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500 w-40',
                                         row_height,
                                         rows_styles.remark_label,
                                       )}
@@ -152,7 +162,7 @@ export default function Table(props: {
                                       <td
                                         key={generateUUID()}
                                         className={classNames(
-                                          'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500',
+                                          'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500 min-w-36',
                                           row_height,
                                         )}
                                       >
@@ -182,14 +192,15 @@ export default function Table(props: {
                                   <td
                                     className={
                                       styles?.static_bottom
-                                        ? 'grid grid-cols-5 w-full'
+                                        ? // ? 'grid grid-cols-5 w-full'
+                                          'grid grid-flow-col'
                                         : 'flex flex-row'
                                     }
                                   >
                                     <div
                                       key={generateUUID()}
                                       className={classNames(
-                                        'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500',
+                                        'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500 w-40',
                                         row_height,
                                         rows_styles.remark_label,
                                       )}
@@ -200,7 +211,7 @@ export default function Table(props: {
                                       <div
                                         key={generateUUID()}
                                         className={classNames(
-                                          'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500',
+                                          'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500 min-w-36',
                                           row_height,
                                         )}
                                       >
@@ -215,11 +226,21 @@ export default function Table(props: {
                         {/* Formato CON GRUPOS */}
                         {/* Nombre de cada grupo */}
                         {asGroups && (
-                          <tr className="border-t border-gray-200">
+                          <tr
+                            className={classNames(
+                              'border-t border-gray-200',
+                              `grid grid-cols-${num_columns}`,
+                            )}
+                          >
                             <th
                               scope="colgroup"
                               colSpan={num_columns}
-                              className="bg-gray-50 py-2 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+                              className={classNames(
+                                'bg-gray-50 py-2 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3 w-40',
+                                styles?.rows?.static_label
+                                  ? 'sticky left-0 border-r-2 border-gray-400'
+                                  : '',
+                              )}
                             >
                               {group.name}
                             </th>
@@ -232,10 +253,10 @@ export default function Table(props: {
                               key={generateUUID()}
                               className={classNames(
                                 styles?.vertical_lines
-                                  ? 'divide-x divide-gray-500 '
+                                  ? 'divide-x divide-gray-400 '
                                   : '',
                                 styles?.static_headers
-                                  ? `grid grid-cols-${num_columns}`
+                                  ? `grid grid-flow-col`
                                   : '',
                               )}
                             >
@@ -245,9 +266,12 @@ export default function Table(props: {
                                     <td
                                       key={generateUUID() + cell_num}
                                       className={classNames(
-                                        'whitespace-nowrap px-4 sm:pl-6 text-sm text-gray-500',
+                                        'whitespace-nowrap px-4 sm:pl-6 text-sm text-gray-500 w-40',
                                         row_height,
                                         rows_styles.remark_label,
+                                        styles?.rows?.static_label
+                                          ? 'sticky left-0 bg-white border-r-2 border-gray-400'
+                                          : '',
                                       )}
                                     >
                                       {(cell as cell_object).data}
@@ -257,7 +281,7 @@ export default function Table(props: {
                                     <td
                                       key={generateUUID() + cell_num}
                                       className={classNames(
-                                        'whitespace-nowrap px-2 text-sm text-gray-500',
+                                        'whitespace-nowrap px-2 text-sm text-gray-500 min-w-36',
                                         row_height,
                                         (cell as cell_object).color,
                                       )}
