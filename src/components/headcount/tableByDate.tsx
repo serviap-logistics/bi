@@ -421,9 +421,9 @@ export default function HeadcountTableByDate() {
           rows={rows}
           styles={{
             vertical_lines: true,
-            full_width: true,
+            max_width: '50vw',
             row_height: 'xs',
-            rows: { remark_label: true },
+            rows: { remark_label: true, static_label: false },
             static_headers: true,
             static_bottom: true,
             max_height: 'max-h-[27rem]',
