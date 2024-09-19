@@ -19,7 +19,7 @@ export type registration_time_type = {
   overtime_cost: number | undefined;
   // Total
   total_hours: number;
-  total_cost: number | undefined;
+  subtotal: number | undefined;
   // Week
-  week_hours_accumulated: number | undefined;
+  week_hours: number | undefined;
 };
