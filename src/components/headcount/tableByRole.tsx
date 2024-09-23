@@ -54,6 +54,7 @@ type result_data = {
   'Worked Overtime'?: table_row[];
   Travel?: table_row[];
   'Travel Overtime'?: table_row[];
+  Waiting: table_row[];
 };
 
 export default function HeadcountTableByRole() {
@@ -91,6 +92,7 @@ export default function HeadcountTableByRole() {
     'Worked Overtime': [],
     Travel: [],
     'Travel Overtime': [],
+    Waiting: [],
   });
 
   const updateReportDates = () => {
@@ -309,9 +311,6 @@ export default function HeadcountTableByRole() {
             week: record.week,
             employee_id: record.employee_id,
             employee_role: record.employee_role,
-            regular_hour_cost: record.regular_hour_cost,
-            regular_hours: record.regular_hours,
-            regular_cost: record.regular_cost,
             hours: record.total_hours,
             subtotal: record.subtotal,
           });
@@ -319,6 +318,7 @@ export default function HeadcountTableByRole() {
       });
       console.log('worked: ', groupListBy('week', worked));
       console.log('travel: ', groupListBy('week', travel));
+      console.log('waiting: ', groupListBy('week', waiting));
 
       const worked_overtime: any[] = [];
       worked
@@ -514,8 +514,8 @@ export default function HeadcountTableByRole() {
         totals_by_role[role][date] = {
           date: date,
           people: [...totals_by_role[role][date].people, record.employee_id],
-          hours: totals_by_role[role][date].hours + record.regular_hours, // Valor acumulado + horas regulares del registro actual.
-          subtotal: totals_by_role[role][date].subtotal + record.regular_cost,
+          hours: totals_by_role[role][date].hours + record.hours, // Valor acumulado + horas regulares del registro actual.
+          subtotal: totals_by_role[role][date].subtotal + record.subtotal,
         };
         return totals_by_role;
       }, {});
@@ -610,6 +610,7 @@ export default function HeadcountTableByRole() {
       'Worked Overtime': [],
       Travel: [],
       'Travel Overtime': [],
+      Waiting: [],
     };
     for (const group of Object.keys(budgets)) {
       for (const role of Object.keys(budgets[group])) {
@@ -666,6 +667,7 @@ export default function HeadcountTableByRole() {
   };
 
   const formatAsTable = (results: result_data) => {
+    console.log('Formatting... ', results);
     if (!reportDates?.dates_beetween) return;
     const columns = ['Role', reportDates?.dates_beetween].flat();
     setColumns(columns);
