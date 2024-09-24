@@ -57,7 +57,10 @@ type result_data = {
   Waiting: table_row[];
 };
 
-export default function HeadcountTableByRole() {
+export default function HeadcountTableByRole(props: {
+  excelRowsCallback: any;
+}) {
+  const { excelRowsCallback } = props;
   const project = useContext(ProjectContext);
   const costAnalysis = useContext(CostAnalysisContext);
   const reportType = useContext(ReportTypeContext);
@@ -683,6 +686,7 @@ export default function HeadcountTableByRole() {
       })),
     );
     setShowTable(true);
+    excelRowsCallback(Object.values(filtered_results).map((rows) => rows));
   };
 
   useEffect(() => {

@@ -41,7 +41,10 @@ type day_result_type = {
   records?: report_data[];
 };
 
-export default function HeadcountTableByDate() {
+export default function HeadcountTableByDate(props: {
+  excelRowsCallback: any;
+}) {
+  const { excelRowsCallback } = props;
   const project = useContext(ProjectContext);
   const costAnalysis = useContext(CostAnalysisContext);
   const reportType = useContext(ReportTypeContext);
@@ -341,6 +344,7 @@ export default function HeadcountTableByDate() {
       />,
     ]);
     setRows(rows);
+    excelRowsCallback(rows);
   };
 
   useEffect(() => {
