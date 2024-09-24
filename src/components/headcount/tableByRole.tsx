@@ -727,7 +727,7 @@ export default function HeadcountTableByRole() {
           styles={{
             vertical_lines: true,
             max_width: '97vw',
-            row_height: 'xs',
+            row_height: 'none',
             rows: { remark_label: true, static_label: true },
             static_headers: true,
             max_height: 'max-h-[27rem]',

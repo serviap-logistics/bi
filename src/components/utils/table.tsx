@@ -15,7 +15,7 @@ export default function Table(props: {
     static_bottom?: boolean;
     vertical_lines?: boolean;
     max_width?: string;
-    row_height?: 'xs' | 'sm' | 'base';
+    row_height?: 'xs' | 'sm' | 'base' | 'none';
     rows?: {
       remark_label: boolean;
       static_label: boolean;
@@ -23,6 +23,7 @@ export default function Table(props: {
       cell_width?: string;
     };
     max_height?: string;
+    column_size?: string | undefined;
   };
 }) {
   const { styles, columns, rows } = props;
@@ -34,7 +35,9 @@ export default function Table(props: {
         ? 'py-3'
         : styles?.row_height === 'base'
           ? 'py-4'
-          : 'py-4';
+          : styles?.row_height === 'none'
+            ? ''
+            : '';
   const static_bottom = styles?.static_bottom ?? false;
   const rows_styles = {
     remark_label: styles?.rows?.remark_label ? 'font-medium' : '',
@@ -85,13 +88,14 @@ export default function Table(props: {
                     className={classNames(
                       'bg-gray-50',
                       styles?.static_headers
-                        ? 'sticky top-0 -mt-2 pr-[16px] z-10'
+                        ? 'sticky top-0 -mt-2 pr-[16px] z-20'
                         : '',
                     )}
                   >
                     <tr
                       className={classNames(
-                        `${styles?.static_headers ? `grid grid-flow-col` : ''}`,
+                        // `${styles?.static_headers ? `grid grid-flow-col` : ''}`,
+                        `${styles?.static_headers ? `flex` : ''}`,
                       )}
                     >
                       {columns.map((column_name, column_num) => (
@@ -101,18 +105,21 @@ export default function Table(props: {
                           className={classNames(
                             'py-3.5 text-left text-sm font-semibold text-gray-900',
                             column_num === 0
-                              ? 'pl-4 pr-3 sm:pl-6'
+                              ? 'pl-4 sm:pl-6 pr-3'
                               : 'px-3 text-center',
-                            styles?.static_headers ? 'sticky top-0' : '',
-                            column_num === 0 && styles?.static_headers
-                              ? 'w-44'
+                            styles?.static_headers || styles?.rows?.static_label
+                              ? 'sticky'
                               : '',
-                            column_num !== 0 && styles?.static_headers
-                              ? 'min-w-36'
-                              : '',
+                            styles?.static_headers &&
+                              styles?.rows?.static_label &&
+                              column_num === 0
+                              ? 'z-30'
+                              : 'z-20',
+                            styles?.static_headers ? 'top-0' : '',
                             column_num === 0 && styles?.rows?.static_label
-                              ? 'sticky left-0 z-20 bg-gray-50 border-r-2 border-gray-400'
+                              ? 'left-0 bg-gray-50 border-r-2 border-gray-400'
                               : '',
+                            styles?.column_size ?? 'min-w-44',
                           )}
                         >
                           {column_name}
@@ -122,7 +129,7 @@ export default function Table(props: {
                   </thead>
                   <tbody
                     className={classNames(
-                      'divide-y divide-gray-200 bg-white mb-10',
+                      'divide-y divide-gray-200 bg-white mb-10 z-0',
                       styles?.static_headers ? 'flex flex-col' : '',
                     )}
                   >
@@ -228,8 +235,7 @@ export default function Table(props: {
                         {asGroups && (
                           <tr
                             className={classNames(
-                              'border-t border-gray-200',
-                              `grid grid-cols-${num_columns}`,
+                              'border-t border-gray-200 z-10',
                             )}
                           >
                             <th
@@ -238,7 +244,7 @@ export default function Table(props: {
                               className={classNames(
                                 'bg-gray-50 py-2 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3 w-44',
                                 styles?.rows?.static_label
-                                  ? 'sticky left-0 border-r-2 border-gray-400'
+                                  ? 'sticky left-0'
                                   : '',
                               )}
                             >
@@ -260,13 +266,15 @@ export default function Table(props: {
                                   : '',
                               )}
                             >
+                              {/* Formato para cada celda dell grupo. */}
                               {group_row.map((cell, cell_num) => (
                                 <Fragment>
+                                  {/* Formato si la celda solo tiene UN valor. */}
                                   {cell_num === 0 && (
                                     <td
                                       key={generateUUID() + cell_num}
                                       className={classNames(
-                                        'whitespace-nowrap px-4 sm:pl-6 text-sm text-gray-500 w-44',
+                                        'whitespace-nowrap px-4 py-1 sm:pl-6 text-sm text-gray-500 w-44 z-10',
                                         row_height,
                                         rows_styles.remark_label,
                                         styles?.rows?.static_label
@@ -277,18 +285,18 @@ export default function Table(props: {
                                       {(cell as cell_object).data}
                                     </td>
                                   )}
+                                  {/* Formato si la celda tiene mas de un valor. */}
                                   {cell_num > 0 && (
                                     <td
                                       key={generateUUID() + cell_num}
                                       className={classNames(
-                                        'whitespace-nowrap px-2 text-sm text-gray-500 min-w-36',
+                                        'whitespace-nowrap text-sm text-gray-500 min-w-44',
                                         row_height,
-                                        (cell as cell_object).color,
                                       )}
                                     >
                                       <div
                                         className={classNames(
-                                          'flex justify-center divide-x',
+                                          'flex justify-center divide-x relative box-content w-full h-full',
                                         )}
                                       >
                                         {Array.isArray(
@@ -297,8 +305,17 @@ export default function Table(props: {
                                           (
                                             (cell as cell_object)
                                               .data as cell_data[]
-                                          ).map((value) => (
-                                            <div className="px-3">{value}</div>
+                                          ).map((value, val_num) => (
+                                            <div
+                                              className={classNames(
+                                                'w-1/2 h-full flex justify-center items-center',
+                                                val_num === 0
+                                                  ? 'bg-slate-300'
+                                                  : (cell as cell_object).color,
+                                              )}
+                                            >
+                                              <p>{value}</p>
+                                            </div>
                                           ))}
                                       </div>
                                     </td>
