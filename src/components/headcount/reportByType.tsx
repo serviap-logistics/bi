@@ -6,6 +6,9 @@ import Divider from '../utils/divider';
 import PillsMenu from '../utils/pillsMenu';
 import HeadcountTableByRole from './tableByRole';
 import HeadcountSummary from './summary';
+import { ArrowDownCircleIcon } from '@heroicons/react/24/outline';
+import { generateExcel } from '../../utils';
+import { saveAs } from 'file-saver';
 
 type report_types_available = 'HOURS' | 'COST' | 'PEOPLE';
 type summary_types_available = 'BY_DAY' | 'BY_ROLE';
@@ -59,6 +62,16 @@ export default function HeadcountReportByType() {
     }
   };
 
+  const [excelRows, setExcelRows] = useState([]);
+  const onChangeRows = (rows) => {
+    console.log('Generating excel! ', rows);
+    setExcelRows(rows);
+  };
+  const handleExportAsExcel = async () => {
+    const buffer = await generateExcel([{ name: 'TEST', rows: excelRows }]);
+    saveAs(new Blob([buffer as Buffer]), 'example.xlsx');
+  };
+
   return (
     <>
       <div className="sticky top-16 bg-white z-10">
@@ -71,12 +84,23 @@ export default function HeadcountReportByType() {
       <ReportTypeContext.Provider value={reportType}>
         <>
           <HeadcountProjectDetails />
-          <div className="sticky top-[7rem] bg-white z-10 py-1">
+          <div className="sticky top-[7rem] bg-white z-10 py-1 flex justify-between">
             <PillsMenu
               tabs={reportTypes}
               onSelectCallback={handleChangeReport}
               default_key="BY_DAY"
             />
+            <button
+              type="button"
+              className="inline-flex items-center gap-x-2 rounded-md bg-slate-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600"
+              onClick={handleExportAsExcel}
+            >
+              Export as Excel
+              <ArrowDownCircleIcon
+                aria-hidden="true"
+                className="-mr-0.5 h-5 w-5"
+              />
+            </button>
           </div>
           <HeadcountSummary />
           <Divider
@@ -85,8 +109,12 @@ export default function HeadcountReportByType() {
               summaryTabs.find((tab) => tab.current)?.name.toLowerCase()
             }
           />
-          {summaryType === 'BY_DAY' && <HeadcountTableByDate />}
-          {summaryType === 'BY_ROLE' && <HeadcountTableByRole />}
+          {summaryType === 'BY_DAY' && (
+            <HeadcountTableByDate excelRowsCallback={onChangeRows} />
+          )}
+          {summaryType === 'BY_ROLE' && (
+            <HeadcountTableByRole excelRowsCallback={onChangeRows} />
+          )}
         </>
       </ReportTypeContext.Provider>
     </>
