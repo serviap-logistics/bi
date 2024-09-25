@@ -104,8 +104,9 @@ export const generateExcel = async (
     const worksheet = workbook.addWorksheet(page.name);
     worksheet.columns = page.columns ?? [];
     worksheet.addRows(page.rows);
-    if (settings?.mergeCells) {
-      console.log(settings.mergeCells);
+    if (settings?.mergeCells && settings?.mergeCells?.length > 0) {
+      console.log('Merging cells...');
+      console.log(settings?.mergeCells);
     }
     const buffer = await workbook.xlsx.writeBuffer();
     return buffer;

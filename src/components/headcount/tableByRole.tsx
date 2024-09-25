@@ -688,6 +688,12 @@ export default function HeadcountTableByRole(props: {
     setRows(table_rows);
     setShowTable(true);
     const excel_rows: any[] = [];
+    const labels_list: string[] = [''];
+    reportDates.dates_beetween?.map(() => {
+      labels_list.push('Budget');
+      labels_list.push('Real');
+    });
+    excel_rows.push(labels_list);
     table_rows.map((group) => {
       excel_rows.push([group.name]);
       group.rows.map((row) =>
@@ -696,7 +702,7 @@ export default function HeadcountTableByRole(props: {
     });
     excelRowsCallback(excel_rows);
     const excel_columns: excel_column[] = [
-      { header: 'Role', key: 'ROLE', width: 15 },
+      { header: 'Role', key: 'ROLE', width: 25 },
     ];
     reportDates.dates_beetween.map((date) => {
       excel_columns.push({ header: date, key: date, width: 10 });

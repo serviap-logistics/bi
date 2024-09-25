@@ -67,22 +67,14 @@ export default function HeadcountReportByType() {
   const [excelRows, setExcelRows] = useState([]);
   const [excelColumns, setExcelColumns] = useState<excel_column[]>([]);
   const onChangeRows = (rows) => {
-    console.log('Generating rows! ', rows);
     setExcelRows(rows);
   };
   const onChangeColumns = (columns: excel_column[]) => {
-    console.log('Generating columns! ', columns);
     setExcelColumns(columns);
   };
 
   const handleExportAsExcel = async () => {
     const settings = { mergeCells: [] };
-    if (summaryType === 'BY_ROLE') {
-      const temp_columns = excelColumns;
-      temp_columns.shift();
-      console.log(excelColumns);
-      console.log(temp_columns);
-    }
     const buffer = await generateExcel(
       [
         {
