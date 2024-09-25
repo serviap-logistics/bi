@@ -46,9 +46,7 @@ export default function Table(props: {
   const [data, setData] = useState<group[]>();
 
   useEffect(() => {
-    // if (columns) console.log('COLUMNS: ', columns, num_columns);
     if (rows) {
-      // console.log('New ROWS! ', rows);
       setAsGroups(isObjectArray(rows));
       setData(
         isObjectArray(rows)
