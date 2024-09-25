@@ -9,7 +9,7 @@ export default function Toast(props: {
   return (
     <span
       className={classNames(
-        'inline-flex items-center rounded-md px-2 py-1 font-medium ring-1 ring-inset',
+        'inline-flex items-center rounded-md px-2 py-1 font-medium ring-1 ring-inset justify-center',
         text_size,
         color === 'success'
           ? 'bg-green-50 text-green-700 ring-green-600/20'
