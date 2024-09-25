@@ -6,6 +6,7 @@ import { CostAnalysisContext, ProjectContext } from '.';
 import { ReportTypeContext } from './reportByType';
 import { registration_time_type } from '../../types/registration_time.type';
 import {
+  excel_column,
   getDateByTimestamp,
   getDatesBeetween,
   getPercentageUsed,
@@ -43,8 +44,9 @@ type day_result_type = {
 
 export default function HeadcountTableByDate(props: {
   excelRowsCallback: any;
+  excelColumnsCallback: any;
 }) {
-  const { excelRowsCallback } = props;
+  const { excelRowsCallback, excelColumnsCallback } = props;
   const project = useContext(ProjectContext);
   const costAnalysis = useContext(CostAnalysisContext);
   const reportType = useContext(ReportTypeContext);
@@ -344,7 +346,19 @@ export default function HeadcountTableByDate(props: {
       />,
     ]);
     setRows(rows);
-    excelRowsCallback(rows);
+    const columns: excel_column[] = [
+      { header: 'Date', key: 'DATE', width: 20 },
+      { header: 'Budget', key: 'DATE', width: 10 },
+      { header: 'Real', key: 'DATE', width: 10 },
+      { header: 'Difference', key: 'DATE', width: 10 },
+      { header: '% Used', key: 'DATE', width: 20 },
+    ];
+    excelColumnsCallback(columns);
+    const table_rows = rows.map((row) => [
+      ...row.slice(0, 4),
+      (row[4] as JSX.Element).props.text,
+    ]);
+    excelRowsCallback(table_rows);
   };
 
   useEffect(() => {
