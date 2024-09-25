@@ -1,11 +1,15 @@
 import { useContext, useEffect, useState } from 'react';
-import Table, { group as table_group, row as table_row } from '../utils/table';
+import Table, {
+  cell_object,
+  group as table_group,
+  row as table_row,
+} from '../utils/table';
 import { getRegistrationTimes } from '../../api/registration_times';
 import { CostAnalysisContext, ProjectContext } from '.';
-// import { ReportTypeContext } from "./reportByType";
 import { registration_time_type } from '../../types/registration_time.type';
 import {
   cloneObject,
+  excel_column,
   generateColorStatus,
   getDateByTimestamp,
   getDatesBeetween,
@@ -59,8 +63,9 @@ type result_data = {
 
 export default function HeadcountTableByRole(props: {
   excelRowsCallback: any;
+  excelColumnsCallback: any;
 }) {
-  const { excelRowsCallback } = props;
+  const { excelRowsCallback, excelColumnsCallback } = props;
   const project = useContext(ProjectContext);
   const costAnalysis = useContext(CostAnalysisContext);
   const reportType = useContext(ReportTypeContext);
@@ -319,10 +324,6 @@ export default function HeadcountTableByRole(props: {
           });
         }
       });
-      console.log('worked: ', groupListBy('week', worked));
-      console.log('travel: ', groupListBy('week', travel));
-      console.log('waiting: ', groupListBy('week', waiting));
-
       const worked_overtime: any[] = [];
       worked
         .filter((times) => times.overtime_hours !== 0)
@@ -670,7 +671,6 @@ export default function HeadcountTableByRole(props: {
   };
 
   const formatAsTable = (results: result_data) => {
-    console.log('Formatting... ', results);
     if (!reportDates?.dates_beetween) return;
     const columns = ['Role', reportDates?.dates_beetween].flat();
     setColumns(columns);
@@ -679,14 +679,30 @@ export default function HeadcountTableByRole(props: {
       delete filtered_results['Travel Overtime'];
       delete filtered_results['Worked Overtime'];
     }
-    setRows(
-      Object.entries(filtered_results).map(([group, rows]) => ({
+    const table_rows = Object.entries(filtered_results).map(
+      ([group, rows]) => ({
         name: group,
         rows: rows as table_row[],
-      })),
+      }),
     );
+    setRows(table_rows);
     setShowTable(true);
-    excelRowsCallback(Object.values(filtered_results).map((rows) => rows));
+    const excel_rows: any[] = [];
+    table_rows.map((group) => {
+      excel_rows.push([group.name]);
+      group.rows.map((row) =>
+        excel_rows.push(row.map((cell) => (cell as cell_object).data).flat()),
+      );
+    });
+    excelRowsCallback(excel_rows);
+    const excel_columns: excel_column[] = [
+      { header: 'Role', key: 'ROLE', width: 15 },
+    ];
+    reportDates.dates_beetween.map((date) => {
+      excel_columns.push({ header: date, key: date, width: 10 });
+      excel_columns.push({ header: '', key: '', width: 10 });
+    });
+    excelColumnsCallback(excel_columns);
   };
 
   useEffect(() => {

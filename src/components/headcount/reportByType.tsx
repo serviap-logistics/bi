@@ -1,4 +1,4 @@
-import { createContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import TabsMenu, { tabs_menu_option_type } from '../utils/tabsMenu';
 import HeadcountProjectDetails from './projectDetail';
 import HeadcountTableByDate from './tableByDate';
@@ -7,8 +7,9 @@ import PillsMenu from '../utils/pillsMenu';
 import HeadcountTableByRole from './tableByRole';
 import HeadcountSummary from './summary';
 import { ArrowDownCircleIcon } from '@heroicons/react/24/outline';
-import { generateExcel } from '../../utils';
+import { excel_column, generateExcel } from '../../utils';
 import { saveAs } from 'file-saver';
+import { ProjectContext } from '.';
 
 type report_types_available = 'HOURS' | 'COST' | 'PEOPLE';
 type summary_types_available = 'BY_DAY' | 'BY_ROLE';
@@ -22,6 +23,7 @@ export const SummaryTypeContext =
   createContext<summary_types_available>(DEFAULT_SUMMARY_TYPE);
 
 export default function HeadcountReportByType() {
+  const project = useContext(ProjectContext);
   const [reportTypes, setReportTypes] = useState<tabs_menu_option_type[]>([
     { key: 'HOURS', current: true, name: 'Hours', icon: undefined },
     { key: 'COST', current: false, name: 'Cost', icon: undefined },
@@ -63,13 +65,35 @@ export default function HeadcountReportByType() {
   };
 
   const [excelRows, setExcelRows] = useState([]);
+  const [excelColumns, setExcelColumns] = useState<excel_column[]>([]);
   const onChangeRows = (rows) => {
-    console.log('Generating excel! ', rows);
+    console.log('Generating rows! ', rows);
     setExcelRows(rows);
   };
+  const onChangeColumns = (columns: excel_column[]) => {
+    console.log('Generating columns! ', columns);
+    setExcelColumns(columns);
+  };
+
   const handleExportAsExcel = async () => {
-    const buffer = await generateExcel([{ name: 'TEST', rows: excelRows }]);
-    saveAs(new Blob([buffer as Buffer]), 'example.xlsx');
+    const settings = { mergeCells: [] };
+    if (summaryType === 'BY_ROLE') {
+      const temp_columns = excelColumns;
+      temp_columns.shift();
+      console.log(excelColumns);
+      console.log(temp_columns);
+    }
+    const buffer = await generateExcel(
+      [
+        {
+          name: `${reportType} (${summaryType.replace('_', ' ')})`,
+          columns: excelColumns,
+          rows: excelRows,
+        },
+      ],
+      settings,
+    );
+    saveAs(new Blob([buffer as Buffer]), `${project?.project_id}.xlsx`);
   };
 
   return (
@@ -110,10 +134,16 @@ export default function HeadcountReportByType() {
             }
           />
           {summaryType === 'BY_DAY' && (
-            <HeadcountTableByDate excelRowsCallback={onChangeRows} />
+            <HeadcountTableByDate
+              excelRowsCallback={onChangeRows}
+              excelColumnsCallback={onChangeColumns}
+            />
           )}
           {summaryType === 'BY_ROLE' && (
-            <HeadcountTableByRole excelRowsCallback={onChangeRows} />
+            <HeadcountTableByRole
+              excelRowsCallback={onChangeRows}
+              excelColumnsCallback={onChangeColumns}
+            />
           )}
         </>
       </ReportTypeContext.Provider>
