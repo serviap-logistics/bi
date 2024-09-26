@@ -42,7 +42,7 @@ export async function getWorkedTimes(
     (record): worked_time => ({
       ...record,
       category: 'WORKED',
-      regular_hour_cost: record.regular_hour_cost[0],
+      regular_hour_cost: record.regular_hour_cost,
     }),
   );
 }

@@ -42,7 +42,7 @@ export async function getTravelTimes(
     (record): travel_time => ({
       ...record,
       category: 'TRAVEL',
-      regular_hour_cost: record.regular_hour_cost[0],
+      regular_hour_cost: record.regular_hour_cost,
     }),
   );
 }

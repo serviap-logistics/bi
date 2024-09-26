@@ -42,7 +42,7 @@ export async function getWaitingTimes(
     (record): waiting_time => ({
       ...record,
       category: 'WAITING',
-      regular_hour_cost: record.regular_hour_cost[0],
+      regular_hour_cost: record.regular_hour_cost,
     }),
   );
 }

@@ -47,7 +47,7 @@ export async function getRegistrationTimes(settings: {
   worked: boolean;
   travel: boolean;
   waiting: boolean;
-  project_id: string;
+  project_id?: string;
 }): Promise<registration_time_type[]> {
   const { worked, travel, waiting, project_id } = settings;
   const times_found: registration_time_type[] = [];
