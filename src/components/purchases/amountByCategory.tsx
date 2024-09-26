@@ -175,7 +175,9 @@ export default function PurchasesAmountsByCategory(props: {
                 <p className="text-gray-700 font-semibold text-lg">
                   {USDollar.format(
                     result.amount > 1000 ? result.amount / 1000 : result.amount,
-                  ) + result.unit}
+                  ) +
+                    result.unit +
+                    ' USD'}
                 </p>
               </div>
             </div>
