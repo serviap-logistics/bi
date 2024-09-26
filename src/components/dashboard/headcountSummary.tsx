@@ -140,7 +140,7 @@ export default function HeadcountSummary(props: {
                 {budget.hours.toLocaleString() + ' hours'}
               </p>
               <p className="text-lg text-gray-600 py-1">
-                {USDollar.format(budget.cost)}
+                {USDollar.format(budget.cost) + ' USD'}
               </p>
               <p className="text-lg text-gray-600">
                 {budget.people + ' labors'}
@@ -155,7 +155,7 @@ export default function HeadcountSummary(props: {
                 {real.hours.toLocaleString() + ' hours'}
               </p>
               <p className="text-lg text-gray-600 py-1">
-                {USDollar.format(real.cost)}
+                {USDollar.format(real.cost) + ' USD'}
               </p>
               <p className="text-lg text-gray-600">{real.people + ' labors'}</p>
             </div>
@@ -168,7 +168,7 @@ export default function HeadcountSummary(props: {
                 {indicators.hours_difference.toLocaleString() + ' hours'}
               </p>
               <p className="text-lg text-gray-600 py-1">
-                {USDollar.format(indicators.cost_difference)}
+                {USDollar.format(indicators.cost_difference) + ' USD'}
               </p>
               <p className="text-lg text-gray-600">
                 {indicators.people_difference + ' labors'}
