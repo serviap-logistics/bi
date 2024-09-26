@@ -160,9 +160,9 @@ export default function TableByCategory(props: { purchases: purchase_type[] }) {
 
     const rows = Object.values(data).map((section) => [
       section.name,
-      USDollar.format(section.budget),
-      USDollar.format(section.real), // Budget, Real
-      USDollar.format(section.difference), // Difference
+      USDollar.format(section.budget) + ' USD',
+      USDollar.format(section.real) + ' USD', // Budget, Real
+      USDollar.format(section.difference) + ' USD', // Difference
       <Toast
         text={section.used.toFixed(2) + '%'} // % used
         color={
@@ -206,7 +206,13 @@ export default function TableByCategory(props: { purchases: purchase_type[] }) {
     <Table
       columns={table.columns}
       rows={table.rows}
-      styles={{ static_headers: false, static_bottom: false }}
+      styles={{
+        static_headers: false,
+        dynamic_headers: false,
+        static_bottom: false,
+        max_height: 'max-h-[22rem]',
+        row_height: 'sm',
+      }}
     />
   );
 }

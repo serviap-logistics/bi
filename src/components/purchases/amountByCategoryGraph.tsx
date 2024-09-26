@@ -70,19 +70,19 @@ export default function PurchasesAmountsByCategoryGraph(props: {
         },
         dataLabels: {
           formatter: (val: number) => {
-            return USDollar.format(val);
+            return USDollar.format(val) + ' USD';
           },
         },
         yaxis: {
           labels: {
             formatter: (val: any) => {
-              return USDollar.format(val);
+              return USDollar.format(val) + ' USD';
             },
           },
         },
         tooltip: {
           enabled: true,
-          y: { formatter: (val) => USDollar.format(val) },
+          y: { formatter: (val) => USDollar.format(val) + ' USD' },
         },
       },
       series: [{ name: '', data: [] }],
@@ -145,19 +145,19 @@ export default function PurchasesAmountsByCategoryGraph(props: {
         },
         dataLabels: {
           formatter: (val: number) => {
-            return USDollar.format(val);
+            return USDollar.format(val) + ' USD';
           },
         },
         yaxis: {
           labels: {
             formatter: (val: number) => {
-              return USDollar.format(val);
+              return USDollar.format(val) + ' USD';
             },
           },
         },
         tooltip: {
           enabled: true,
-          y: { formatter: (val) => USDollar.format(val) },
+          y: { formatter: (val) => USDollar.format(val) + ' USD' },
         },
       },
       series: [{ name: '', data: [] }],
