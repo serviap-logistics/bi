@@ -7,6 +7,7 @@ import HeadcountSummary from './headcountSummary';
 import PurchasesSummary from './purchasesSummary';
 import ProjectDetails from './projectDetail';
 import FinanceSummary from './financeSummary';
+import DashboardAllProjects from './allProjects';
 
 export const ProjectContext = createContext<project_type | undefined>(
   undefined,
@@ -56,7 +57,7 @@ export default function Dashboard() {
       <ProjectContext.Provider value={project}>
         <CostAnalysisContext.Provider value={costAnalysis}>
           <h3 className="text-base font-semibold leading-6 text-gray-900 mb-4">
-            Summary (By Project)
+            Dashboard
           </h3>
           <DashboardFilters onChangeCallback={setProject} />
           {project && (
@@ -74,6 +75,7 @@ export default function Dashboard() {
               />
             </>
           )}
+          {!project && <DashboardAllProjects />}
         </CostAnalysisContext.Provider>
       </ProjectContext.Provider>
     </div>

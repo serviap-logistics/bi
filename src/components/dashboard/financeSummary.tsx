@@ -30,7 +30,7 @@ export default function FinanceSummary(props: {
                 Cost Analysis
               </p>
               <p className="text-lg text-gray-600 py-1">
-                {USDollar.format(costAnalysis?.total_cost ?? 0)}
+                {USDollar.format(costAnalysis?.total_cost ?? 0) + ' USD'}
               </p>
             </div>
             {/* REAL */}
@@ -39,7 +39,8 @@ export default function FinanceSummary(props: {
                 Real Amount
               </p>
               <p className="text-lg text-gray-600 py-1">
-                {USDollar.format(headcount_subtotal + purchases_subtotal)}
+                {USDollar.format(headcount_subtotal + purchases_subtotal) +
+                  ' USD'}
               </p>
             </div>
             {/* Difference */}
@@ -51,7 +52,7 @@ export default function FinanceSummary(props: {
                 {USDollar.format(
                   (costAnalysis?.total_cost ?? 0) -
                     (headcount_subtotal + purchases_subtotal),
-                )}
+                ) + ' USD'}
               </p>
             </div>
             {/* % Used */}

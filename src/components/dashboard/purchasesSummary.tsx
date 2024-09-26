@@ -69,7 +69,7 @@ export default function PurchasesSummary(props: {
                           (costAnalysis.total_labor_staffing_cost ?? 0) +
                           (costAnalysis.total_lodge_cost ?? 0)
                       : 0,
-                  )}
+                  ) + ' USD'}
                 </p>
                 <p className="text-xs text-gray-600">
                   (Only purchases amounts)
@@ -86,7 +86,7 @@ export default function PurchasesSummary(props: {
                       (total, purchase) => total + purchase.total_cost,
                       0,
                     ),
-                  )}
+                  ) + ' USD'}
                 </p>
                 <p className="text-xs text-gray-600">
                   ({purchases.length} items)
@@ -104,7 +104,7 @@ export default function PurchasesSummary(props: {
                         (total, purchase) => total + purchase.total_cost,
                         0,
                       ),
-                  )}
+                  ) + ' USD'}
                 </p>
               </div>
               {/* % Used */}
