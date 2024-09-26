@@ -20,7 +20,7 @@ export type app_navigation_option = {
 export const APP_NAVIGATION = [
   {
     key: 'DASHBOARD',
-    name: 'Summary (By project)',
+    name: 'Dashboard',
     icon: PresentationChartLineIcon,
     current: false,
     main_component: Dashboard,
