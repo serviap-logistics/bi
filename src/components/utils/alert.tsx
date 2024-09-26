@@ -1,5 +1,6 @@
 import { XCircleIcon } from '@heroicons/react/20/solid';
 import { classNames } from '../../utils';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export default function Alert(props: {
   status: 'success' | 'info' | 'warning' | 'error';
@@ -10,31 +11,41 @@ export default function Alert(props: {
   const { status, label, details, buttons } = props;
   const status_color =
     status === 'success'
-      ? 'success'
+      ? 'teal'
       : status === 'info'
         ? 'blue'
         : status === 'warning'
-          ? 'warning'
+          ? 'yellow'
           : status === 'error'
             ? 'red'
-            : 'secondary';
+            : 'slate';
+  const bg_color = `bg-${status_color}-200`;
+  const text_base_color = `text-${status_color}-400`;
+  const text_bold_color = `text-${status_color}-700`;
+  const text_heading_color = `text-${status_color}-800`;
 
   return (
-    <div className={`rounded-md bg-${status_color}-200 p-4`}>
+    <div className={classNames(`rounded-md p-4`, bg_color)}>
       <div className="flex">
         <div className="flex-shrink-0">
           {status === 'error' && (
             <XCircleIcon
               aria-hidden="true"
-              className={`h-5 w-5 text-${status_color}-400`}
+              className={classNames(`h-5 w-5`, text_base_color)}
+            />
+          )}
+          {status === 'warning' && (
+            <ExclamationTriangleIcon
+              aria-hidden="true"
+              className={classNames(`h-5 w-5`, text_base_color)}
             />
           )}
         </div>
         <div className="ml-3">
-          <h3 className={`text-sm font-medium text-${status_color}-800`}>
+          <h3 className={classNames(`text-sm font-medium`, text_heading_color)}>
             {label}
           </h3>
-          <div className={`mt-2 text-sm text-${status_color}-700`}>
+          <div className={classNames(`mt-2 text-sm`, text_bold_color)}>
             {Array.isArray(details) && (
               <ul role="list" className="list-disc space-y-1 pl-5">
                 {details.map((text) => (
@@ -43,7 +54,7 @@ export default function Alert(props: {
               </ul>
             )}
             {!Array.isArray(details) && (
-              <div className={`mt-2 text-sm text-${status_color}-700`}>
+              <div className={classNames(`mt-2 text-sm`, text_bold_color)}>
                 <p>{details}</p>
               </div>
             )}
