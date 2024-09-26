@@ -231,21 +231,21 @@ export default function HeadcountTableByDate(props: {
         reportType === 'HOURS'
           ? result.budget_total_hours
           : reportType === 'COST'
-            ? USDollar.format(result.budget_total_cost)
+            ? USDollar.format(result.budget_total_cost) + ' USD'
             : result.budget_total_people;
       // Celda 3: Real (dependiendo del tipo de reporte)
       const real =
         reportType === 'HOURS'
           ? result.real_total_hours.toFixed(2)
           : reportType === 'COST'
-            ? USDollar.format(result.real_total_cost)
+            ? USDollar.format(result.real_total_cost) + ' USD'
             : result.real_total_people;
       // Celda 4: Diferencia (dependiendo del tipo de reporte)
       const difference =
         reportType === 'HOURS'
           ? result.difference_hours.toFixed(2)
           : reportType === 'COST'
-            ? USDollar.format(result.difference_cost)
+            ? USDollar.format(result.difference_cost) + ' USD'
             : result.difference_people;
       // Celda 5: % Usado (dependiendo del tipo de reporte)
       const percentage_used =
@@ -323,13 +323,13 @@ export default function HeadcountTableByDate(props: {
     rows.push([
       'TOTALS',
       reportType === 'COST'
-        ? USDollar.format(summary_budget)
+        ? USDollar.format(summary_budget) + ' USD'
         : summary_budget.toFixed(2),
       reportType === 'COST'
-        ? USDollar.format(summary_real)
+        ? USDollar.format(summary_real) + ' USD'
         : summary_real.toFixed(2),
       reportType === 'COST'
-        ? USDollar.format(summary_difference)
+        ? USDollar.format(summary_difference) + ' USD'
         : summary_difference.toFixed(2),
       <Toast
         text={summary_percentage.toFixed(2) + '%'}
@@ -395,6 +395,7 @@ export default function HeadcountTableByDate(props: {
           columns={['Date', 'Budget', 'Real', 'Difference', '% Used']}
           rows={rows}
           styles={{
+            dynamic_headers: false,
             vertical_lines: true,
             max_width: '50vw',
             row_height: 'xs',

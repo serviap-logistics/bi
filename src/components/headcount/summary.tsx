@@ -132,7 +132,7 @@ export default function HeadcountSummary() {
               <p className="text-lg text-gray-600">
                 {reportType === 'HOURS' &&
                   budget.hours.toLocaleString() + ' hours'}
-                {reportType === 'COST' && USDollar.format(budget.cost)}
+                {reportType === 'COST' && USDollar.format(budget.cost) + ' USD'}
                 {reportType === 'PEOPLE' && budget.people + ' labors'}
               </p>
             </div>
@@ -144,7 +144,7 @@ export default function HeadcountSummary() {
               <p className="text-lg text-gray-600">
                 {reportType === 'HOURS' &&
                   real.hours.toLocaleString() + ' hours'}
-                {reportType === 'COST' && USDollar.format(real.cost)}
+                {reportType === 'COST' && USDollar.format(real.cost) + ' USD'}
                 {reportType === 'PEOPLE' && real.people + ' labors'}
               </p>
             </div>
@@ -157,7 +157,7 @@ export default function HeadcountSummary() {
                 {reportType === 'HOURS' &&
                   indicators.hours_difference.toLocaleString() + ' hours'}
                 {reportType === 'COST' &&
-                  USDollar.format(indicators.cost_difference)}
+                  USDollar.format(indicators.cost_difference) + ' USD'}
                 {reportType === 'PEOPLE' &&
                   indicators.people_difference + ' labors'}
               </p>
