@@ -646,8 +646,10 @@ export default function HeadcountTableByRole(props: {
                 ),
               ),
               data: [
-                USDollar.format(budgets[group][role][date].subtotal ?? 0),
-                USDollar.format(reals[group][role][date].subtotal ?? 0),
+                USDollar.format(budgets[group][role][date].subtotal ?? 0) +
+                  ' USD',
+                USDollar.format(reals[group][role][date].subtotal ?? 0) +
+                  ' USD',
               ],
             });
           if (reportType === 'PEOPLE')
@@ -752,9 +754,29 @@ export default function HeadcountTableByRole(props: {
           rows={rows}
           styles={{
             vertical_lines: true,
+            dynamic_headers: true,
             max_width: '97vw',
             row_height: 'none',
-            rows: { remark_label: true, static_label: true },
+            headers: {
+              first_column_size: 'w-40',
+              column_size:
+                reportType === 'HOURS'
+                  ? 'min-w-36'
+                  : reportType === 'COST'
+                    ? 'min-w-56'
+                    : 'min-w-28',
+            },
+            rows: {
+              remark_label: true,
+              static_label: true,
+              label_width: 'w-40',
+              cell_width:
+                reportType === 'HOURS'
+                  ? 'min-w-36'
+                  : reportType === 'COST'
+                    ? 'min-w-56'
+                    : 'min-w-28',
+            },
             static_headers: true,
             max_height: 'max-h-[27rem]',
           }}

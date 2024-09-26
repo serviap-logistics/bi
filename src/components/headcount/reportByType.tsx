@@ -28,8 +28,6 @@ export default function HeadcountReportByType() {
     { key: 'HOURS', current: true, name: 'Hours', icon: undefined },
     { key: 'COST', current: false, name: 'Cost', icon: undefined },
     { key: 'PEOPLE', current: false, name: 'People', icon: undefined },
-    // FIXME: Es probable que la seccion de TODO se vea en un Dashboard general.
-    // { key: 'ALL', current: false, name: 'All', icon: undefined },
   ]);
   const [summaryTabs, setSummaryTypes] = useState<tabs_menu_option_type[]>([
     { key: 'BY_DAY', current: true, name: 'By Day', icon: undefined },
