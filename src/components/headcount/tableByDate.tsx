@@ -23,6 +23,7 @@ type report_data = {
   total_cost: number;
   total_hours: number;
   total_people: number;
+  total_perdiem: number;
   records?: any[];
 };
 type day_result_type = {
@@ -30,15 +31,19 @@ type day_result_type = {
   budget_total_cost: number;
   budget_total_hours: number;
   budget_total_people: number;
+  budget_total_perdiem: number;
   real_total_cost: number;
   real_total_hours: number;
   real_total_people: number;
+  real_total_perdiem: number;
   difference_cost: number;
   difference_hours: number;
   difference_people: number;
+  difference_perdiem: number;
   percentage_cost: any;
   percentage_hours: any;
   percentage_people: any;
+  percentage_perdiem: any;
   records?: report_data[];
 };
 
@@ -65,16 +70,18 @@ export default function HeadcountTableByDate(props: {
         'people_quantity',
         'total_hours',
         'total_cost',
+        'perdiem_count',
         'date',
       ],
       formula: encodeURI(`cost_analysis_id='${costAnalysis.cost_analysis_id}'`),
     });
     const times_formatted = budget_times.map(
-      ({ total_cost, total_hours, people_quantity, date }) => ({
+      ({ total_cost, total_hours, people_quantity, date, perdiem_count }) => ({
         date: getDateByTimestamp(date),
         hours: total_hours,
         cost: total_cost,
         people: people_quantity,
+        perdiem_count: perdiem_count,
       }),
     );
     const grouped_by_date = groupListBy('date', times_formatted);
@@ -87,8 +94,13 @@ export default function HeadcountTableByDate(props: {
           (total, record) => total + record.people,
           0,
         ),
+        total_perdiem: records.reduce(
+          (total, record) => total + record.perdiem_count,
+          0,
+        ),
       }),
     );
+    console.log('Budget: ', totals_by_date);
     setBudgets(totals_by_date);
   };
 
@@ -117,6 +129,7 @@ export default function HeadcountTableByDate(props: {
           hours: time_registered.total_hours,
           subtotal: time_registered.subtotal,
           week_hours: time_registered.week_hours,
+          perdiem: time_registered.perdiem,
         };
       },
     );
@@ -131,6 +144,13 @@ export default function HeadcountTableByDate(props: {
         ),
         total_people: [...new Set(records.map((record) => record.employee))]
           .length,
+        total_perdiem: [
+          ...new Set(
+            records
+              .filter((record) => record.perdiem_count)
+              .map((record) => record.employee),
+          ),
+        ].length,
       }),
     );
     totals_by_date = totals_by_date.sort(
@@ -171,15 +191,19 @@ export default function HeadcountTableByDate(props: {
           budget_total_cost: 0,
           budget_total_hours: 0,
           budget_total_people: 0,
+          budget_total_perdiem: 0,
           real_total_cost: 0,
           real_total_hours: 0,
           real_total_people: 0,
+          real_total_perdiem: 0,
           difference_cost: 0,
           difference_hours: 0,
           difference_people: 0,
+          difference_perdiem: 0,
           percentage_cost: 0,
           percentage_hours: 0,
           percentage_people: 0,
+          percentage_perdiem: 0,
         };
         const budget_totals = budgets.find(
           (budget) => budget.date === pivot_date,
@@ -188,12 +212,14 @@ export default function HeadcountTableByDate(props: {
           day_results.budget_total_hours = budget_totals.total_hours;
           day_results.budget_total_cost = budget_totals.total_cost;
           day_results.budget_total_people = budget_totals.total_people;
+          day_results.budget_total_perdiem = budget_totals.total_perdiem;
         }
         const real_totals = reals.find((real) => real.date === pivot_date);
         if (real_totals) {
           day_results.real_total_hours = real_totals.total_hours;
           day_results.real_total_cost = real_totals.total_cost;
           day_results.real_total_people = real_totals.total_people;
+          day_results.real_total_perdiem = real_totals.total_perdiem;
         }
         day_results.difference_hours =
           day_results.budget_total_hours - day_results.real_total_hours;
@@ -201,6 +227,8 @@ export default function HeadcountTableByDate(props: {
           day_results.budget_total_cost - day_results.real_total_cost;
         day_results.difference_people =
           day_results.budget_total_people - day_results.real_total_people;
+        day_results.difference_perdiem =
+          day_results.budget_total_perdiem - day_results.real_total_perdiem;
         day_results.percentage_hours = getPercentageUsed(
           day_results.budget_total_hours,
           day_results.real_total_hours,
@@ -212,6 +240,10 @@ export default function HeadcountTableByDate(props: {
         day_results.percentage_people = getPercentageUsed(
           day_results.budget_total_people,
           day_results.real_total_people,
+        );
+        day_results.percentage_perdiem = getPercentageUsed(
+          day_results.budget_total_perdiem,
+          day_results.real_total_perdiem,
         );
 
         results.push(day_results);
@@ -232,28 +264,36 @@ export default function HeadcountTableByDate(props: {
           ? result.budget_total_hours
           : reportType === 'COST'
             ? USDollar.format(result.budget_total_cost) + ' USD'
-            : result.budget_total_people;
+            : reportType === 'PEOPLE'
+              ? result.budget_total_people
+              : result.budget_total_people;
       // Celda 3: Real (dependiendo del tipo de reporte)
       const real =
         reportType === 'HOURS'
           ? result.real_total_hours.toFixed(2)
           : reportType === 'COST'
             ? USDollar.format(result.real_total_cost) + ' USD'
-            : result.real_total_people;
+            : reportType === 'PEOPLE'
+              ? result.real_total_people
+              : result.real_total_perdiem;
       // Celda 4: Diferencia (dependiendo del tipo de reporte)
       const difference =
         reportType === 'HOURS'
           ? result.difference_hours.toFixed(2)
           : reportType === 'COST'
             ? USDollar.format(result.difference_cost) + ' USD'
-            : result.difference_people;
+            : reportType === 'PEOPLE'
+              ? result.difference_people
+              : result.difference_perdiem;
       // Celda 5: % Usado (dependiendo del tipo de reporte)
       const percentage_used =
         reportType === 'HOURS'
           ? result.percentage_hours.toFixed(2)
           : reportType === 'COST'
             ? result.percentage_cost.toFixed(2)
-            : result.percentage_people.toFixed(2);
+            : reportType === 'PEOPLE'
+              ? result.percentage_people.toFixed(2)
+              : result.percentage_perdiem.toFixed(2);
       return [
         date,
         budget,
@@ -276,46 +316,75 @@ export default function HeadcountTableByDate(props: {
     });
     // Se calcula el total de todas las columnas (Totales verticalmente)
     let summary_budget = 0;
-    if (reportType === 'HOURS' || reportType === 'COST') {
+    if (reportType === 'HOURS') {
       summary_budget = indicators.reduce(
-        (total, result) =>
-          total +
-          (reportType === 'HOURS'
-            ? result.budget_total_hours
-            : result.budget_total_cost),
+        (total, result) => total + result.budget_total_hours,
         0,
       );
-    } else {
+    }
+    if (reportType === 'COST') {
+      summary_budget = indicators.reduce(
+        (total, result) => total + result.budget_total_cost,
+        0,
+      );
+    }
+    if (reportType === 'PERDIEM') {
+      summary_budget = indicators.reduce(
+        (total, result) => total + result.budget_total_perdiem,
+        0,
+      );
+    }
+    if (reportType === 'PEOPLE') {
       summary_budget = Math.max(
         ...indicators.map((day) => day.budget_total_people),
       );
     }
+
     let summary_real = 0;
-    if (reportType === 'HOURS' || reportType === 'COST') {
+    if (reportType === 'HOURS') {
       summary_real = indicators.reduce(
-        (total, result) =>
-          total +
-          (reportType === 'HOURS'
-            ? result.real_total_hours
-            : result.real_total_cost),
+        (total, result) => total + result.real_total_hours,
         0,
       );
-    } else {
+    }
+    if (reportType === 'COST') {
+      summary_real = indicators.reduce(
+        (total, result) => total + result.real_total_cost,
+        0,
+      );
+    }
+    if (reportType === 'PERDIEM') {
+      summary_real = indicators.reduce(
+        (total, result) => total + result.real_total_perdiem,
+        0,
+      );
+    }
+    if (reportType === 'PEOPLE') {
       summary_real = Math.max(
         ...indicators.map((day) => day.real_total_people),
       );
     }
+
     let summary_difference = 0;
-    if (reportType === 'HOURS' || reportType === 'COST') {
+    if (reportType === 'HOURS') {
       summary_difference = indicators.reduce(
-        (total, result) =>
-          total +
-          (reportType === 'HOURS'
-            ? result.difference_hours
-            : result.difference_cost),
+        (total, result) => total + result.difference_hours,
         0,
       );
-    } else {
+    }
+    if (reportType === 'COST') {
+      summary_difference = indicators.reduce(
+        (total, result) => total + result.difference_cost,
+        0,
+      );
+    }
+    if (reportType === 'PERDIEM') {
+      summary_difference = indicators.reduce(
+        (total, result) => total + result.difference_perdiem,
+        0,
+      );
+    }
+    if (reportType === 'PEOPLE') {
       summary_difference = summary_budget - summary_real;
     }
     const summary_percentage = getPercentageUsed(summary_budget, summary_real);
