@@ -11,7 +11,7 @@ import { excel_column, generateExcel } from '../../utils';
 import { saveAs } from 'file-saver';
 import { ProjectContext } from '.';
 
-type report_types_available = 'HOURS' | 'COST' | 'PEOPLE';
+type report_types_available = 'HOURS' | 'COST' | 'PEOPLE' | 'PERDIEM';
 type summary_types_available = 'BY_DAY' | 'BY_ROLE';
 
 const DEFAULT_REPORT_TYPE = 'HOURS';
@@ -28,6 +28,7 @@ export default function HeadcountReportByType() {
     { key: 'HOURS', current: true, name: 'Hours', icon: undefined },
     { key: 'COST', current: false, name: 'Cost', icon: undefined },
     { key: 'PEOPLE', current: false, name: 'People', icon: undefined },
+    { key: 'PERDIEM', current: false, name: 'Perdiem', icon: undefined },
   ]);
   const [summaryTabs, setSummaryTypes] = useState<tabs_menu_option_type[]>([
     { key: 'BY_DAY', current: true, name: 'By Day', icon: undefined },

@@ -27,4 +27,6 @@ export type registration_time_type = {
   subtotal: number | undefined;
   // Week
   week_hours: number | undefined;
+  // Perdiem
+  perdiem: boolean;
 };

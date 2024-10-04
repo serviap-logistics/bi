@@ -95,10 +95,13 @@ export default function HeadcountProjectDetails() {
         <li className="px-4 py-4 sm:px-6 lg:px-10 grid grid-cols-2 grap-y-4 gap-x-8">
           <div>
             <p className="order-first text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
-              {project?.project_id ? project?.project_id : 'ALL PROJECTS'}
+              {project?.project_id ? project?.project_id : ''}
             </p>
             {project && project.customer_name && (
               <div>
+                <p className="text-base leading-7 text-gray-600">
+                  {project.project_name}
+                </p>
                 <p className="text-base leading-7 text-gray-600">
                   {project.customer_name}
                 </p>

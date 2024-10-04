@@ -28,6 +28,7 @@ type group_data = {
   Travel: object;
   'Travel Overtime': object;
   Waiting: object;
+  Perdiems: object;
 };
 
 const empty_results: group_data = {
@@ -36,6 +37,7 @@ const empty_results: group_data = {
   Travel: {},
   'Travel Overtime': {},
   Waiting: {},
+  Perdiems: {},
 };
 
 type cell_data = {
@@ -44,6 +46,7 @@ type cell_data = {
   people_quantity: number;
   subtotal: number;
   date?: string;
+  perdiem_count: 0;
 };
 
 const empty_cell_data: cell_data = {
@@ -51,6 +54,7 @@ const empty_cell_data: cell_data = {
   hours: 0,
   people_quantity: 0,
   subtotal: 0,
+  perdiem_count: 0,
 };
 
 type result_data = {
@@ -59,6 +63,7 @@ type result_data = {
   Travel?: table_row[];
   'Travel Overtime'?: table_row[];
   Waiting: table_row[];
+  Perdiems: table_row[];
 };
 
 export default function HeadcountTableByRole(props: {
@@ -85,6 +90,7 @@ export default function HeadcountTableByRole(props: {
     Travel: {},
     'Travel Overtime': {},
     Waiting: {},
+    Perdiems: {},
   });
   const [formattedBudgets, setFormattedBudgets] = useState<result_data>();
   const [reals, setReals] = useState<group_data>({
@@ -93,6 +99,7 @@ export default function HeadcountTableByRole(props: {
     Travel: {},
     'Travel Overtime': {},
     Waiting: {},
+    Perdiems: {},
   });
   const [formattedReals, setFormattedReals] = useState<result_data>();
   const [displayResults, setDisplayResults] = useState<result_data>({
@@ -101,6 +108,7 @@ export default function HeadcountTableByRole(props: {
     Travel: [],
     'Travel Overtime': [],
     Waiting: [],
+    Perdiems: [],
   });
 
   const updateReportDates = () => {
@@ -164,6 +172,7 @@ export default function HeadcountTableByRole(props: {
           'travel_overtime_hour_cost',
           'subtotal_worked_overtime',
           'subtotal_travel_overtime',
+          'perdiem_count',
         ],
         formula: encodeURI(
           `cost_analysis_id='${costAnalysis.cost_analysis_id}'`,
@@ -185,6 +194,7 @@ export default function HeadcountTableByRole(props: {
               hour_cost: record.worked_hour_cost,
               hours: record.worked_hours,
               subtotal: record.subtotal_worked_hours,
+              perdiem_count: record.perdiem_count,
             }),
         );
       });
@@ -230,12 +240,21 @@ export default function HeadcountTableByRole(props: {
             }),
         );
       });
+      const perdiems_by_role = {};
+      Object.entries(grouped_by_role).map(([role, records]: [string, any]) => {
+        perdiems_by_role[role] = {};
+        records.map(
+          (record) =>
+            (perdiems_by_role[role][record.date] = record.perdiem_count ?? 0),
+        );
+      });
       setBudgets({
         Worked: worked_by_role,
         'Worked Overtime': worked_overtime_by_role,
         Travel: travel_by_role,
         'Travel Overtime': travel_overtime_by_role,
         Waiting: {},
+        Perdiems: perdiems_by_role,
       });
     }
   };
@@ -270,6 +289,8 @@ export default function HeadcountTableByRole(props: {
           total_hours: record.total_hours,
           subtotal: record.subtotal,
           week_hours: record.week_hours,
+          // Perdiem
+          perdiem: record.perdiem,
         }),
       );
       // Recalcular horas de acuerdo al acumulado por semana...
@@ -277,6 +298,7 @@ export default function HeadcountTableByRole(props: {
       const worked: any[] = [];
       const travel: any[] = [];
       const waiting: any[] = [];
+      const perdiems: any[] = [];
       // Separacion de datos por categoria WORKED y TRAVEL.
       times_formatted.map((record: any) => {
         if (record.category === 'WORKED') {
@@ -321,6 +343,14 @@ export default function HeadcountTableByRole(props: {
             employee_role: record.employee_role,
             hours: record.total_hours,
             subtotal: record.subtotal,
+          });
+        }
+        if (record.perdiem) {
+          perdiems.push({
+            date: record.date,
+            employee_id: record.employee_id,
+            employee_role: record.employee_role,
+            perdiem: record.perdiem,
           });
         }
       });
@@ -533,12 +563,26 @@ export default function HeadcountTableByRole(props: {
           };
         });
       });
+      const perdiem_by_role = groupListBy('employee_role', perdiems);
+      const perdiems_by_role = {};
+      Object.entries(perdiem_by_role).map(([role, records]: [string, any]) => {
+        perdiems_by_role[role] = {};
+        const records_by_day = groupListBy('date', records);
+        Object.entries(records_by_day).map(
+          ([day, time_records]: [string, any]) => {
+            perdiems_by_role[role][day] = [
+              ...new Set(time_records.map((employee) => employee.employee_id)),
+            ].length;
+          },
+        );
+      });
       setReals({
         Worked: worked_by_role,
         'Worked Overtime': worked_overtime_by_role,
         Travel: travel_by_role,
         'Travel Overtime': travel_overtime_by_role,
         Waiting: waiting_by_role,
+        Perdiems: perdiems_by_role,
       });
     }
   };
@@ -549,6 +593,7 @@ export default function HeadcountTableByRole(props: {
       reportDates.end_date &&
       reportDates.dates_beetween
     ) {
+      console.log('New budgets!', budgets);
       // Para este momento, budgets deberia existir con al menos un role y con todo en 0.
       const budget_roles_available = Object.values(budgets).map((roles) =>
         Object.keys(roles),
@@ -578,10 +623,14 @@ export default function HeadcountTableByRole(props: {
                 (date) => !dates.includes(date),
               );
               dates_to_create.map((date) => {
-                budget_results[group][role][date] = {
-                  date: date,
-                  ...empty_cell_data,
-                };
+                if (group !== 'Perdiems') {
+                  budget_results[group][role][date] = {
+                    date: date,
+                    ...empty_cell_data,
+                  };
+                } else {
+                  budget_results[group][role][date] = 0;
+                }
               });
             }
             // Reals
@@ -593,10 +642,14 @@ export default function HeadcountTableByRole(props: {
                 (date) => !dates.includes(date),
               );
               dates_to_create.map((date) => {
-                real_results[group][role][date] = {
-                  date: date,
-                  ...empty_cell_data,
-                };
+                if (group !== 'Perdiems') {
+                  real_results[group][role][date] = {
+                    date: date,
+                    ...empty_cell_data,
+                  };
+                } else {
+                  real_results[group][role][date] = 0;
+                }
               });
             }
           }
@@ -615,6 +668,7 @@ export default function HeadcountTableByRole(props: {
       Travel: [],
       'Travel Overtime': [],
       Waiting: [],
+      Perdiems: [],
     };
     for (const group of Object.keys(budgets)) {
       for (const role of Object.keys(budgets[group])) {
@@ -665,10 +719,24 @@ export default function HeadcountTableByRole(props: {
                 reals[group][role][date].people_quantity,
               ],
             });
+          if (reportType === 'PERDIEM')
+            row.push({
+              color: generateColorStatus(
+                getPercentageUsed(
+                  budgets[group][role][date],
+                  reals[group][role][date],
+                ),
+              ),
+              data: [
+                budgets['Perdiems'][role][date],
+                reals['Perdiems'][role][date],
+              ],
+            });
         });
         final_results[group].push(row);
       }
     }
+    console.log('Final: ', final_results);
     setDisplayResults(final_results);
   };
 
@@ -677,9 +745,16 @@ export default function HeadcountTableByRole(props: {
     const columns = ['Role', reportDates?.dates_beetween].flat();
     setColumns(columns);
     const filtered_results = cloneObject(results);
-    if (reportType === 'PEOPLE') {
+    if (reportType === 'PEOPLE' || reportType === 'PERDIEM') {
       delete filtered_results['Travel Overtime'];
       delete filtered_results['Worked Overtime'];
+    }
+    if (reportType !== 'PERDIEM') {
+      delete filtered_results['Perdiems'];
+    } else {
+      delete filtered_results['Travel'];
+      delete filtered_results['Worked'];
+      delete filtered_results['Worked'];
     }
     const table_rows = Object.entries(filtered_results).map(
       ([group, rows]) => ({
@@ -758,7 +833,7 @@ export default function HeadcountTableByRole(props: {
             max_width: '97vw',
             row_height: 'none',
             headers: {
-              first_column_size: 'w-40',
+              first_column_size: 'w-52',
               column_size:
                 reportType === 'HOURS'
                   ? 'min-w-36'
@@ -769,7 +844,7 @@ export default function HeadcountTableByRole(props: {
             rows: {
               remark_label: true,
               static_label: true,
-              label_width: 'w-40',
+              label_width: 'w-52',
               cell_width:
                 reportType === 'HOURS'
                   ? 'min-w-36'

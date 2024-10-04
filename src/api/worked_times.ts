@@ -19,6 +19,7 @@ export type worked_time = {
   employee_id: string;
   employee_role: string;
 
+  day: string;
   start_date: string;
   end_date: string;
   week: string;
@@ -35,6 +36,8 @@ export type worked_time = {
   total_cost: number;
   total_hours: number;
   subtotal: number;
+
+  perdiem: boolean;
 };
 
 export async function getWorkedTimes(
