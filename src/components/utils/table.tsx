@@ -291,12 +291,13 @@ export default function Table(props: {
                                   <td
                                     key={generateUUID() + cell_num}
                                     className={classNames(
-                                      'whitespace-nowrap px-4 py-1 sm:pl-6 text-sm text-gray-500 w-44 z-10',
+                                      'whitespace-nowrap px-4 py-1 sm:pl-6 text-sm text-gray-500 z-10',
                                       row_height,
                                       rows_styles.remark_label,
                                       styles?.rows?.static_label
                                         ? 'sticky left-0 bg-white border-r-2 border-gray-400'
                                         : '',
+                                      styles?.rows?.label_width ?? '',
                                     )}
                                   >
                                     {(cell as cell_object).data}

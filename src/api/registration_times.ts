@@ -64,6 +64,7 @@ export async function getRegistrationTimes(settings: {
         'employee_id',
         'employee_role',
         'week',
+        'day',
         'start_date',
         'end_date',
         'regular_hour_cost',
@@ -71,6 +72,7 @@ export async function getRegistrationTimes(settings: {
         'total_hours',
         'site_name',
         'site_address',
+        'perdiem',
       ],
     });
     updateOvertimes(travel_times);
@@ -88,6 +90,7 @@ export async function getRegistrationTimes(settings: {
         'employee_id',
         'employee_role',
         'week',
+        'day',
         'start_date',
         'end_date',
         'regular_hour_cost',
@@ -95,6 +98,7 @@ export async function getRegistrationTimes(settings: {
         'total_hours',
         'site_name',
         'site_address',
+        'perdiem',
       ],
     });
     updateOvertimes(worked_times);
@@ -112,6 +116,7 @@ export async function getRegistrationTimes(settings: {
         'employee_id',
         'employee_role',
         'week',
+        'day',
         'start_date',
         'end_date',
         'regular_hour_cost',
@@ -119,6 +124,7 @@ export async function getRegistrationTimes(settings: {
         'subtotal',
         'site_name',
         'site_address',
+        'perdiem',
       ],
     });
     times_found.push(...waiting_times);

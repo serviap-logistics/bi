@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { CostAnalysisContext, ProjectContext } from '.';
 import {
+  cloneObject,
   getPercentageUsed,
   getToastColor,
   groupListBy,
@@ -12,7 +13,12 @@ import { getRegistrationTimes } from '../../api/registration_times';
 import { cost_analysis_type } from '../../types/cost_analysis.type';
 import { getCALaborDetails } from '../../api/ca_labor_details';
 
-type report_data = { hours: number; cost: number; people: number };
+type report_data = {
+  hours: number;
+  cost: number;
+  people: number;
+  perdiem: number;
+};
 
 export default function HeadcountSummary() {
   const project = useContext(ProjectContext);
@@ -22,11 +28,13 @@ export default function HeadcountSummary() {
     hours: 0,
     cost: 0,
     people: 0,
+    perdiem: 0,
   });
   const [real, setReal] = useState<report_data>({
     hours: 0,
     cost: 0,
     people: 0,
+    perdiem: 0,
   });
   const [indicators, setIndicators] = useState({
     hours_difference: 0,
@@ -35,6 +43,8 @@ export default function HeadcountSummary() {
     cost_percentage_used: 0,
     people_difference: 0,
     people_percentage_used: 0,
+    perdiem_difference: 0,
+    perdiem_percentage_used: 0,
   });
 
   const updateDifference = (budget: report_data, real: report_data) => {
@@ -45,6 +55,8 @@ export default function HeadcountSummary() {
       cost_percentage_used: getPercentageUsed(budget.cost, real.cost),
       people_difference: budget.people - real.people,
       people_percentage_used: getPercentageUsed(budget.people, real.people),
+      perdiem_difference: budget.perdiem - real.perdiem,
+      perdiem_percentage_used: getPercentageUsed(budget.perdiem, real.perdiem),
     });
   };
 
@@ -77,6 +89,7 @@ export default function HeadcountSummary() {
               (total, quantity) => total + quantity,
             )
           : 0,
+      perdiem: costAnalysis.total_labor_perdiem_count ?? 0,
     });
   };
 
@@ -96,11 +109,23 @@ export default function HeadcountSummary() {
     const total_employees = [
       ...new Set(real_times.map((record) => record.employee_id)),
     ].length;
+    const times_by_day = groupListBy('day', real_times);
+    const perdiems = cloneObject(times_by_day);
+    Object.entries(perdiems).map(([day, time_records]: [string, any]) => {
+      const employees = [
+        ...new Set(time_records.map((record) => record.employee_id)),
+      ];
+      perdiems[day] = employees.length;
+    });
 
     setReal({
       hours: total_hours,
       cost: total_cost,
       people: total_employees,
+      perdiem: Object.values(perdiems).reduce(
+        (total: number, perdiems_by_day: any) => total + perdiems_by_day,
+        0,
+      ),
     });
   };
 
@@ -127,25 +152,27 @@ export default function HeadcountSummary() {
             {/* Cost Analysis TOTAL */}
             <div>
               <p className="text-base leading-7 font-semibold text-gray-600">
-                Cost Analysis
+                Labor Budget
               </p>
               <p className="text-lg text-gray-600">
                 {reportType === 'HOURS' &&
                   budget.hours.toLocaleString() + ' hours'}
                 {reportType === 'COST' && USDollar.format(budget.cost) + ' USD'}
                 {reportType === 'PEOPLE' && budget.people + ' labors'}
+                {reportType === 'PERDIEM' && budget.perdiem + ' perdiems'}
               </p>
             </div>
             {/* REAL */}
             <div>
               <p className="text-base leading-7 font-semibold text-gray-600">
-                Hour Registration
+                Labor Expenses
               </p>
               <p className="text-lg text-gray-600">
                 {reportType === 'HOURS' &&
                   real.hours.toLocaleString() + ' hours'}
                 {reportType === 'COST' && USDollar.format(real.cost) + ' USD'}
                 {reportType === 'PEOPLE' && real.people + ' labors'}
+                {reportType === 'PERDIEM' && real.perdiem + ' perdiems'}
               </p>
             </div>
             {/* Difference */}
@@ -160,6 +187,8 @@ export default function HeadcountSummary() {
                   USDollar.format(indicators.cost_difference) + ' USD'}
                 {reportType === 'PEOPLE' &&
                   indicators.people_difference + ' labors'}
+                {reportType === 'PERDIEM' &&
+                  indicators.perdiem_difference + ' perdiems'}
               </p>
             </div>
             {/* % Used */}
@@ -175,7 +204,9 @@ export default function HeadcountSummary() {
                         ? indicators.hours_percentage_used
                         : reportType === 'COST'
                           ? indicators.cost_percentage_used
-                          : indicators.people_percentage_used
+                          : reportType === 'PEOPLE'
+                            ? indicators.people_percentage_used
+                            : indicators.perdiem_percentage_used
                       ).toFixed(2) + '%'
                     }
                     text_size="text-base"
@@ -184,7 +215,9 @@ export default function HeadcountSummary() {
                         ? indicators.hours_percentage_used
                         : reportType === 'COST'
                           ? indicators.cost_percentage_used
-                          : indicators.people_percentage_used,
+                          : reportType === 'PEOPLE'
+                            ? indicators.people_percentage_used
+                            : indicators.perdiem_percentage_used,
                     )}
                   />
                 }

@@ -26,6 +26,7 @@ export default function Headcount() {
         'cost_analysis_id',
         'total_labor_cost',
         'total_labor_hours',
+        'total_labor_perdiem_count',
         'start_date',
         'end_date',
       ],
