@@ -4,6 +4,11 @@ export type registration_time_type = {
   category: 'WORKED' | 'TRAVEL' | 'WAITING';
 
   project_id: string;
+  project_name: string;
+  project_start_date: string;
+  project_end_date: string;
+  site_name: string;
+  site_address: string;
   employee_id: string;
   employee_role: string;
   week: string;

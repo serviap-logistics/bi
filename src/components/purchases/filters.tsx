@@ -12,9 +12,9 @@ export default function PurchasesReportFilters(props: {
 
   const formatProjects = (projects: project_type[]): selectOption[] => {
     const formatted: selectOption[] = projects.map(
-      ({ id, Status, project_id }) => ({
+      ({ id, Status, project_id, project_name }) => ({
         id: id,
-        name: project_id,
+        name: `${project_id} (${project_name})`,
         color:
           Status === 'Project Finished'
             ? 'success'
@@ -37,6 +37,7 @@ export default function PurchasesReportFilters(props: {
       formula: encodeURI(''),
       fields: [
         'project_id',
+        'project_name',
         'Status',
         'start_date',
         'end_date',
@@ -70,7 +71,7 @@ export default function PurchasesReportFilters(props: {
             label="Project"
             options={projectOptions}
             onSelectCallback={handleSelectProject}
-            width="sm:w-[24rem]"
+            width="sm:w-[40rem]"
           />
         </div>
       </div>

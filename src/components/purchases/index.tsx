@@ -24,8 +24,12 @@ export default function Purchases() {
   const [costAnalysis, setCostAnalysis] = useState<
     cost_analysis_type | undefined
   >();
+  const [requestCounter, setRequestCounter] = useState(0);
+  const [responses, setResponses] = useState<object>({});
 
   const getPurchases = async () => {
+    const currentRequest = requestCounter + 1;
+    setRequestCounter(currentRequest);
     const purchases_found: purchase_type[] = await getAirtablePurchases({
       view: 'BI',
       formula: project
@@ -40,7 +44,10 @@ export default function Purchases() {
       ],
       offset: undefined,
     });
-    setPurchases(purchases_found);
+    setResponses((prevState) => ({
+      ...prevState,
+      [currentRequest]: purchases_found,
+    }));
   };
 
   const getCostAnalysis = async () => {
@@ -51,6 +58,7 @@ export default function Purchases() {
         'total_cost',
         'cost_analysis_id',
         'cost_analysis_id',
+        'total_purchases_cost',
         'total_material_cost',
         'total_labor_cost',
         'total_labor_staffing_cost',
@@ -69,6 +77,20 @@ export default function Purchases() {
   const handleSelectProject = (project: project_type) => {
     setProject(project);
   };
+
+  useEffect(() => {
+    // Ya que se encontró la última respuesta, se eliminan todas las demás (hasta que se haga la siguiente petición).
+    setResponses({});
+  }, [purchases]);
+
+  useEffect(() => {
+    const lastReponse = Math.max(
+      ...Object.keys(responses).map((key) => Number(key)),
+    );
+    if (Object.keys(responses).length > 0 && requestCounter === lastReponse) {
+      setPurchases(responses[requestCounter]);
+    }
+  }, [responses]);
 
   useEffect(() => {
     getPurchases();
