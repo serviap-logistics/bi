@@ -22,6 +22,9 @@ export default function ProjectDetails(props: { purchases: purchase_type[] }) {
           {project && project.customer_name && (
             <div>
               <p className="text-base leading-7 text-gray-600">
+                {project.project_name}
+              </p>
+              <p className="text-base leading-7 text-gray-600">
                 {project.customer_name}
               </p>
               <p className="text-xs text-gray-600">
@@ -41,12 +44,7 @@ export default function ProjectDetails(props: { purchases: purchase_type[] }) {
                 <p className="text-lg text-gray-600">
                   {USDollar.format(
                     costAnalysis != undefined
-                      ? (costAnalysis.total_material_cost ?? 0) +
-                          (costAnalysis.total_equipment_cost ?? 0) +
-                          (costAnalysis.total_subcontractor_cost ?? 0) +
-                          (costAnalysis.total_miscelanea_cost ?? 0) +
-                          (costAnalysis.total_labor_staffing_cost ?? 0) +
-                          (costAnalysis.total_lodge_cost ?? 0)
+                      ? (costAnalysis.total_purchases_cost ?? 0)
                       : 0,
                   ) + ' USD'}
                 </p>
@@ -78,7 +76,7 @@ export default function ProjectDetails(props: { purchases: purchase_type[] }) {
                 </p>
                 <p className="text-lg text-gray-600">
                   {USDollar.format(
-                    (costAnalysis?.total_cost ?? 0) -
+                    (costAnalysis?.total_purchases_cost ?? 0) -
                       purchases.reduce(
                         (total, purchase) => total + purchase.total_cost,
                         0,

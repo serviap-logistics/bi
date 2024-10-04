@@ -3,6 +3,7 @@ export type cost_analysis_type = {
   createdTime: string;
 
   cost_analysis_id: string;
+  project_name?: string;
   ca_start_date?: string;
   start_date?: string;
   end_date?: string;
@@ -14,6 +15,8 @@ export type cost_analysis_type = {
   total_labor_cost?: number;
   total_labor_staffing_cost?: number;
 
+  // Expenses
+  total_purchases_cost?: number;
   total_material_cost?: number;
   total_equipment_cost?: number;
   total_subcontractor_cost?: number;

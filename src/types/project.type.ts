@@ -1,6 +1,7 @@
 export type project_type = {
   id: string;
   project_id: string;
+  project_name: string;
   Status: string;
   start_date: string;
   end_date: string;
