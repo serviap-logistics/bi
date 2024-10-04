@@ -58,6 +58,9 @@ export async function getRegistrationTimes(settings: {
       formula: project_id ? encodeURI(`project_id='${project_id}'`) : undefined,
       fields: [
         'project_id',
+        'project_name',
+        'project_start_date',
+        'project_end_date',
         'employee_id',
         'employee_role',
         'week',
@@ -66,6 +69,8 @@ export async function getRegistrationTimes(settings: {
         'regular_hour_cost',
         'overtime_hour_cost',
         'total_hours',
+        'site_name',
+        'site_address',
       ],
     });
     updateOvertimes(travel_times);
@@ -77,6 +82,9 @@ export async function getRegistrationTimes(settings: {
       formula: project_id ? encodeURI(`project_id='${project_id}'`) : undefined,
       fields: [
         'project_id',
+        'project_name',
+        'project_start_date',
+        'project_end_date',
         'employee_id',
         'employee_role',
         'week',
@@ -85,6 +93,8 @@ export async function getRegistrationTimes(settings: {
         'regular_hour_cost',
         'overtime_hour_cost',
         'total_hours',
+        'site_name',
+        'site_address',
       ],
     });
     updateOvertimes(worked_times);
@@ -96,6 +106,9 @@ export async function getRegistrationTimes(settings: {
       formula: project_id ? encodeURI(`project_id='${project_id}'`) : undefined,
       fields: [
         'project_id',
+        'project_name',
+        'project_start_date',
+        'project_end_date',
         'employee_id',
         'employee_role',
         'week',
@@ -104,6 +117,8 @@ export async function getRegistrationTimes(settings: {
         'regular_hour_cost',
         'total_hours',
         'subtotal',
+        'site_name',
+        'site_address',
       ],
     });
     times_found.push(...waiting_times);
