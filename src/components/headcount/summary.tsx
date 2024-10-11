@@ -1,7 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { CostAnalysisContext, ProjectContext } from '.';
 import {
-  cloneObject,
   getPercentageUsed,
   getToastColor,
   groupListBy,
