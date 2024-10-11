@@ -12,6 +12,7 @@ import { ReportTypeContext } from './reportByType';
 import { getRegistrationTimes } from '../../api/registration_times';
 import { cost_analysis_type } from '../../types/cost_analysis.type';
 import { getCALaborDetails } from '../../api/ca_labor_details';
+import { getTimesByDay, times_by_day } from '../../api/times_by_day';
 
 type report_data = {
   hours: number;
@@ -100,32 +101,44 @@ export default function HeadcountSummary() {
       waiting: true,
       project_id: project_id,
     });
-    const total_cost = real_times
-      .map((record) => record.subtotal)
-      .reduce((total: number, cost: any) => total + cost, 0);
+    const results_by_day: times_by_day[] = await getTimesByDay({
+      view: 'BI',
+      fields: [
+        'date',
+        'perdiem_per_project',
+        'perdiem_cost',
+        'worked_projects',
+        'travel_projects',
+      ],
+      formula: project_id
+        ? encodeURI(
+            `OR(FIND('${project_id}', worked_projects), FIND('${project_id}', travel_projects))`,
+          )
+        : undefined,
+      offset: undefined,
+    });
+    const total_cost =
+      // Costo por horas
+      real_times
+        .map((record) => record.subtotal)
+        .reduce((total: number, cost: any) => total + cost, 0) + // Costo por perdiems
+      results_by_day.reduce((total, record) => total + record.perdiem_cost, 0);
     const total_hours = real_times
       .map((record) => record.total_hours)
       .reduce((total, hours) => total + hours, 0);
     const total_employees = [
       ...new Set(real_times.map((record) => record.employee_id)),
     ].length;
-    const times_by_day = groupListBy('day', real_times);
-    const perdiems = cloneObject(times_by_day);
-    Object.entries(perdiems).map(([day, time_records]: [string, any]) => {
-      const employees = [
-        ...new Set(time_records.map((record) => record.employee_id)),
-      ];
-      perdiems[day] = employees.length;
-    });
+    const perdiems = results_by_day.reduce(
+      (total, record) => total + record.perdiem_per_project,
+      0,
+    );
 
     setReal({
       hours: total_hours,
       cost: total_cost,
       people: total_employees,
-      perdiem: Object.values(perdiems).reduce(
-        (total: number, perdiems_by_day: any) => total + perdiems_by_day,
-        0,
-      ),
+      perdiem: perdiems,
     });
   };
 
@@ -174,6 +187,9 @@ export default function HeadcountSummary() {
                 {reportType === 'PEOPLE' && real.people + ' labors'}
                 {reportType === 'PERDIEM' && real.perdiem + ' perdiems'}
               </p>
+              {reportType === 'COST' && (
+                <p className="text-base text-gray-600">(hours + perdiem)</p>
+              )}
             </div>
             {/* Difference */}
             <div>
