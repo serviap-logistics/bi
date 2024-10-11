@@ -17,6 +17,7 @@ import { getCALaborDetails } from '../../api/ca_labor_details';
 import { ca_labor_detail_type } from '../../types/ca_labor_detail.type';
 import Toast from '../utils/toast';
 import Alert from '../utils/alert';
+import { getTimesByDay, times_by_day } from '../../api/times_by_day';
 
 type report_data = {
   date: string;
@@ -100,7 +101,6 @@ export default function HeadcountTableByDate(props: {
         ),
       }),
     );
-    console.log('Budget: ', totals_by_date);
     setBudgets(totals_by_date);
   };
 
@@ -133,26 +133,50 @@ export default function HeadcountTableByDate(props: {
         };
       },
     );
+    const results_by_day: times_by_day[] = await getTimesByDay({
+      view: 'BI',
+      fields: [
+        'date',
+        'perdiem_per_project',
+        'perdiem_cost',
+        'worked_projects',
+        'travel_projects',
+      ],
+      formula: project_id
+        ? encodeURI(
+            `OR(FIND('${project_id}', worked_projects), FIND('${project_id}', travel_projects))`,
+          )
+        : undefined,
+      offset: undefined,
+    });
     const grouped_by_date = groupListBy('date', times_formatted);
+    const perdiem_by_date = groupListBy('date', results_by_day);
+    console.log(`Perdiem by day (${project_id}): `, perdiem_by_date);
     let totals_by_date = Object.entries(grouped_by_date).map(
       ([date, records]: [string, any]): report_data => ({
         date: date,
         total_hours: records.reduce((total, record) => total + record.hours, 0),
-        total_cost: records.reduce(
-          (total, record) => total + record.subtotal,
-          0,
-        ),
+        total_cost:
+          // Costo por horas
+          records.reduce((total, record) => total + record.subtotal, 0) +
+          // Costo por perdiem
+          (perdiem_by_date[date]
+            ? perdiem_by_date[date].reduce(
+                (total, record) => total + record.perdiem_cost,
+                0,
+              )
+            : 0),
         total_people: [...new Set(records.map((record) => record.employee))]
           .length,
-        total_perdiem: [
-          ...new Set(
-            records
-              .filter((record) => record.perdiem_count)
-              .map((record) => record.employee),
-          ),
-        ].length,
+        total_perdiem: perdiem_by_date[date]
+          ? perdiem_by_date[date].reduce(
+              (total, record) => total + record.perdiem_per_project,
+              0,
+            )
+          : 0,
       }),
     );
+    console.log('Totals by Date (budget): ', totals_by_date);
     totals_by_date = totals_by_date.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
@@ -334,11 +358,6 @@ export default function HeadcountTableByDate(props: {
         0,
       );
     }
-    if (reportType === 'PEOPLE') {
-      summary_budget = Math.max(
-        ...indicators.map((day) => day.budget_total_people),
-      );
-    }
 
     let summary_real = 0;
     if (reportType === 'HOURS') {
@@ -357,11 +376,6 @@ export default function HeadcountTableByDate(props: {
       summary_real = indicators.reduce(
         (total, result) => total + result.real_total_perdiem,
         0,
-      );
-    }
-    if (reportType === 'PEOPLE') {
-      summary_real = Math.max(
-        ...indicators.map((day) => day.real_total_people),
       );
     }
 
@@ -384,36 +398,35 @@ export default function HeadcountTableByDate(props: {
         0,
       );
     }
-    if (reportType === 'PEOPLE') {
-      summary_difference = summary_budget - summary_real;
-    }
     const summary_percentage = getPercentageUsed(summary_budget, summary_real);
-    // Se genera una columna extra al final con los TOTALES de todos los dias.
-    rows.push([
-      'TOTALS',
-      reportType === 'COST'
-        ? USDollar.format(summary_budget) + ' USD'
-        : summary_budget.toFixed(2),
-      reportType === 'COST'
-        ? USDollar.format(summary_real) + ' USD'
-        : summary_real.toFixed(2),
-      reportType === 'COST'
-        ? USDollar.format(summary_difference) + ' USD'
-        : summary_difference.toFixed(2),
-      <Toast
-        text={summary_percentage.toFixed(2) + '%'}
-        text_size="text-sm"
-        color={
-          summary_percentage <= 50
-            ? 'success'
-            : summary_percentage <= 70
-              ? 'info'
-              : summary_percentage <= 90
-                ? 'warning'
-                : 'error'
-        }
-      />,
-    ]);
+    // Se genera una columna extra al final con los TOTALES de todos los dias (solo si el reporte no es de PEOPLE*).
+    // * Cuando es de People, no se realiza una suma normal, ya que el conteo es por la cantidad de personas distintas.
+    if (reportType !== 'PEOPLE')
+      rows.push([
+        'TOTALS',
+        reportType === 'COST'
+          ? USDollar.format(summary_budget) + ' USD'
+          : summary_budget.toFixed(2),
+        reportType === 'COST'
+          ? USDollar.format(summary_real) + ' USD'
+          : summary_real.toFixed(2),
+        reportType === 'COST'
+          ? USDollar.format(summary_difference) + ' USD'
+          : summary_difference.toFixed(2),
+        <Toast
+          text={summary_percentage.toFixed(2) + '%'}
+          text_size="text-sm"
+          color={
+            summary_percentage <= 50
+              ? 'success'
+              : summary_percentage <= 70
+                ? 'info'
+                : summary_percentage <= 90
+                  ? 'warning'
+                  : 'error'
+          }
+        />,
+      ]);
     setRows(rows);
     const columns: excel_column[] = [
       { header: 'Date', key: 'DATE', width: 20 },
@@ -470,7 +483,7 @@ export default function HeadcountTableByDate(props: {
             row_height: 'xs',
             rows: { remark_label: true, static_label: false },
             static_headers: true,
-            static_bottom: true,
+            static_bottom: reportType !== 'PEOPLE',
             max_height: 'max-h-[27rem]',
           }}
         />
