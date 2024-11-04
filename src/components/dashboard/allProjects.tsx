@@ -5,12 +5,13 @@ import { createContext, useState } from 'react';
 import { excel_column, generateExcel } from '../../utils';
 import { saveAs } from 'file-saver';
 import AllProjectsTableByAmounts from './allProjectsTableByAmounts';
+import AllProjectsTableByWeek from './allProjectsTableByWeek';
 
 type report_types_available = 'BY_WEEK' | 'BY_PROJECT';
 const DEFAULT_REPORT_TYPE = 'BY_PROJECT';
 const INITIAL_REPORT_TYPES = [
   { key: 'BY_PROJECT', current: true, name: 'By Project', icon: undefined },
-  // { key: 'BY_WEEK', current: false, name: 'By Week', icon: undefined },
+  { key: 'BY_WEEK', current: false, name: 'By Week', icon: undefined },
 ];
 
 export const ReportTypeContext =
@@ -48,7 +49,7 @@ export default function DashboardAllProjects() {
     const buffer = await generateExcel(
       [
         {
-          name: `AMOUNTS (BY PROJECT)`,
+          name: `AMOUNTS (${reportType.replace('_', ' ')})`,
           columns: excelColumns,
           rows: excelRows,
         },
@@ -102,7 +103,12 @@ export default function DashboardAllProjects() {
               excelColumnsCallback={onChangeColumns}
             />
           )}
-          {/* {reportType === 'BY_WEEK' && <AllProjectsTableByWeek />} */}
+          {reportType === 'BY_WEEK' && (
+            <AllProjectsTableByWeek
+              excelRowsCallback={onChangeRows}
+              excelColumnsCallback={onChangeColumns}
+            />
+          )}
         </li>
       </ul>
     </div>

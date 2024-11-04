@@ -57,7 +57,7 @@ export default function PurchasesSummary(props: {
               {/* Cost Analysis TOTAL */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">
-                  Cost Analysis
+                  Purchasing Budget
                 </p>
                 <p className="text-lg text-gray-600">
                   {USDollar.format(
@@ -71,14 +71,12 @@ export default function PurchasesSummary(props: {
                       : 0,
                   ) + ' USD'}
                 </p>
-                <p className="text-xs text-gray-600">
-                  (Only purchases amounts)
-                </p>
+                <p className="text-xs text-gray-600">(From Cost Analysis)</p>
               </div>
               {/* Purchases TOTAL */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">
-                  Purchases
+                  Purchase Expenses
                 </p>
                 <p className="text-lg text-gray-600">
                   {USDollar.format(

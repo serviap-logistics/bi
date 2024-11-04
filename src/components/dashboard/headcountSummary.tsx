@@ -134,7 +134,7 @@ export default function HeadcountSummary(props: {
             {/* Cost Analysis TOTAL */}
             <div>
               <p className="text-base leading-7 font-semibold text-gray-600">
-                Cost Analysis
+                Labor Expenses
               </p>
               <p className="text-lg text-gray-600">
                 {budget.hours.toLocaleString() + ' hours'}
@@ -149,7 +149,7 @@ export default function HeadcountSummary(props: {
             {/* REAL */}
             <div>
               <p className="text-base leading-7 font-semibold text-gray-600">
-                Hour Registration
+                Labor Expenses
               </p>
               <p className="text-lg text-gray-600">
                 {real.hours.toLocaleString() + ' hours'}

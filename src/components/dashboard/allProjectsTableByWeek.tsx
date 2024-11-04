@@ -37,7 +37,7 @@ function CustomCellData(props: {
   );
 }
 
-export default function AllProjectsTableByAmounts(props: {
+export default function AllProjectsTableByWeek(props: {
   excelRowsCallback: any;
   excelColumnsCallback: any;
 }) {
@@ -61,6 +61,9 @@ export default function AllProjectsTableByAmounts(props: {
         'cost_analysis_id',
         'project_id',
         'project_name',
+        'week',
+        'site_name',
+        'site_address',
         'project_start_date',
         'project_end_date',
         'status_request',
@@ -136,28 +139,28 @@ export default function AllProjectsTableByAmounts(props: {
     // Calculando costos de compras POR proyecto.
     const purchases = await getPurchases();
     const purchases_grouped_by_project = groupListBy('project_id', purchases);
-    const reduced_purchases = cloneObject(purchases_grouped_by_project);
-    const project_names = cloneObject(purchases_grouped_by_project);
-    Object.entries(reduced_purchases).map(
+    const purchases_by_site = {};
+    Object.entries(purchases_grouped_by_project).map(
       ([project, purchases]: [string, any]) => {
-        reduced_purchases[project] = purchases.reduce(
-          (total, purchase) => purchase.total_cost + total,
-          0,
+        purchases_by_site[project] = {};
+        const purchases_grouped = groupListBy('site_name', purchases);
+        Object.entries(purchases_grouped).map(
+          ([site, site_purchases]: [string, any]) => {
+            purchases_by_site[project][site] = {};
+            const purchases_by_week = groupListBy('week', site_purchases);
+            Object.entries(purchases_by_week).map(
+              ([week, week_purchases]: [string, any]) => {
+                purchases_by_site[project][site][week] = week_purchases.reduce(
+                  (total, purchase) => total + purchase.total_cost,
+                  0,
+                );
+              },
+            );
+          },
         );
-        project_names[project] = {
-          name: [...new Set(purchases.map((record) => record.project_name))][0],
-          start_date: [
-            ...new Set(purchases.map((record) => record.project_start_date)),
-          ][0],
-          end_date: [
-            ...new Set(purchases.map((record) => record.project_end_date)),
-          ][0],
-          status: [
-            ...new Set(purchases.map((record) => record.project_status)),
-          ][0],
-        };
       },
     );
+    console.log('Purchases: ', purchases_by_site);
 
     // Calculando costos de horas POR proyecto.
     const real_times: registration_time_type[] = await getRegistrationTimes({
@@ -169,50 +172,55 @@ export default function AllProjectsTableByAmounts(props: {
       (time_registered: registration_time_type) => {
         return {
           project_id: time_registered.project_id,
-          project_name: time_registered.project_name,
-          project_start_date: time_registered.project_start_date,
-          project_end_date: time_registered.project_end_date,
+          site_name: time_registered.site_name,
+          week: time_registered.week,
           subtotal: time_registered.subtotal,
         };
       },
     );
     const times_grouped_by_project = groupListBy('project_id', times_formatted);
-    const reduced_hours = cloneObject(times_grouped_by_project);
-    Object.entries(reduced_hours).map(
+    const hours_by_site = {};
+    Object.entries(times_grouped_by_project).map(
       ([project, times_found]: [string, any]) => {
-        reduced_hours[project] = times_found.reduce(
-          (total, time_record) => time_record.subtotal + total,
-          0,
+        hours_by_site[project] = {};
+        const times_grouped = groupListBy('site_name', times_found);
+        Object.entries(times_grouped).map(
+          ([site, site_times]: [string, any]) => {
+            hours_by_site[project][site] = {};
+            const times_by_week = groupListBy('week', site_times);
+            Object.entries(times_by_week).map(
+              ([week, week_times]: [string, any]) => {
+                hours_by_site[project][site][week] = week_times.reduce(
+                  (total, time_record) => time_record.subtotal + total,
+                  0,
+                );
+              },
+            );
+          },
         );
-        project_names[project] = {
-          name: [
-            ...new Set(times_found.map((record) => record.project_name)),
-          ][0],
-          start_date: [
-            ...new Set(times_found.map((record) => record.project_start_date)),
-          ][0],
-          end_date: [
-            ...new Set(times_found.map((record) => record.project_end_date)),
-          ][0],
-          status: [
-            ...new Set(times_found.map((record) => record.project_status)),
-          ][0],
-        };
       },
     );
+    console.log('Times: ', hours_by_site);
 
     // Mezclando resultados entre costos por compras + costos por horas.
     // Por defecto, el objeto final tendra al menos los datos de compras
     // y se iran agregando elementos al objeto si existen registros de horas.
-    const merged_totals = cloneObject(reduced_purchases);
-    Object.entries(reduced_hours).map(([project, total]) => {
-      // Si no existe el proyecto en el objeto con compras, se agrega con el valor
-      // inicial igua al costo de horas de ese proyecto.
-      // Si ya existe, solo se suma el costo de horas al costo de compras.
-      if (!merged_totals[project]) merged_totals[project] = total;
-      else merged_totals[project] += total;
+    const merged_totals = cloneObject(purchases_by_site);
+    Object.entries(hours_by_site).map(([project, sites]: [string, any]) => {
+      Object.entries(sites).map(([site, weeks]: [string, any]) => {
+        Object.entries(weeks).map(([week, total]: [string, any]) => {
+          if (!merged_totals[project]) merged_totals[project] = {};
+          if (!merged_totals[project][site]) merged_totals[project][site] = {};
+          // Si no existe el proyecto en el objeto con compras, se agrega con el valor
+          // inicial igua al costo de horas de ese proyecto.
+          // Si ya existe, solo se suma el costo de horas al costo de compras.
+          if (!merged_totals[project][site][week])
+            merged_totals[project][site][week] = total;
+          else merged_totals[project][site][week] += total;
+        });
+      });
     });
-    setProjectsAvailable(project_names);
+    console.log('Merged: ', merged_totals);
     setReals(merged_totals);
   };
 
@@ -258,8 +266,6 @@ export default function AllProjectsTableByAmounts(props: {
 
   const formatAsTable = () => {
     const project_names = { ...costAnalysisAvailable, ...projectsAvailable };
-    console.log('All projects: ', project_names);
-    console.log('All projects (count): ', Object.keys(project_names).length);
     // Se genera un arreglo que representa los renglones en la tabla.
     // Cada renglon tiene los totales POR DIA.
     const rows = Object.entries(indicators).map(([project_id, values]) => {
@@ -298,7 +304,7 @@ export default function AllProjectsTableByAmounts(props: {
         />,
       ];
     });
-    console.log('Rows: ', rows);
+    // console.log('Rows: ', rows);
     setRows(rows);
     setLoading(false);
     const columns: excel_column[] = [
@@ -333,15 +339,15 @@ export default function AllProjectsTableByAmounts(props: {
 
   useEffect(() => {
     if (Object.keys(costAnalysisAvailable).length > 0) {
-      console.log('New CAs! ', costAnalysisAvailable);
-      console.log('Count:', Object.keys(costAnalysisAvailable).length);
+      // console.log('New CAs! ', costAnalysisAvailable);
+      // console.log('Count:', Object.keys(costAnalysisAvailable).length);
     }
   }, [costAnalysisAvailable]);
 
   useEffect(() => {
     if (Object.keys(projectsAvailable).length > 0) {
-      console.log('New projects! ', projectsAvailable);
-      console.log('Count:', Object.keys(projectsAvailable).length);
+      // console.log('New projects! ', projectsAvailable);
+      // console.log('Count:', Object.keys(projectsAvailable).length);
     }
   }, [projectsAvailable]);
 
