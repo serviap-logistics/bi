@@ -754,7 +754,7 @@ export default function HeadcountTableByRole(props: {
     } else {
       delete filtered_results['Travel'];
       delete filtered_results['Worked'];
-      delete filtered_results['Worked'];
+      delete filtered_results['Waiting'];
     }
     const table_rows = Object.entries(filtered_results).map(
       ([group, rows]) => ({
