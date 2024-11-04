@@ -107,7 +107,7 @@ export default function Table(props: {
                   >
                     {columns.map((column_name, column_num) => (
                       <th
-                        key={generateUUID()}
+                        key={column_num + generateUUID()}
                         scope="col"
                         className={classNames(
                           'py-3.5 text-left text-sm font-semibold text-gray-900',
