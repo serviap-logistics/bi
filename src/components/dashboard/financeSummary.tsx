@@ -27,7 +27,7 @@ export default function FinanceSummary(props: {
             {/* Cost Analysis TOTAL */}
             <div>
               <p className="text-base leading-7 font-semibold text-gray-600">
-                Cost Analysis
+                Budget
               </p>
               <p className="text-lg text-gray-600 py-1">
                 {USDollar.format(costAnalysis?.total_cost ?? 0) + ' USD'}
