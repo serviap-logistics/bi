@@ -321,6 +321,9 @@ export default function AllProjectsTableByAmounts(props: {
     const columns: excel_column[] = [
       { header: 'Project ID', key: 'PROJECT_ID', width: 25 },
       { header: 'Project Name', key: 'PROJECT_NAME', width: 40 },
+      { header: 'Status', key: 'PROJECT_STATUS', width: 20 },
+      { header: 'Start Date', key: 'START_DATE', width: 20 },
+      { header: 'End Date', key: 'END_DATE', width: 20 },
       { header: 'Budget', key: 'BUDGET', width: 18 },
       { header: 'Real', key: 'REAL', width: 18 },
       { header: 'Difference', key: 'DIFF', width: 18 },
@@ -330,6 +333,9 @@ export default function AllProjectsTableByAmounts(props: {
     const table_rows = rows.map((row) => [
       (row[0] as JSX.Element).props.project_id,
       (row[0] as JSX.Element).props.project_name,
+      (row[0] as JSX.Element).props.status,
+      (row[0] as JSX.Element).props.start_date,
+      (row[0] as JSX.Element).props.end_date,
       ...row.slice(1, 4),
       (row[4] as JSX.Element).props.text,
     ]);
