@@ -59,6 +59,7 @@ export async function getRegistrationTimes(settings: {
       fields: [
         'project_id',
         'project_name',
+        'project_status',
         'project_start_date',
         'project_end_date',
         'employee_id',
@@ -85,6 +86,7 @@ export async function getRegistrationTimes(settings: {
       fields: [
         'project_id',
         'project_name',
+        'project_status',
         'project_start_date',
         'project_end_date',
         'employee_id',
@@ -111,6 +113,7 @@ export async function getRegistrationTimes(settings: {
       fields: [
         'project_id',
         'project_name',
+        'project_status',
         'project_start_date',
         'project_end_date',
         'employee_id',
