@@ -22,17 +22,27 @@ function CustomCellData(props: {
   project_name: string;
   start_date: string;
   end_date: string;
+  status: string;
 }) {
   return (
     <div className="flex flex-col">
-      <span>{props.project_id}</span>
-      <span className="text-xs text-slate-400 text-wrap">
+      <span className="text-slate-800">{props.project_id}</span>
+      <span className="text-xs text-slate-500 text-wrap">
         {props.project_name}
       </span>
-      <span className="text-xs text-slate-400">Start: {props.start_date}</span>
-      <span className="text-xs text-slate-400">
-        Completion: {props.end_date}
+      <span className="text-xs text-slate-700 text-wrap font-semibold">
+        {props.status ?? <p className="text-red-400">Status not specified</p>}
       </span>
+      {props.start_date && (
+        <span className="text-xs text-slate-500">
+          Start: {props.start_date}
+        </span>
+      )}
+      {props.end_date && (
+        <span className="text-xs text-slate-500">
+          Completion: {props.end_date}
+        </span>
+      )}
     </div>
   );
 }
@@ -61,6 +71,7 @@ export default function AllProjectsTableByAmounts(props: {
         'cost_analysis_id',
         'project_id',
         'project_name',
+        'project_status',
         'project_start_date',
         'project_end_date',
         'status_request',
@@ -170,6 +181,7 @@ export default function AllProjectsTableByAmounts(props: {
         return {
           project_id: time_registered.project_id,
           project_name: time_registered.project_name,
+          project_status: time_registered.project_status,
           project_start_date: time_registered.project_start_date,
           project_end_date: time_registered.project_end_date,
           subtotal: time_registered.subtotal,
@@ -257,9 +269,13 @@ export default function AllProjectsTableByAmounts(props: {
   };
 
   const formatAsTable = () => {
+    console.log('CA: ');
+    console.log(costAnalysisAvailable);
+    console.log('Projects: ');
+    console.log(projectsAvailable);
     const project_names = { ...costAnalysisAvailable, ...projectsAvailable };
-    console.log('All projects: ', project_names);
-    console.log('All projects (count): ', Object.keys(project_names).length);
+    console.log('All projects: ');
+    console.log(project_names);
     // Se genera un arreglo que representa los renglones en la tabla.
     // Cada renglon tiene los totales POR DIA.
     const rows = Object.entries(indicators).map(([project_id, values]) => {
@@ -279,6 +295,7 @@ export default function AllProjectsTableByAmounts(props: {
           project_name={project_names[project].name}
           start_date={project_names[project].start_date}
           end_date={project_names[project].end_date}
+          status={project_names[project].status}
         />,
         budget,
         real,
@@ -298,7 +315,7 @@ export default function AllProjectsTableByAmounts(props: {
         />,
       ];
     });
-    console.log('Rows: ', rows);
+    // console.log('Rows: ', rows);
     setRows(rows);
     setLoading(false);
     const columns: excel_column[] = [
@@ -333,15 +350,15 @@ export default function AllProjectsTableByAmounts(props: {
 
   useEffect(() => {
     if (Object.keys(costAnalysisAvailable).length > 0) {
-      console.log('New CAs! ', costAnalysisAvailable);
-      console.log('Count:', Object.keys(costAnalysisAvailable).length);
+      // console.log('New CAs! ', costAnalysisAvailable);
+      // console.log('Count:', Object.keys(costAnalysisAvailable).length);
     }
   }, [costAnalysisAvailable]);
 
   useEffect(() => {
     if (Object.keys(projectsAvailable).length > 0) {
-      console.log('New projects! ', projectsAvailable);
-      console.log('Count:', Object.keys(projectsAvailable).length);
+      // console.log('New projects! ', projectsAvailable);
+      // console.log('Count:', Object.keys(projectsAvailable).length);
     }
   }, [projectsAvailable]);
 
