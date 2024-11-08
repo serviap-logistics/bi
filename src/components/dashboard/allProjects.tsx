@@ -11,7 +11,7 @@ type report_types_available = 'BY_WEEK' | 'BY_PROJECT';
 const DEFAULT_REPORT_TYPE = 'BY_PROJECT';
 const INITIAL_REPORT_TYPES = [
   { key: 'BY_PROJECT', current: true, name: 'By Project', icon: undefined },
-  { key: 'BY_WEEK', current: false, name: 'By Week', icon: undefined },
+  // { key: 'BY_WEEK', current: false, name: 'By Week', icon: undefined },
 ];
 
 export const ReportTypeContext =

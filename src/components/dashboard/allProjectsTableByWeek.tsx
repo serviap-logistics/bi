@@ -49,7 +49,7 @@ export default function AllProjectsTableByWeek(props: {
   const [rows, setRows] = useState<any[]>([]);
   const [indicators, setIndicators] = useState<object>({});
   const [loading, setLoading] = useState<boolean>(true);
-  const [projectsAvailable, setProjectsAvailable] = useState<object>({});
+  const [projectsAvailable] = useState<object>({});
   const [costAnalysisAvailable, setCostAnalysisAvailable] = useState<object>(
     {},
   );
@@ -339,15 +339,15 @@ export default function AllProjectsTableByWeek(props: {
 
   useEffect(() => {
     if (Object.keys(costAnalysisAvailable).length > 0) {
-      // console.log('New CAs! ', costAnalysisAvailable);
-      // console.log('Count:', Object.keys(costAnalysisAvailable).length);
+      console.log('New CAs! ', costAnalysisAvailable);
+      console.log('Count:', Object.keys(costAnalysisAvailable).length);
     }
   }, [costAnalysisAvailable]);
 
   useEffect(() => {
     if (Object.keys(projectsAvailable).length > 0) {
-      // console.log('New projects! ', projectsAvailable);
-      // console.log('Count:', Object.keys(projectsAvailable).length);
+      console.log('New projects! ', projectsAvailable);
+      console.log('Count:', Object.keys(projectsAvailable).length);
     }
   }, [projectsAvailable]);
 
