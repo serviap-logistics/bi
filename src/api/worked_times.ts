@@ -11,6 +11,7 @@ export type worked_time = {
   createdTime: string;
   project_id: string;
   project_name: string;
+  project_status: string;
   project_start_date: string;
   project_end_date: string;
   site_name: string;
