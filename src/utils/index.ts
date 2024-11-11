@@ -38,13 +38,34 @@ export const getDatesBeetween = (start: string, end: string) => {
   return dates;
 };
 
-export const getPercentageUsed = (budget: number, real: number): number => {
+export type Indicator = {
+  value: number;
+  status: 'used' | 'exceeded' | 'NO BUDGET!' | undefined;
+  color: 'success' | 'info' | 'warning' | 'error' | 'none';
+};
+export const getPercentageUsed = (budget: number, real: number): Indicator => {
   // Si el real es 0, exista o no presupuesto, el uso es de 0.
-  if (real === 0) return 0;
+  if (real === 0) return { value: 0, status: 'used', color: 'none' };
   // Si el presupuesto NO es 0 y el real NO es 0, el calculo de porcentaje es normal.
-  if (budget !== 0) return (real * 100) / budget;
+  if (budget !== 0) {
+    const percentaje = (real * 100) / budget;
+    return percentaje <= 100 && percentaje >= 0
+      ? {
+          value: percentaje,
+          status: 'used',
+          color:
+            percentaje <= 50
+              ? 'success'
+              : percentaje <= 70
+                ? 'info'
+                : percentaje <= 90
+                  ? 'warning'
+                  : 'error',
+        } // Si el uso va entre 0-100
+      : { value: percentaje - 100, status: 'exceeded', color: 'error' };
+  }
   // SI existe real y NO hay presupuesto, se entiende que el 100% del presupuesto seria 1.
-  return real * 100;
+  return { value: real * 100, status: 'NO BUDGET!', color: 'error' };
 };
 
 export const cloneObject = (object) => JSON.parse(JSON.stringify(object));

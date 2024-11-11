@@ -256,19 +256,19 @@ export default function HeadcountTableByDate(props: {
         day_results.percentage_hours = getPercentageUsed(
           day_results.budget_total_hours,
           day_results.real_total_hours,
-        );
+        ).value;
         day_results.percentage_cost = getPercentageUsed(
           day_results.budget_total_cost,
           day_results.real_total_cost,
-        );
+        ).value;
         day_results.percentage_people = getPercentageUsed(
           day_results.budget_total_people,
           day_results.real_total_people,
-        );
+        ).value;
         day_results.percentage_perdiem = getPercentageUsed(
           day_results.budget_total_perdiem,
           day_results.real_total_perdiem,
-        );
+        ).value;
 
         results.push(day_results);
       }
@@ -398,7 +398,10 @@ export default function HeadcountTableByDate(props: {
         0,
       );
     }
-    const summary_percentage = getPercentageUsed(summary_budget, summary_real);
+    const summary_percentage = getPercentageUsed(
+      summary_budget,
+      summary_real,
+    ).value;
     // Se genera una columna extra al final con los TOTALES de todos los dias (solo si el reporte no es de PEOPLE*).
     // * Cuando es de People, no se realiza una suma normal, ya que el conteo es por la cantidad de personas distintas.
     if (reportType !== 'PEOPLE')
@@ -433,7 +436,7 @@ export default function HeadcountTableByDate(props: {
       { header: 'Budget', key: 'DATE', width: 10 },
       { header: 'Real', key: 'DATE', width: 10 },
       { header: 'Difference', key: 'DATE', width: 10 },
-      { header: '% Used', key: 'DATE', width: 20 },
+      { header: 'Status', key: 'STATUS', width: 20 },
     ];
     excelColumnsCallback(columns);
     const table_rows = rows.map((row) => [
@@ -474,7 +477,7 @@ export default function HeadcountTableByDate(props: {
       )}
       {project?.start_date && project.end_date && (
         <Table
-          columns={['Date', 'Budget', 'Real', 'Difference', '% Used']}
+          columns={['Date', 'Budget', 'Real', 'Difference', 'Status']}
           rows={rows}
           styles={{
             dynamic_headers: false,

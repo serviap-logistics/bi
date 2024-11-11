@@ -177,7 +177,7 @@ export default function TableByCategory(props: { purchases: purchase_type[] }) {
       />,
     ]);
     setTable({
-      columns: ['Category', 'Budget', 'Real', 'Difference', '% used'],
+      columns: ['Category', 'Budget', 'Real', 'Difference', 'Status'],
       rows: rows,
     });
   };

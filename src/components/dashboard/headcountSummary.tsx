@@ -2,8 +2,8 @@ import { useContext, useEffect, useState } from 'react';
 import { CostAnalysisContext, ProjectContext } from '.';
 import {
   getPercentageUsed,
-  getToastColor,
   groupListBy,
+  Indicator,
   USDollar,
 } from '../../utils';
 import Toast from '../utils/toast';
@@ -12,6 +12,14 @@ import { cost_analysis_type } from '../../types/cost_analysis.type';
 import { getCALaborDetails } from '../../api/ca_labor_details';
 
 type report_data = { hours: number; cost: number; people: number };
+type indicator_data = {
+  hours_difference: number;
+  hours_percentage_used: Indicator;
+  cost_difference: number;
+  cost_percentage_used: Indicator;
+  people_difference: number;
+  people_percentage_used: Indicator;
+};
 
 export default function HeadcountSummary(props: {
   onUpdateSubtotalCallback: any;
@@ -29,13 +37,13 @@ export default function HeadcountSummary(props: {
     cost: 0,
     people: 0,
   });
-  const [indicators, setIndicators] = useState({
+  const [indicators, setIndicators] = useState<indicator_data>({
     hours_difference: 0,
-    hours_percentage_used: 0,
+    hours_percentage_used: { value: 0, status: undefined, color: 'none' },
     cost_difference: 0,
-    cost_percentage_used: 0,
+    cost_percentage_used: { value: 0, status: undefined, color: 'none' },
     people_difference: 0,
-    people_percentage_used: 0,
+    people_percentage_used: { value: 0, status: undefined, color: 'none' },
   });
 
   const updateDifference = (budget: report_data, real: report_data) => {
@@ -177,28 +185,46 @@ export default function HeadcountSummary(props: {
             {/* % Used */}
             <div>
               <p className="text-base leading-7 font-semibold text-gray-600">
-                % Used
+                Status
               </p>
               <p className="text-lg text-gray-600 flex flex-col">
                 {
                   <Toast
-                    text={indicators.hours_percentage_used.toFixed(2) + '%'}
+                    text={
+                      budget.hours != 0
+                        ? indicators.hours_percentage_used.value.toFixed(2) +
+                          '% ' +
+                          indicators.hours_percentage_used.status
+                        : 'NO BUDGET!'
+                    }
                     text_size="text-base"
-                    color={getToastColor(indicators.hours_percentage_used)}
+                    color={indicators.hours_percentage_used.color}
                   />
                 }
                 {
                   <Toast
-                    text={indicators.cost_percentage_used.toFixed(2) + '%'}
+                    text={
+                      budget.cost != 0
+                        ? indicators.cost_percentage_used.value.toFixed(2) +
+                          '% ' +
+                          indicators.cost_percentage_used.status
+                        : 'NO BUDGET!'
+                    }
                     text_size="text-base"
-                    color={getToastColor(indicators.cost_percentage_used)}
+                    color={indicators.cost_percentage_used.color}
                   />
                 }
                 {
                   <Toast
-                    text={indicators.people_percentage_used.toFixed(2) + '%'}
+                    text={
+                      budget.people != 0
+                        ? indicators.people_percentage_used.value.toFixed(2) +
+                          '% ' +
+                          indicators.people_percentage_used.status
+                        : 'NO BUDGET!'
+                    }
                     text_size="text-base"
-                    color={getToastColor(indicators.people_percentage_used)}
+                    color={indicators.people_percentage_used.color}
                   />
                 }
               </p>
