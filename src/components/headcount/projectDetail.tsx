@@ -24,7 +24,8 @@ export default function HeadcountProjectDetails() {
   const updateDifference = (budget: report_data, real: report_data) => {
     setIndicators({
       people_difference: budget.people - real.people,
-      people_percentage_used: getPercentageUsed(budget.people, real.people),
+      people_percentage_used: getPercentageUsed(budget.people, real.people)
+        .value,
     });
   };
 

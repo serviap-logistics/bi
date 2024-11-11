@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { CostAnalysisContext, ProjectContext } from '.';
-import { getPercentageUsed, getToastColor, USDollar } from '../../utils';
+import { getPercentageUsed, USDollar } from '../../utils';
 import Toast from '../utils/toast';
 
 export default function FinanceSummary(props: {
@@ -58,24 +58,33 @@ export default function FinanceSummary(props: {
             {/* % Used */}
             <div>
               <p className="text-base leading-7 font-semibold text-gray-600">
-                % Used
+                Status
               </p>
               <p className="text-lg text-gray-600 flex flex-col">
                 {
                   <Toast
                     text={
+                      (getPercentageUsed(
+                        costAnalysis?.total_cost ?? 0,
+                        headcount_subtotal + purchases_subtotal,
+                      ).status !== 'NO BUDGET!'
+                        ? getPercentageUsed(
+                            costAnalysis?.total_cost ?? 0,
+                            headcount_subtotal + purchases_subtotal,
+                          ).value.toFixed(2) + '% '
+                        : '') +
                       getPercentageUsed(
                         costAnalysis?.total_cost ?? 0,
                         headcount_subtotal + purchases_subtotal,
-                      ).toFixed(2) + '%'
+                      ).status
                     }
                     text_size="text-base"
-                    color={getToastColor(
+                    color={
                       getPercentageUsed(
                         costAnalysis?.total_cost ?? 0,
                         headcount_subtotal + purchases_subtotal,
-                      ),
-                    )}
+                      ).color
+                    }
                   />
                 }
               </p>

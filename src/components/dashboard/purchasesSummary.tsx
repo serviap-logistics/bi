@@ -108,7 +108,7 @@ export default function PurchasesSummary(props: {
               {/* % Used */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">
-                  % Used
+                  Status
                 </p>
                 <p className="text-lg text-gray-600">
                   {costAnalysis != undefined &&
@@ -157,14 +157,7 @@ export default function PurchasesSummary(props: {
                     />
                   ) : (
                     <Toast
-                      text={
-                        purchases
-                          .reduce(
-                            (total, purchase) => total + purchase.total_cost,
-                            0,
-                          )
-                          .toFixed(2) + '%'
-                      }
+                      text={'NO BUDGET!'}
                       text_size="text-base"
                       color={
                         purchases.reduce(

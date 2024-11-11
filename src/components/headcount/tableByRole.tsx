@@ -680,7 +680,7 @@ export default function HeadcountTableByRole(props: {
                 getPercentageUsed(
                   budgets[group][role][date].hours,
                   reals[group][role][date].hours,
-                ),
+                ).value,
               ),
               data: [
                 budgets[group][role][date].hours
@@ -697,7 +697,7 @@ export default function HeadcountTableByRole(props: {
                 getPercentageUsed(
                   budgets[group][role][date].subtotal,
                   reals[group][role][date].subtotal,
-                ),
+                ).value,
               ),
               data: [
                 USDollar.format(budgets[group][role][date].subtotal ?? 0) +
@@ -712,7 +712,7 @@ export default function HeadcountTableByRole(props: {
                 getPercentageUsed(
                   budgets[group][role][date].people_quantity,
                   reals[group][role][date].people_quantity,
-                ),
+                ).value,
               ),
               data: [
                 budgets[group][role][date].people_quantity,
@@ -725,7 +725,7 @@ export default function HeadcountTableByRole(props: {
                 getPercentageUsed(
                   budgets[group][role][date],
                   reals[group][role][date],
-                ),
+                ).value,
               ),
               data: [
                 budgets['Perdiems'][role][date],

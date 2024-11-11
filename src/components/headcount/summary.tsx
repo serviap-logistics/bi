@@ -50,13 +50,15 @@ export default function HeadcountSummary() {
   const updateDifference = (budget: report_data, real: report_data) => {
     setIndicators({
       hours_difference: budget.hours - real.hours,
-      hours_percentage_used: getPercentageUsed(budget.hours, real.hours),
+      hours_percentage_used: getPercentageUsed(budget.hours, real.hours).value,
       cost_difference: budget.cost - real.cost,
-      cost_percentage_used: getPercentageUsed(budget.cost, real.cost),
+      cost_percentage_used: getPercentageUsed(budget.cost, real.cost).value,
       people_difference: budget.people - real.people,
-      people_percentage_used: getPercentageUsed(budget.people, real.people),
+      people_percentage_used: getPercentageUsed(budget.people, real.people)
+        .value,
       perdiem_difference: budget.perdiem - real.perdiem,
-      perdiem_percentage_used: getPercentageUsed(budget.perdiem, real.perdiem),
+      perdiem_percentage_used: getPercentageUsed(budget.perdiem, real.perdiem)
+        .value,
     });
   };
 
@@ -209,7 +211,7 @@ export default function HeadcountSummary() {
             {/* % Used */}
             <div>
               <p className="text-base leading-7 font-semibold text-gray-600">
-                % Used
+                Status
               </p>
               <p className="text-lg text-gray-600">
                 {

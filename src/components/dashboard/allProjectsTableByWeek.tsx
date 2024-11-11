@@ -278,7 +278,7 @@ export default function AllProjectsTableByWeek(props: {
       // Celda 4: Diferencia (dependiendo del tipo de reporte)
       const difference = USDollar.format(values.difference) + ' USD';
       // Celda 5: % Usado (dependiendo del tipo de reporte)
-      const percentage_used = values.percentage.toFixed(2);
+      const percentage_used = values.percentage.value.toFixed(2);
       return [
         <CustomCellData
           project_id={project}
@@ -290,17 +290,13 @@ export default function AllProjectsTableByWeek(props: {
         real,
         difference,
         <Toast
-          text={percentage_used + '%'}
-          text_size="text-sm"
-          color={
-            percentage_used <= 50
-              ? 'success'
-              : percentage_used <= 70
-                ? 'info'
-                : percentage_used <= 90
-                  ? 'warning'
-                  : 'error'
+          text={
+            values.percentage.status !== 'NO BUDGET!'
+              ? percentage_used + '% ' + values.percentage.status
+              : 'NO BUDGET!'
           }
+          text_size="text-sm"
+          color={values.percentage.color}
         />,
       ];
     });
@@ -313,7 +309,7 @@ export default function AllProjectsTableByWeek(props: {
       { header: 'Budget', key: 'BUDGET', width: 18 },
       { header: 'Real', key: 'REAL', width: 18 },
       { header: 'Difference', key: 'DIFF', width: 18 },
-      { header: '% Used', key: 'USED', width: 13 },
+      { header: 'Status', key: 'STATUS', width: 13 },
     ];
     excelColumnsCallback(columns);
     const table_rows = rows.map((row) => [
@@ -369,7 +365,7 @@ export default function AllProjectsTableByWeek(props: {
       )}
       {!loading && (
         <Table
-          columns={['Project', 'Budget', 'Real', 'Difference', '% Used']}
+          columns={['Project', 'Budget', 'Real', 'Difference', 'Status']}
           rows={rows}
           styles={{
             vertical_lines: true,

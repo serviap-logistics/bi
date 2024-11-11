@@ -87,7 +87,7 @@ export default function ProjectDetails(props: { purchases: purchase_type[] }) {
               {/* % Used */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">
-                  % Used
+                  Status
                 </p>
                 <p className="text-lg text-gray-600">
                   {costAnalysis != undefined &&
