@@ -9,10 +9,6 @@ import AllProjectsTableByWeek from './allProjectsTableByWeek';
 
 type report_types_available = 'BY_WEEK' | 'BY_PROJECT';
 const DEFAULT_REPORT_TYPE = 'BY_PROJECT';
-const INITIAL_REPORT_TYPES = [
-  { key: 'BY_PROJECT', current: true, name: 'By Project', icon: undefined },
-  // { key: 'BY_WEEK', current: false, name: 'By Week', icon: undefined },
-];
 
 export const ReportTypeContext =
   createContext<report_types_available>(DEFAULT_REPORT_TYPE);
@@ -20,8 +16,10 @@ export const ReportTypeContext =
 export default function DashboardAllProjects() {
   const [reportType, setReportType] =
     useState<report_types_available>(DEFAULT_REPORT_TYPE);
-  const [reportTypes, setReportTypes] =
-    useState<tabs_menu_option_type[]>(INITIAL_REPORT_TYPES);
+  const [reportTypes, setReportTypes] = useState<tabs_menu_option_type[]>([
+    { key: 'BY_PROJECT', current: true, name: 'By Project', icon: undefined },
+    { key: 'BY_WEEK', current: false, name: 'By Week', icon: undefined },
+  ]);
 
   const handleChangeReport = (tab: tabs_menu_option_type) => {
     if (reportType !== tab.key) {
@@ -56,7 +54,10 @@ export default function DashboardAllProjects() {
       ],
       settings,
     );
-    saveAs(new Blob([buffer as Buffer]), `AMOUNTS (BY PROJECT).xlsx`);
+    saveAs(
+      new Blob([buffer as Buffer]),
+      `AMOUNTS (${reportType.replace('_', ' ')}).xlsx`,
+    );
   };
 
   return (

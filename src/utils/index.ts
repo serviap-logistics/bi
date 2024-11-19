@@ -110,11 +110,11 @@ export const generateColorStatus = (value: number) => {
 
 import ExcelJS from 'exceljs';
 export type excel_column = { header: string; key: string; width: number };
-export type excel_row = string | number;
+export type excel_cell = string | number;
 export type excel_page = {
   name: string;
   columns?: excel_column[];
-  rows: excel_row[];
+  rows: excel_cell[];
 };
 export const generateExcel = async (
   pages: excel_page[],

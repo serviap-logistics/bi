@@ -1,34 +1,26 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Table from '../utils/table';
 import { getRegistrationTimes } from '../../api/registration_times';
-import { cost_analysis_type } from '../../types/cost_analysis.type';
 import { registration_time_type } from '../../types/registration_time.type';
-import {
-  cloneObject,
-  excel_column,
-  getPercentageUsed,
-  groupListBy,
-  USDollar,
-} from '../../utils';
-import Toast from '../utils/toast';
+import { excel_cell, excel_column, groupListBy, USDollar } from '../../utils';
 import Alert from '../utils/alert';
-import { ReportTypeContext } from './allProjects';
 import { purchase_type } from '../../types/purchase.type';
 import { getPurchases as getAirtablePurchases } from '../../api/purchases';
-import { getCostAnalysis } from '../../api/cost_analysis';
+import { tabs_menu_option_type } from '../utils/tabsMenu';
+// import { getSites } from '../../api/sites';
+import PillsMenu from '../utils/pillsMenu';
 
+/*
 function CustomCellData(props: {
-  project_id: string;
-  project_name: string;
+  site: string;
+  address: string;
   start_date: string;
   end_date: string;
 }) {
   return (
     <div className="flex flex-col">
-      <span>{props.project_id}</span>
-      <span className="text-xs text-slate-400 text-wrap">
-        {props.project_name}
-      </span>
+      <span>{props.site}</span>
+      <span className="text-xs text-slate-400 text-wrap">{props.address}</span>
       <span className="text-xs text-slate-400">Start: {props.start_date}</span>
       <span className="text-xs text-slate-400">
         Completion: {props.end_date}
@@ -36,344 +28,319 @@ function CustomCellData(props: {
     </div>
   );
 }
+*/
+type display_types_available = 'BY_PROJECT' | 'BY_SITE';
+const DEFAULT_DISPLAY_OPTION = 'BY_PROJECT';
 
 export default function AllProjectsTableByWeek(props: {
   excelRowsCallback: any;
   excelColumnsCallback: any;
 }) {
   const { excelRowsCallback, excelColumnsCallback } = props;
-  const reportType = useContext(ReportTypeContext);
-
-  const [budgets, setBudgets] = useState<object>({});
-  const [reals, setReals] = useState<object>({});
-  const [rows, setRows] = useState<any[]>([]);
-  const [indicators, setIndicators] = useState<object>({});
-  const [loading, setLoading] = useState<boolean>(true);
-  const [projectsAvailable] = useState<object>({});
-  const [costAnalysisAvailable, setCostAnalysisAvailable] = useState<object>(
-    {},
+  const [displayOptions, setDisplayOptions] = useState<tabs_menu_option_type[]>(
+    [
+      { key: 'BY_PROJECT', current: true, name: 'By Project', icon: undefined },
+      // { key: 'BY_SITE', current: false, name: 'By Site', icon: undefined },
+    ],
   );
+  const [displayOption, setDisplayOption] = useState<string | undefined>(
+    DEFAULT_DISPLAY_OPTION,
+  );
+
+  const handleChangeOption = (tab: tabs_menu_option_type) => {
+    if (displayOption !== tab.key) {
+      setDisplayOptions(
+        displayOptions.map((option) => ({
+          ...option,
+          current: option.key === tab.key,
+        })),
+      );
+      setDisplayOption(tab.key as display_types_available);
+    }
+  };
 
   const getPurchases = async (): Promise<purchase_type[]> => {
     const purchases_found: purchase_type[] = await getAirtablePurchases({
       view: 'BI',
       fields: [
-        'cost_analysis_id',
         'project_id',
-        'project_name',
         'week',
         'site_name',
-        'site_address',
-        'project_start_date',
-        'project_end_date',
         'status_request',
-        'Category',
         'total_cost',
       ],
     });
     return purchases_found;
   };
 
-  const updateBudget = async () => {
-    const budget_costs: cost_analysis_type[] = await getCostAnalysis({
-      view: 'BI',
-      fields: [
-        'cost_analysis_id',
-        'total_cost',
-        'project_name',
-        'start_date',
-        'end_date',
-      ],
-    });
-    const budget_formatted = budget_costs.map(
-      ({
-        cost_analysis_id,
-        total_cost,
-        project_name,
-        start_date,
-        end_date,
-      }) => ({
-        cost_analysis_id: cost_analysis_id,
-        total_cost: total_cost,
-        project_name: project_name,
-        start_date: start_date,
-        end_date: end_date,
-      }),
-    );
-    const grouped_by_CA = groupListBy('cost_analysis_id', budget_formatted);
-    const reduced_CA = cloneObject(grouped_by_CA);
-    const reduced_names_CA = cloneObject(grouped_by_CA);
-    Object.entries(reduced_CA).map(
-      ([cost_analysis_id, CAs_found]: [string, any]) => {
-        reduced_CA[cost_analysis_id] = CAs_found.reduce(
-          (total, cost_analysis) => cost_analysis.total_cost + total,
-          0,
-        );
-        // En teoria, todos los analisis de costos cuentan con un nombre aparte del ID de cotizacion
-        // por lo tanto, siempre habra al menos un dato.
-        reduced_names_CA[cost_analysis_id] = {
-          name: [
-            ...new Set(
-              CAs_found.map((cost_analysis) => cost_analysis.project_name),
-            ),
-          ][0],
-          start_date: [
-            ...new Set(
-              CAs_found.map((cost_analysis) => cost_analysis.start_date),
-            ),
-          ][0],
-          end_date: [
-            ...new Set(
-              CAs_found.map((cost_analysis) => cost_analysis.end_date),
-            ),
-          ][0],
-          status: 'On Quotation',
-        };
-      },
-    );
-    setCostAnalysisAvailable(reduced_names_CA);
-    setBudgets(reduced_CA);
-  };
+  const [expenses, setExpenses] = useState<object>({});
+  const [rows, setRows] = useState<any[]>([]);
+  const [columns, setColumns] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const updateReal = async () => {
+  const updateExpenses = async () => {
     // Calculando costos de compras POR proyecto.
+    // Objetivo: Tener un objeto donde la clave sea el ID del proyecto y su valor sea otro objeto con las siguientes propiedades.
+    //           {purchases: [], registration_times: []}
     const purchases = await getPurchases();
-    const purchases_grouped_by_project = groupListBy('project_id', purchases);
-    const purchases_by_site = {};
-    Object.entries(purchases_grouped_by_project).map(
+    const purchases_by_project = groupListBy('project_id', purchases);
+    // Objeto resultante
+    const expenses_by_project = {};
+    // Se genera la primer parte del objeto: purchases: []
+    Object.entries(purchases_by_project).map(
       ([project, purchases]: [string, any]) => {
-        purchases_by_site[project] = {};
-        const purchases_grouped = groupListBy('site_name', purchases);
-        Object.entries(purchases_grouped).map(
-          ([site, site_purchases]: [string, any]) => {
-            purchases_by_site[project][site] = {};
-            const purchases_by_week = groupListBy('week', site_purchases);
-            Object.entries(purchases_by_week).map(
-              ([week, week_purchases]: [string, any]) => {
-                purchases_by_site[project][site][week] = week_purchases.reduce(
-                  (total, purchase) => total + purchase.total_cost,
-                  0,
-                );
-              },
-            );
-          },
-        );
+        expenses_by_project[project] = { purchases: [...purchases] };
       },
     );
-    console.log('Purchases: ', purchases_by_site);
 
     // Calculando costos de horas POR proyecto.
-    const real_times: registration_time_type[] = await getRegistrationTimes({
+    const rawTimes: registration_time_type[] = await getRegistrationTimes({
       worked: true,
       travel: true,
       waiting: true,
     });
-    const times_formatted = real_times.map(
-      (time_registered: registration_time_type) => {
-        return {
-          project_id: time_registered.project_id,
-          site_name: time_registered.site_name,
-          week: time_registered.week,
-          subtotal: time_registered.subtotal,
-        };
+    const times = rawTimes.map((time_registered: registration_time_type) => {
+      return {
+        project_id: time_registered.project_id,
+        site_name: time_registered.site_name,
+        week: time_registered.week,
+        subtotal: time_registered.subtotal,
+      };
+    });
+
+    const timesByProject = groupListBy('project_id', times);
+    Object.entries(timesByProject).map(
+      ([project, times_found]: [string, any]) => {
+        if (!expenses_by_project[project]) expenses_by_project[project] = {};
+        expenses_by_project[project]['times'] = times_found;
       },
     );
-    const times_grouped_by_project = groupListBy('project_id', times_formatted);
-    const hours_by_site = {};
-    Object.entries(times_grouped_by_project).map(
-      ([project, times_found]: [string, any]) => {
-        hours_by_site[project] = {};
-        const times_grouped = groupListBy('site_name', times_found);
-        Object.entries(times_grouped).map(
-          ([site, site_times]: [string, any]) => {
-            hours_by_site[project][site] = {};
-            const times_by_week = groupListBy('week', site_times);
-            Object.entries(times_by_week).map(
-              ([week, week_times]: [string, any]) => {
-                hours_by_site[project][site][week] = week_times.reduce(
-                  (total, time_record) => time_record.subtotal + total,
+    setExpenses(expenses_by_project);
+  };
+
+  const formatAsTable = (expenses, displayOption: string) => {
+    // Se genera un arreglo que representa los renglones en la tabla.
+    // Cada renglon tiene los totales POR SEMANA POR SITIO.
+    // Agrupado por PROJECTO / ANALISIS DE COSTOS
+    const results_by_week = {};
+    let excel_columns: excel_column[] = [];
+    let excel_rows: excel_cell[][] = [];
+    if (displayOption === 'BY_PROJECT') {
+      Object.entries(expenses).map(
+        ([project_id, project_data]: [string, any]) => {
+          // project_data: {purchases: [], times: []}
+          if (!results_by_week[project_id]) results_by_week[project_id] = {};
+          if (project_data?.purchases) {
+            const purchases_by_week = groupListBy(
+              'week',
+              project_data.purchases,
+            );
+            Object.entries(purchases_by_week).map(
+              ([week, purchases]: [string, any]) => {
+                results_by_week[project_id][week] = purchases.reduce(
+                  (total, purchase) => (total += purchase.total_cost),
                   0,
                 );
               },
             );
-          },
-        );
-      },
-    );
-    console.log('Times: ', hours_by_site);
-
-    // Mezclando resultados entre costos por compras + costos por horas.
-    // Por defecto, el objeto final tendra al menos los datos de compras
-    // y se iran agregando elementos al objeto si existen registros de horas.
-    const merged_totals = cloneObject(purchases_by_site);
-    Object.entries(hours_by_site).map(([project, sites]: [string, any]) => {
-      Object.entries(sites).map(([site, weeks]: [string, any]) => {
-        Object.entries(weeks).map(([week, total]: [string, any]) => {
-          if (!merged_totals[project]) merged_totals[project] = {};
-          if (!merged_totals[project][site]) merged_totals[project][site] = {};
-          // Si no existe el proyecto en el objeto con compras, se agrega con el valor
-          // inicial igua al costo de horas de ese proyecto.
-          // Si ya existe, solo se suma el costo de horas al costo de compras.
-          if (!merged_totals[project][site][week])
-            merged_totals[project][site][week] = total;
-          else merged_totals[project][site][week] += total;
-        });
-      });
-    });
-    console.log('Merged: ', merged_totals);
-    setReals(merged_totals);
-  };
-
-  /**
-   * Esta funcion se encarga de mezclar los resultados obtenidos en budgets, con los obtenidos en reales.
-   * Se obtiene como resultado, un nuevo objeto con varias propiedades.
-   * {project_id: {budget: number, real: number, difference: number, percentage_used: number}}
-   */
-  const mergeResults = () => {
-    const results = {};
-    // Se agregan los resultados de budgets.
-    Object.entries(budgets).map(([project, budget_total]) => {
-      results[project] = {
-        budget: budget_total,
-        // El resto de valores se colocan por defecto en 0, seran calculados mas adelante cuando
-        // se mezclen los valores reales.
-        real: 0,
-        difference: 0,
-        percentage: 0,
-      };
-    });
-    // Se agregan los resultados de totales reales.
-    Object.entries(reals).map(([project, real_total]) => {
-      if (!results[project])
-        results[project] = {
-          budget: 0,
-          real: real_total,
-          difference: 0,
-          percentage: 0,
-        };
-      else results[project] = { ...results[project], real: real_total };
-    });
-    // Se calculan las diferencias y los porcentajes.
-    Object.entries(results).map(([project, values]: [string, any]) => {
-      results[project].difference = values.budget - values.real;
-      results[project].percentage = getPercentageUsed(
-        values.budget,
-        values.real,
-      );
-    });
-    setIndicators(results);
-  };
-
-  const formatAsTable = () => {
-    const project_names = { ...costAnalysisAvailable, ...projectsAvailable };
-    // Se genera un arreglo que representa los renglones en la tabla.
-    // Cada renglon tiene los totales POR DIA.
-    const rows = Object.entries(indicators).map(([project_id, values]) => {
-      // Celda 1: Fecha
-      const project = project_id;
-      // Celda 2: Presupuesto (dependiendo del tipo de reporte)
-      const budget = USDollar.format(values.budget) + ' USD';
-      // Celda 3: Real (dependiendo del tipo de reporte)
-      const real = USDollar.format(values.real) + ' USD';
-      // Celda 4: Diferencia (dependiendo del tipo de reporte)
-      const difference = USDollar.format(values.difference) + ' USD';
-      // Celda 5: % Usado (dependiendo del tipo de reporte)
-      const percentage_used = values.percentage.value.toFixed(2);
-      return [
-        <CustomCellData
-          project_id={project}
-          project_name={project_names[project].name}
-          start_date={project_names[project].start_date}
-          end_date={project_names[project].end_date}
-        />,
-        budget,
-        real,
-        difference,
-        <Toast
-          text={
-            values.percentage.status !== 'NO BUDGET!'
-              ? percentage_used + '% ' + values.percentage.status
-              : 'NO BUDGET!'
           }
-          text_size="text-sm"
-          color={values.percentage.color}
-        />,
+          if (project_data?.times) {
+            const times_by_week = groupListBy('week', project_data.times);
+            Object.entries(times_by_week).map(
+              ([week, times]: [string, any]) => {
+                results_by_week[project_id][week] = times.reduce(
+                  (total, times) => (total += times.subtotal),
+                  0,
+                );
+              },
+            );
+          }
+        },
+      );
+      const weeks_available = [
+        ...new Set(
+          Object.values(results_by_week)
+            .map((result: any) => Object.keys(result))
+            .flat(),
+        ),
+      ]
+        .filter((week) => week !== 'undefined')
+        .sort();
+      console.log('Weeks: ', weeks_available);
+      const rows: string[][] = [];
+      Object.entries(results_by_week).map(
+        ([project_id, weeks]: [string, any]) => {
+          const row: string[] = [];
+          // Se agrega al inicio del renglon, el ID de projecto.
+          row.push(project_id);
+          // Se agrega al total de registros SIN fecha.
+          if (weeks['undefined']) row.push(USDollar.format(weeks['undefined']));
+          else row.push(USDollar.format(0));
+          // Se agrega el resto de semanas
+          weeks_available.map((week) => {
+            if (!weeks[week]) row.push(USDollar.format(0));
+            else row.push(USDollar.format(weeks[week]));
+          });
+          rows.push(row);
+        },
+      );
+      console.log('Results: ', rows);
+      setRows(rows);
+      setColumns(['Project', 'No date', ...weeks_available]);
+      excel_columns = [
+        { header: 'Project ID', key: 'PROJECT_ID', width: 25 },
+        { header: 'No Date', key: 'NO DATE', width: 15 },
+        ...weeks_available.map((week) => ({
+          header: week,
+          key: week.toUpperCase(),
+          width: 15,
+        })),
       ];
-    });
-    // console.log('Rows: ', rows);
-    setRows(rows);
+      excel_rows = rows;
+    } else if (displayOption === 'BY_SITE') {
+      const weeks_available: string[] = [];
+      // const allSites = async () =>
+      //   await getSites({
+      //     view: 'BI',
+      //     fields: ['site_name', 'site_address', 'customer_name'],
+      //   });
+      Object.entries(expenses).map(
+        ([project_id, project_data]: [string, any]) => {
+          // project_data: {purchases: [], times: []}
+          if (!results_by_week[project_id]) results_by_week[project_id] = {};
+          if (project_data?.purchases) {
+            const purchases_by_site = groupListBy(
+              'site',
+              project_data.purchases,
+            );
+            Object.entries(purchases_by_site).map(
+              ([site, purchases]: [string, any]) => {
+                if (!results_by_week[project_id][site])
+                  results_by_week[project_id][site] = {};
+                const purchases_by_week = groupListBy('week', purchases);
+                Object.entries(purchases_by_week).map(
+                  ([week, purchases]: [string, any]) => {
+                    if (!weeks_available.includes(week))
+                      weeks_available.push(week);
+                    results_by_week[project_id][site][week] = purchases.reduce(
+                      (total, purchase) => (total += purchase.total_cost),
+                      0,
+                    );
+                  },
+                );
+              },
+            );
+          }
+          if (project_data?.times) {
+            const times_by_site = groupListBy('site', project_data.purchases);
+            Object.entries(times_by_site).map(
+              ([site, times]: [string, any]) => {
+                if (!results_by_week[project_id][site])
+                  results_by_week[project_id][site] = {};
+                const sites_by_week = groupListBy('week', times);
+                Object.entries(sites_by_week).map(
+                  ([week, purchases]: [string, any]) => {
+                    results_by_week[project_id][site][week] = purchases.reduce(
+                      (total, purchase) => (total += purchase.total_cost),
+                      0,
+                    );
+                  },
+                );
+              },
+            );
+          }
+        },
+      );
+      weeks_available.filter((week) => week !== 'undefined').sort();
+      console.log('Weeks: ', weeks_available);
+      /*
+      const rows: (string | Element)[][] = [];
+      Object.entries(results_by_week).map(
+        ([project_id, weeks]: [string, any]) => {
+          const row: (string | Element)[] = [];
+          // Se agrega al inicio del renglon, el ID de projecto.
+          row.push(
+            <CustomCellData
+              site={site.name}
+              address={site.address}
+              start_date={site.start_date}
+              end_date={site.end_date}
+            />,
+          );
+          // Se agrega al total de registros SIN fecha.
+          if (weeks['undefined']) row.push(USDollar.format(weeks['undefined']));
+          else row.push(USDollar.format(0));
+          // Se agrega el resto de semanas
+          weeks_available.map((week) => {
+            if (!weeks[week]) row.push(USDollar.format(0));
+            else row.push(USDollar.format(weeks[week]));
+          });
+          rows.push(row);
+        },
+      );
+      console.log('Results: ', rows);
+      setRows(rows);
+      setColumns(['Project', 'No date', ...weeks_available]);
+      excel_columns = [
+        { header: 'Project ID', key: 'PROJECT_ID', width: 25 },
+        { header: 'No Date', key: 'NO DATE', width: 15 },
+        ...weeks_available.map((week) => ({
+          header: week,
+          key: week.toUpperCase(),
+          width: 15,
+        })),
+      ];
+      excel_rows = rows;
+      */
+    }
+    excelColumnsCallback(excel_columns);
+    excelRowsCallback(excel_rows);
     setLoading(false);
-    const columns: excel_column[] = [
-      { header: 'Project ID', key: 'PROJECT_ID', width: 25 },
-      { header: 'Project Name', key: 'PROJECT_NAME', width: 40 },
-      { header: 'Budget', key: 'BUDGET', width: 18 },
-      { header: 'Real', key: 'REAL', width: 18 },
-      { header: 'Difference', key: 'DIFF', width: 18 },
-      { header: 'Status', key: 'STATUS', width: 13 },
-    ];
-    excelColumnsCallback(columns);
-    const table_rows = rows.map((row) => [
-      (row[0] as JSX.Element).props.project_id,
-      (row[0] as JSX.Element).props.project_name,
-      ...row.slice(1, 4),
-      (row[4] as JSX.Element).props.text,
-    ]);
-    excelRowsCallback(table_rows);
   };
 
   useEffect(() => {
-    if (Object.keys(indicators).length > 0) {
-      formatAsTable();
-    }
-  }, [indicators, reportType]);
+    if (Object.values(expenses).length !== 0 && displayOption !== undefined)
+      formatAsTable(expenses, displayOption);
+  }, [expenses, displayOption]);
 
   useEffect(() => {
-    if (Object.keys(budgets).length > 0 || Object.keys(reals).length > 0) {
-      mergeResults();
-    }
-  }, [budgets, reals]);
-
-  useEffect(() => {
-    if (Object.keys(costAnalysisAvailable).length > 0) {
-      console.log('New CAs! ', costAnalysisAvailable);
-      console.log('Count:', Object.keys(costAnalysisAvailable).length);
-    }
-  }, [costAnalysisAvailable]);
-
-  useEffect(() => {
-    if (Object.keys(projectsAvailable).length > 0) {
-      console.log('New projects! ', projectsAvailable);
-      console.log('Count:', Object.keys(projectsAvailable).length);
-    }
-  }, [projectsAvailable]);
-
-  useEffect(() => {
-    updateBudget();
-    updateReal();
+    updateExpenses();
   }, []);
 
   return (
     <div className="max-w-full relative">
+      <PillsMenu
+        tabs={displayOptions}
+        onSelectCallback={handleChangeOption}
+        default_key="BY_PROJECT"
+      />
       {loading && (
         <div className="py-4">
           <Alert
             status="warning"
             label="Loading"
-            details="We are generating table, this could take a few seconds."
+            details="Generating table, this could take a few seconds."
           />
         </div>
       )}
-      {!loading && (
+      {!loading && columns && rows && (
         <Table
-          columns={['Project', 'Budget', 'Real', 'Difference', 'Status']}
+          columns={columns}
           rows={rows}
           styles={{
             vertical_lines: true,
-            dynamic_headers: false,
+            dynamic_headers: true,
+            max_width: '97vw',
             row_height: 'xs',
+            headers: {
+              first_column_size: 'w-52',
+              column_size: 'min-w-28',
+            },
             rows: {
               remark_label: true,
-              static_label: false,
+              static_label: true,
+              label_width: 'w-52',
+              cell_width: 'min-w-28',
             },
             static_headers: true,
             max_height: 'max-h-[27rem]',
