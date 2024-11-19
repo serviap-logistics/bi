@@ -376,7 +376,7 @@ export default function AllProjectsTableByAmounts(props: {
           <Alert
             status="warning"
             label="Loading"
-            details="We are generating table, this could take a few seconds."
+            details="Generating, this could take a few seconds."
           />
         </div>
       )}

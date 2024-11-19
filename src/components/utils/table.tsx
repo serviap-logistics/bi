@@ -112,7 +112,7 @@ export default function Table(props: {
                         className={classNames(
                           'py-3.5 text-left text-sm font-semibold text-gray-900',
                           column_num === 0
-                            ? 'pl-4 sm:pl-6 pr-3'
+                            ? 'pl-4 sm:pl-6'
                             : 'px-3 text-center',
                           styles?.static_headers || styles?.rows?.static_label
                             ? 'sticky'
@@ -173,10 +173,13 @@ export default function Table(props: {
                                 <td
                                   key={generateUUID()}
                                   className={classNames(
-                                    'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500',
-                                    styles?.rows?.label_width ?? '',
+                                    'whitespace-nowrap px-4 py-1 sm:pl-6 text-sm text-gray-500 z-10',
                                     row_height,
                                     rows_styles.remark_label,
+                                    styles?.rows?.static_label
+                                      ? 'sticky left-0 bg-white border-r-2 border-gray-400'
+                                      : '',
+                                    styles?.rows?.label_width ?? '',
                                   )}
                                 >
                                   {row[0] as cell_data}
@@ -185,7 +188,7 @@ export default function Table(props: {
                                   <td
                                     key={generateUUID()}
                                     className={classNames(
-                                      'whitespace-nowrap pl-4 sm:pl-6 pr-3 text-sm text-gray-500',
+                                      'whitespace-nowrap px-5 text-sm text-gray-500',
                                       styles?.rows?.cell_width ?? '',
                                       row_height,
                                     )}
