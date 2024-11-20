@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Table from '../utils/table';
+import Table, { group, row } from '../utils/table';
 import { getRegistrationTimes } from '../../api/registration_times';
 import { registration_time_type } from '../../types/registration_time.type';
 import { excel_cell, excel_column, groupListBy, USDollar } from '../../utils';
@@ -40,7 +40,7 @@ export default function AllProjectsTableByWeek(props: {
   const [displayOptions, setDisplayOptions] = useState<tabs_menu_option_type[]>(
     [
       { key: 'BY_PROJECT', current: true, name: 'By Project', icon: undefined },
-      // { key: 'BY_SITE', current: false, name: 'By Site', icon: undefined },
+      { key: 'BY_SITE', current: false, name: 'By Site', icon: undefined },
     ],
   );
   const [displayOption, setDisplayOption] = useState<string | undefined>(
@@ -198,7 +198,7 @@ export default function AllProjectsTableByWeek(props: {
       ];
       excel_rows = rows;
     } else if (displayOption === 'BY_SITE') {
-      const weeks_available: string[] = [];
+      let weeks_available: string[] = [];
       // const allSites = async () =>
       //   await getSites({
       //     view: 'BI',
@@ -210,7 +210,7 @@ export default function AllProjectsTableByWeek(props: {
           if (!results_by_week[project_id]) results_by_week[project_id] = {};
           if (project_data?.purchases) {
             const purchases_by_site = groupListBy(
-              'site',
+              'site_name',
               project_data.purchases,
             );
             Object.entries(purchases_by_site).map(
@@ -226,22 +226,25 @@ export default function AllProjectsTableByWeek(props: {
                       (total, purchase) => (total += purchase.total_cost),
                       0,
                     );
+                    console.log(results_by_week[project_id][site]);
                   },
                 );
               },
             );
           }
           if (project_data?.times) {
-            const times_by_site = groupListBy('site', project_data.purchases);
+            const times_by_site = groupListBy('site_name', project_data.times);
             Object.entries(times_by_site).map(
               ([site, times]: [string, any]) => {
                 if (!results_by_week[project_id][site])
-                  results_by_week[project_id][site] = {};
+                  results_by_week[project_id][
+                    site !== 'undefined' ? site : 'No site'
+                  ] = {};
                 const sites_by_week = groupListBy('week', times);
                 Object.entries(sites_by_week).map(
                   ([week, purchases]: [string, any]) => {
                     results_by_week[project_id][site][week] = purchases.reduce(
-                      (total, purchase) => (total += purchase.total_cost),
+                      (total, purchase) => (total += purchase.subtotal),
                       0,
                     );
                   },
@@ -251,47 +254,45 @@ export default function AllProjectsTableByWeek(props: {
           }
         },
       );
-      weeks_available.filter((week) => week !== 'undefined').sort();
-      console.log('Weeks: ', weeks_available);
-      /*
-      const rows: (string | Element)[][] = [];
+      weeks_available = weeks_available
+        .filter((week) => week !== 'undefined')
+        .sort();
+      const groups: group[] = [];
       Object.entries(results_by_week).map(
-        ([project_id, weeks]: [string, any]) => {
-          const row: (string | Element)[] = [];
+        ([project_id, sites]: [string, any]) => {
           // Se agrega al inicio del renglon, el ID de projecto.
-          row.push(
-            <CustomCellData
-              site={site.name}
-              address={site.address}
-              start_date={site.start_date}
-              end_date={site.end_date}
-            />,
-          );
-          // Se agrega al total de registros SIN fecha.
-          if (weeks['undefined']) row.push(USDollar.format(weeks['undefined']));
-          else row.push(USDollar.format(0));
-          // Se agrega el resto de semanas
-          weeks_available.map((week) => {
-            if (!weeks[week]) row.push(USDollar.format(0));
-            else row.push(USDollar.format(weeks[week]));
+          const group_data: group = { name: project_id, rows: [] };
+          Object.entries(sites).map(([site, weeks]: [string, any]) => {
+            const row: row = [];
+            // Se agrega el nombre del sitio.
+            row.push(site);
+            // Se agrega el total SIN fecha.
+            if (weeks['undefined'])
+              row.push(USDollar.format(weeks['undefined']));
+            else row.push(USDollar.format(0));
+            // Se agrega el resto de semanas
+            weeks_available.map((week) => {
+              if (!weeks[week]) row.push(USDollar.format(0));
+              else row.push(USDollar.format(weeks[week]));
+            });
+            group_data.rows.push(row);
           });
-          rows.push(row);
+          groups.push(group_data);
         },
       );
-      console.log('Results: ', rows);
-      setRows(rows);
-      setColumns(['Project', 'No date', ...weeks_available]);
-      excel_columns = [
-        { header: 'Project ID', key: 'PROJECT_ID', width: 25 },
-        { header: 'No Date', key: 'NO DATE', width: 15 },
-        ...weeks_available.map((week) => ({
-          header: week,
-          key: week.toUpperCase(),
-          width: 15,
-        })),
-      ];
-      excel_rows = rows;
-      */
+      console.log('Results: ', groups);
+      setRows(groups);
+      // setColumns(['Project', 'No date', ...weeks_available]);
+      // excel_columns = [
+      //   { header: 'Project ID', key: 'PROJECT_ID', width: 25 },
+      //   { header: 'No Date', key: 'NO DATE', width: 15 },
+      //   ...weeks_available.map((week) => ({
+      //     header: week,
+      //     key: week.toUpperCase(),
+      //     width: 15,
+      //   })),
+      // ];
+      // excel_rows = rows;
     }
     excelColumnsCallback(excel_columns);
     excelRowsCallback(excel_rows);

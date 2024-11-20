@@ -70,6 +70,13 @@ export const getPercentageUsed = (budget: number, real: number): Indicator => {
 
 export const cloneObject = (object) => JSON.parse(JSON.stringify(object));
 
+export const isPlainObject = (value: any): boolean => {
+  // 1. Verifica que sea tipo objeto (Un diccionario o un Array)
+  // 2. Verifica que su valor no sea nulo
+  // 3. Verifica que NO es un Array
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
+
 export const isObjectArray = (arr) => {
   return (
     Array.isArray(arr) &&

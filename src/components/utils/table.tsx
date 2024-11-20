@@ -1,4 +1,9 @@
-import { classNames, generateUUID, isObjectArray } from '../../utils';
+import {
+  classNames,
+  generateUUID,
+  isObjectArray,
+  isPlainObject,
+} from '../../utils';
 import { Fragment, useEffect, useState } from 'react';
 
 export type cell_data = number | string | JSX.Element;
@@ -274,9 +279,9 @@ export default function Table(props: {
                       )}
                       {/* Formato para cada renglon del grupo */}
                       {asGroups &&
-                        group.rows.map((group_row: cell[]) => (
+                        group.rows.map((group_row: cell[], group_num) => (
                           <tr
-                            key={generateUUID()}
+                            key={generateUUID() + group_num}
                             className={classNames(
                               styles?.vertical_lines
                                 ? 'divide-x divide-gray-400 '
@@ -289,7 +294,7 @@ export default function Table(props: {
                             {/* Formato para cada celda del grupo. */}
                             {group_row.map((cell, cell_num) => (
                               <Fragment>
-                                {/* Formato si la celda solo tiene UN valor. */}
+                                {/* Formato para el PRIMER VALOR (label). */}
                                 {cell_num === 0 && (
                                   <td
                                     key={generateUUID() + cell_num}
@@ -303,10 +308,13 @@ export default function Table(props: {
                                       styles?.rows?.label_width ?? '',
                                     )}
                                   >
-                                    {(cell as cell_object).data}
+                                    {isPlainObject(cell) &&
+                                      (cell as cell_object).data}
+                                    {!isPlainObject(cell) &&
+                                      (cell as cell_data)}
                                   </td>
                                 )}
-                                {/* Formato si la celda tiene mas de un valor. */}
+                                {/* Formato para las siguientes celdas. */}
                                 {cell_num > 0 && (
                                   <td
                                     key={generateUUID() + cell_num}
@@ -321,6 +329,17 @@ export default function Table(props: {
                                         'flex justify-center divide-x relative box-content w-full h-full',
                                       )}
                                     >
+                                      {/* SI SOLO ES UN DATO POR CELDA */}
+                                      {!isPlainObject(cell) && (
+                                        <div
+                                          className={classNames(
+                                            'w-1/2 h-full flex justify-center items-center',
+                                          )}
+                                        >
+                                          <p>{cell as cell_data}</p>
+                                        </div>
+                                      )}
+                                      {/* SI SON VARIOS DATOS EN UNA CELTA */}
                                       {Array.isArray(
                                         (cell as cell_object).data,
                                       ) &&
