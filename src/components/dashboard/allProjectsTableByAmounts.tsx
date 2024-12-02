@@ -12,7 +12,6 @@ import {
   USDollar,
 } from '../../utils';
 import Toast from '../utils/toast';
-import Alert from '../utils/notifications/alert';
 import { ReportTypeContext } from './allProjects';
 import {
   getPurchases as getAirtablePurchases,
@@ -20,6 +19,7 @@ import {
 } from '../../api/purchases';
 import { cost_analysis, getCostAnalysis } from '../../api/cost_analysis';
 import { getProjects } from '../../api/projects';
+import Alert from '../utils/notifications/alert';
 
 function CustomCellData(props: {
   project_code: string;

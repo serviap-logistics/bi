@@ -5,7 +5,6 @@ import {
   registration_time,
 } from '../../api/registration_times';
 import { excel_cell, excel_column, groupListBy, USDollar } from '../../utils';
-import Alert from '../utils/notifications/alert';
 import {
   getPurchases as getAirtablePurchases,
   purchase,
@@ -13,6 +12,7 @@ import {
 import { tabs_menu_option_type } from '../utils/tabsMenu';
 import PillsMenu from '../utils/pillsMenu';
 import { getSites } from '../../api/sites';
+import Alert from '../utils/notifications/alert';
 
 function ProjectData(props: {
   project_code: string;
