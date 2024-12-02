@@ -371,12 +371,9 @@ export default function AllProjectsTableByWeek(props: {
   }, [expenses, displayOption]);
 
   useEffect(() => {
+    updateSitesAvailable();
     updateExpenses();
   }, []);
-
-  useEffect(() => {
-    if (displayOption === 'BY_SITE') updateSitesAvailable();
-  }, [displayOption]);
 
   return (
     <div className="max-w-full relative">
