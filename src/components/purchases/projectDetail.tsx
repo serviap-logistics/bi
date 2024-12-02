@@ -1,10 +1,10 @@
 import { useContext } from 'react';
 import { CostAnalysisContext, ProjectContext } from '.';
-import { purchase_type } from '../../types/purchase.type';
 import { USDollar } from '../../utils';
 import Toast from '../utils/toast';
+import { purchase } from '../../api/purchases';
 
-export default function ProjectDetails(props: { purchases: purchase_type[] }) {
+export default function ProjectDetails(props: { purchases: purchase[] }) {
   const { purchases } = props;
   const project = useContext(ProjectContext);
   const costAnalysis = useContext(CostAnalysisContext);
@@ -17,7 +17,7 @@ export default function ProjectDetails(props: { purchases: purchase_type[] }) {
       >
         <li className="px-4 py-4 sm:px-6 flex flex-col grap-y-4">
           <p className="order-first text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
-            {project?.project_id ? project?.project_id : 'ALL PROJECTS'}
+            {project?.project_code ? project?.project_code : 'ALL PROJECTS'}
           </p>
           {project && project.customer_name && (
             <div>

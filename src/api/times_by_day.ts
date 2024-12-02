@@ -1,6 +1,8 @@
 import { ENVIROMENT } from '../settings/enviroment';
-import { airtable_request_type } from '../types/airtable_request.type';
-import airtableRequest from './utils/run_airtable_request';
+import airtableRequest, {
+  airtable_request,
+} from './utils/run_airtable_request';
+
 const { AIRTABLE_HOST, USA_OPERATIONS_BASE, USA_TIMES_BY_DAY_TABLE } =
   ENVIROMENT;
 
@@ -17,7 +19,7 @@ export type times_by_day = {
 };
 
 export async function getTimesByDay(
-  settings: airtable_request_type,
+  settings: airtable_request,
 ): Promise<times_by_day[]> {
   const records = await airtableRequest(
     `${AIRTABLE_HOST}/${USA_OPERATIONS_BASE}/${USA_TIMES_BY_DAY_TABLE}`,

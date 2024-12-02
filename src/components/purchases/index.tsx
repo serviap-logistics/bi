@@ -3,34 +3,34 @@ import PurchasesReportFilters from './filters';
 import PurchasesAmountsByCategory from './amountByCategory';
 import PurchasesAmountsByCategoryGraph from './amountByCategoryGraph';
 import ProjectDetails from './projectDetail';
-import { project_type } from '../../types/project.type';
-import { purchase_type } from '../../types/purchase.type';
-import { cost_analysis_type } from '../../types/cost_analysis.type';
 import TableByCategory from './tableByCategory';
-import { getPurchases as getAirtablePurchases } from '../../api/purchases';
-import { getCostAnalysis as getAirtableCostAnalysis } from '../../api/cost_analysis';
+import {
+  getPurchases as getAirtablePurchases,
+  purchase,
+} from '../../api/purchases';
+import {
+  cost_analysis,
+  getCostAnalysis as getAirtableCostAnalysis,
+} from '../../api/cost_analysis';
+import { project } from '../../api/projects';
 
-export const ProjectContext = createContext<project_type | undefined>(
+export const ProjectContext = createContext<project | undefined>(undefined);
+
+export const CostAnalysisContext = createContext<cost_analysis | undefined>(
   undefined,
 );
 
-export const CostAnalysisContext = createContext<
-  cost_analysis_type | undefined
->(undefined);
-
 export default function Purchases() {
-  const [purchases, setPurchases] = useState<purchase_type[]>([]);
-  const [project, setProject] = useState<project_type | undefined>();
-  const [costAnalysis, setCostAnalysis] = useState<
-    cost_analysis_type | undefined
-  >();
+  const [purchases, setPurchases] = useState<purchase[]>([]);
+  const [project, setProject] = useState<project | undefined>();
+  const [costAnalysis, setCostAnalysis] = useState<cost_analysis | undefined>();
   const [requestCounter, setRequestCounter] = useState(0);
   const [responses, setResponses] = useState<object>({});
 
   const getPurchases = async () => {
     const currentRequest = requestCounter + 1;
     setRequestCounter(currentRequest);
-    const purchases_found: purchase_type[] = await getAirtablePurchases({
+    const purchases_found: purchase[] = await getAirtablePurchases({
       view: 'BI',
       formula: project
         ? encodeURI(`{project_id}="${project.project_id}"`)
@@ -51,12 +51,11 @@ export default function Purchases() {
   };
 
   const getCostAnalysis = async () => {
-    const ca_found: cost_analysis_type[] = await getAirtableCostAnalysis({
+    const ca_found: cost_analysis[] = await getAirtableCostAnalysis({
       view: 'BI',
       formula: encodeURI(`{cost_analysis_id}='${project?.cost_analysis_id}'`),
       fields: [
         'total_cost',
-        'cost_analysis_id',
         'cost_analysis_id',
         'total_purchases_cost',
         'total_material_cost',
@@ -71,10 +70,13 @@ export default function Purchases() {
     });
     if (ca_found.length == 1) {
       setCostAnalysis(ca_found[0]);
+    } else {
+      console.log('More than 1 CA found! Send alert...');
     }
   };
 
-  const handleSelectProject = (project: project_type) => {
+  const handleSelectProject = (project: project) => {
+    console.log('Changing project...', project);
     setProject(project);
   };
 
@@ -93,7 +95,9 @@ export default function Purchases() {
   }, [responses]);
 
   useEffect(() => {
+    console.log('Py: ', project);
     getPurchases();
+    console.log('Purchases: ', purchases);
     if (project?.cost_analysis_id) {
       getCostAnalysis();
     } else {

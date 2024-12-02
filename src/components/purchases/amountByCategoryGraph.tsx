@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Chart, { Props } from 'react-apexcharts';
-import { purchase_type } from '../../types/purchase.type';
+import { purchase } from '../../api/purchases';
 
 const USDollar = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -8,7 +8,7 @@ const USDollar = new Intl.NumberFormat('en-US', {
 });
 
 export default function PurchasesAmountsByCategoryGraph(props: {
-  purchases: purchase_type[];
+  purchases: purchase[];
 }) {
   const { purchases } = props;
   const [charts, setCharts] = useState({
@@ -164,7 +164,7 @@ export default function PurchasesAmountsByCategoryGraph(props: {
     } as Props,
   });
 
-  const updateResults = (purchases: purchase_type[]) => {
+  const updateResults = (purchases: purchase[]) => {
     const purchases_by_category = purchases.reduce((groups, purchase) => {
       const category = purchase.Category;
       if (!groups[category]) groups[category] = [];
@@ -191,7 +191,7 @@ export default function PurchasesAmountsByCategoryGraph(props: {
         },
         series: travel_purchases.map(([_, purchases]: [string, any]) =>
           purchases.reduce(
-            (subtotal: any, purchase: purchase_type) =>
+            (subtotal: any, purchase: purchase) =>
               subtotal + purchase.total_cost,
             0,
           ),
@@ -208,7 +208,7 @@ export default function PurchasesAmountsByCategoryGraph(props: {
           {
             data: travel_purchases.map(([_, purchases]: [string, any]) =>
               purchases.reduce(
-                (subtotal: any, purchase: purchase_type) =>
+                (subtotal: any, purchase: purchase) =>
                   subtotal + purchase.total_cost,
                 0,
               ),
@@ -225,7 +225,7 @@ export default function PurchasesAmountsByCategoryGraph(props: {
         },
         series: tools_purchases.map(([_, purchases]: [string, any]) =>
           purchases.reduce(
-            (subtotal: any, purchase: purchase_type) =>
+            (subtotal: any, purchase: purchase) =>
               subtotal + purchase.total_cost,
             0,
           ),
@@ -242,7 +242,7 @@ export default function PurchasesAmountsByCategoryGraph(props: {
           {
             data: tools_purchases.map(([_, purchases]: [string, any]) =>
               purchases.reduce(
-                (subtotal: any, purchase: purchase_type) =>
+                (subtotal: any, purchase: purchase) =>
                   subtotal + purchase.total_cost,
                 0,
               ),

@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import Select, { selectOption } from '../utils/select';
-import { project_type } from '../../types/project.type';
-import { getProjects } from '../../api/projects';
+import { getProjects, project } from '../../api/projects';
 
 export default function DashboardFilters(props: { onChangeCallback: any }) {
   const { onChangeCallback } = props;
-  const [projects, setProjects] = useState<project_type[]>();
+  const [projects, setProjects] = useState<project[]>();
   const [projectOptions, setProjectOptions] = useState<selectOption[]>([]);
 
-  const formatProjects = (projects: project_type[]): selectOption[] => {
+  const formatProjects = (projects: project[]): selectOption[] => {
     const formatted: selectOption[] = projects.map(
       ({ id, Status, project_id, project_name }) => ({
         id: id,
@@ -30,16 +29,18 @@ export default function DashboardFilters(props: { onChangeCallback: any }) {
   };
 
   const updateProjects = async () => {
-    const projects_found: project_type[] = await getProjects({
+    const projects_found: project[] = await getProjects({
       view: 'BI',
       fields: [
         'project_id',
+        'project_code',
         'project_name',
         'Status',
         'start_date',
         'end_date',
         'customer_name',
         'cost_analysis_id',
+        'cost_analysis_code',
         'hour_registration_start_date',
         'hour_registration_end_date',
       ],

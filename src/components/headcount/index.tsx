@@ -1,29 +1,25 @@
 import { createContext, useEffect, useState } from 'react';
-import { project_type } from '../../types/project.type';
-import { cost_analysis_type } from '../../types/cost_analysis.type';
 import HeadcountFilters from './filters';
-import { getCostAnalysis } from '../../api/cost_analysis';
+import { cost_analysis, getCostAnalysis } from '../../api/cost_analysis';
 import HeadcountReportByType from './reportByType';
+import { project } from '../../api/projects';
 
-export const ProjectContext = createContext<project_type | undefined>(
+export const ProjectContext = createContext<project | undefined>(undefined);
+
+export const CostAnalysisContext = createContext<cost_analysis | undefined>(
   undefined,
 );
 
-export const CostAnalysisContext = createContext<
-  cost_analysis_type | undefined
->(undefined);
-
 export default function Headcount() {
-  const [project, setProject] = useState<project_type | undefined>();
-  const [costAnalysis, setCostAnalysis] = useState<
-    cost_analysis_type | undefined
-  >();
+  const [project, setProject] = useState<project | undefined>();
+  const [costAnalysis, setCostAnalysis] = useState<cost_analysis | undefined>();
 
   const updateCostAnalysis = async (cost_analysis_id: string) => {
-    const cost_analysis: cost_analysis_type[] = await getCostAnalysis({
+    const cost_analysis: cost_analysis[] = await getCostAnalysis({
       view: 'BI',
       fields: [
         'cost_analysis_id',
+        'cost_analysis_code',
         'total_labor_cost',
         'total_labor_hours',
         'total_labor_perdiem_count',

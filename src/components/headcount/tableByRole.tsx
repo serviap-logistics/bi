@@ -4,9 +4,11 @@ import Table, {
   group as table_group,
   row as table_row,
 } from '../utils/table';
-import { getRegistrationTimes } from '../../api/registration_times';
+import {
+  getRegistrationTimes,
+  registration_time,
+} from '../../api/registration_times';
 import { CostAnalysisContext, ProjectContext } from '.';
-import { registration_time_type } from '../../types/registration_time.type';
 import {
   cloneObject,
   excel_column,
@@ -17,9 +19,8 @@ import {
   groupListBy,
   USDollar,
 } from '../../utils';
-import { getCALaborDetails } from '../../api/ca_labor_details';
-import { ca_labor_detail_type } from '../../types/ca_labor_detail.type';
-import Alert from '../utils/alert';
+import { ca_labor_detail, getCALaborDetails } from '../../api/ca_labor_details';
+import Alert from '../utils/notifications/alert';
 import { ReportTypeContext } from './reportByType';
 
 type group_data = {
@@ -153,7 +154,7 @@ export default function HeadcountTableByRole(props: {
     ) {
       setBudgets(empty_results);
     } else {
-      const budget_times: ca_labor_detail_type[] = await getCALaborDetails({
+      const budget_times: ca_labor_detail[] = await getCALaborDetails({
         view: 'BI',
         fields: [
           'cost_analysis_id',
@@ -264,35 +265,32 @@ export default function HeadcountTableByRole(props: {
       setReals(empty_results);
       return;
     } else {
-      const real_times: registration_time_type[] = await getRegistrationTimes({
+      const real_times: registration_time[] = await getRegistrationTimes({
         worked: true,
         travel: true,
         waiting: true,
         project_id: project.project_id,
       });
-      const times_formatted = real_times.map(
-        (record: registration_time_type) => ({
-          date: getDateByTimestamp(record.start_date),
-          week: record.week,
-          category: record.category,
-          employee_id: record.employee_id,
-          employee_role: record.employee_role,
-          // Regular
-          regular_hour_cost: record.regular_hour_cost,
-          regular_hours: record.regular_hours,
-          regular_cost: record.regular_cost,
-          // Overtime
-          overtime_hour_cost: record.overtime_hour_cost,
-          overtime_hours: record.overtime_hours,
-          overtime_cost: record.overtime_cost,
-          // Total
-          total_hours: record.total_hours,
-          subtotal: record.subtotal,
-          week_hours: record.week_hours,
-          // Perdiem
-          perdiem: record.perdiem,
-        }),
-      );
+      const times_formatted = real_times.map((record: registration_time) => ({
+        date: getDateByTimestamp(record.start_date),
+        week: record.week,
+        category: record.category,
+        employee_id: record.employee_id,
+        employee_role: record.employee_role,
+        // Regular
+        regular_hour_cost: record.regular_hour_cost,
+        regular_hours: record.regular_hours,
+        regular_cost: record.regular_cost,
+        // Overtime
+        overtime_hour_cost: record.overtime_hour_cost,
+        overtime_hours: record.overtime_hours,
+        overtime_cost: record.overtime_cost,
+        // Total
+        total_hours: record.total_hours,
+        subtotal: record.subtotal,
+        week_hours: record.week_hours,
+        // Perdiem
+      }));
       // Recalcular horas de acuerdo al acumulado por semana...
       // Travel & Worked < 40 = Regular, > 40 = Overtime
       const worked: any[] = [];

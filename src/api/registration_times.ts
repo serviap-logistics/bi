@@ -1,10 +1,43 @@
-import { registration_time_type } from '../types/registration_time.type';
 import { groupListBy } from '../utils';
 import { getTravelTimes } from './travel_times';
 import { getWaitingTimes } from './waiting_times';
 import { getWorkedTimes } from './worked_times';
 
-const updateOvertimes = (times: registration_time_type[]) => {
+export type registration_time = {
+  id: string;
+  createdTime: string;
+  category: 'WORKED' | 'TRAVEL' | 'WAITING';
+
+  project_id: string;
+  project_code: string;
+  project_name: string;
+  project_status: string;
+  project_start_date: string;
+  project_end_date: string;
+  site_id: string;
+  site_name: string;
+  site_address: string;
+  employee_id: string;
+  employee_role: string;
+  week: string;
+  start_date: string;
+  end_date: string;
+  // Regular
+  regular_hour_cost: number;
+  regular_hours: number | undefined;
+  regular_cost: number | undefined;
+  // Overtime
+  overtime_hour_cost: number;
+  overtime_hours: number | undefined;
+  overtime_cost: number | undefined;
+  // Total
+  total_hours: number;
+  subtotal: number | undefined;
+  // Week
+  week_hours: number | undefined;
+};
+
+const updateOvertimes = (times: registration_time[]) => {
   const by_week = groupListBy('week', times);
   Object.values(by_week).map((records: any) => {
     const by_employee = groupListBy('employee_id', records);
@@ -48,9 +81,9 @@ export async function getRegistrationTimes(settings: {
   travel: boolean;
   waiting: boolean;
   project_id?: string;
-}): Promise<registration_time_type[]> {
+}): Promise<registration_time[]> {
   const { worked, travel, waiting, project_id } = settings;
-  const times_found: registration_time_type[] = [];
+  const times_found: registration_time[] = [];
 
   if (travel) {
     const travel_times = await getTravelTimes({
@@ -71,9 +104,9 @@ export async function getRegistrationTimes(settings: {
         'regular_hour_cost',
         'overtime_hour_cost',
         'total_hours',
+        'site_id',
         'site_name',
         'site_address',
-        'perdiem',
       ],
     });
     updateOvertimes(travel_times);
@@ -98,9 +131,9 @@ export async function getRegistrationTimes(settings: {
         'regular_hour_cost',
         'overtime_hour_cost',
         'total_hours',
+        'site_id',
         'site_name',
         'site_address',
-        'perdiem',
       ],
     });
     updateOvertimes(worked_times);
@@ -125,9 +158,9 @@ export async function getRegistrationTimes(settings: {
         'regular_hour_cost',
         'total_hours',
         'subtotal',
+        'site_id',
         'site_name',
         'site_address',
-        'perdiem',
       ],
     });
     times_found.push(...waiting_times);

@@ -9,7 +9,7 @@ export default function HeadcountProjectDetails() {
         <li className="px-4 py-4 sm:px-6 lg:px-10 flex justify-center w-full">
           <div>
             <p className="order-first text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
-              {project?.project_id ? project?.project_id : ''}
+              {project?.project_code ? project?.project_code : ''}
               <span className="text-base text-center leading-7 text-gray-600">
                 {' '}
                 ({project?.project_name})

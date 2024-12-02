@@ -3,8 +3,8 @@ import { CostAnalysisContext, ProjectContext } from '.';
 import { getPercentageUsed, groupListBy } from '../../utils';
 import Toast from '../utils/toast';
 import { getRegistrationTimes } from '../../api/registration_times';
-import { cost_analysis_type } from '../../types/cost_analysis.type';
 import { getCALaborDetails } from '../../api/ca_labor_details';
+import { cost_analysis } from '../../api/cost_analysis';
 
 export default function HeadcountProjectDetails() {
   const project = useContext(ProjectContext);
@@ -29,7 +29,7 @@ export default function HeadcountProjectDetails() {
     });
   };
 
-  const updateBudget = async (costAnalysis: cost_analysis_type) => {
+  const updateBudget = async (costAnalysis: cost_analysis) => {
     // Se obtienen los Labors Details de la tabla CO Labor Details
     const budget_times = await getCALaborDetails({
       fields: ['cost_analysis_id', 'employee_role', 'people_quantity'],
@@ -96,7 +96,7 @@ export default function HeadcountProjectDetails() {
         <li className="px-4 py-4 sm:px-6 lg:px-10 grid grid-cols-2 grap-y-4 gap-x-8">
           <div>
             <p className="order-first text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
-              {project?.project_id ? project?.project_id : ''}
+              {project?.project_code ? project?.project_code : ''}
             </p>
             {project && project.customer_name && (
               <div>
