@@ -3,12 +3,13 @@ import {
   generateUUID,
   isObjectArray,
   isPlainObject,
+  isReactComponent,
 } from '../../utils';
 import { Fragment, useEffect, useState } from 'react';
 
 export type cell_data = number | string | JSX.Element;
 export type cell_object = { color: string; data: cell_data | cell_data[] };
-export type cell = cell_data | cell_object;
+export type cell = cell_data | cell_object | Element;
 export type row = cell[];
 export type group = { name: string; rows: row[] };
 
@@ -20,7 +21,7 @@ export default function Table(props: {
     dynamic_headers: boolean;
     static_bottom?: boolean;
     vertical_lines?: boolean;
-    max_width?: string;
+    max_width?: true | string;
     row_height?: 'xs' | 'sm' | 'base' | 'none';
     headers?: {
       first_column_size: string;
@@ -77,7 +78,7 @@ export default function Table(props: {
           <div
             className={classNames(
               `inline-block py-2 align-middle w-full -px-8`,
-              `${!styles?.max_width ? 'px-2 sm:px-4' : ''}`,
+              `px-2 sm:px-4`,
             )}
           >
             <div
@@ -312,6 +313,7 @@ export default function Table(props: {
                                       (cell as cell_object).data}
                                     {!isPlainObject(cell) &&
                                       (cell as cell_data)}
+                                    {isReactComponent(cell) ? cell : ''}
                                   </td>
                                 )}
                                 {/* Formato para las siguientes celdas. */}

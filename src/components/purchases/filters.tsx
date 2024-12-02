@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import Select, { selectOption } from '../utils/select';
-import { project_type } from '../../types/project.type';
-import { getProjects as getAirtableProjects } from '../../api/projects';
+import {
+  getProjects as getAirtableProjects,
+  project,
+} from '../../api/projects';
 
 export default function PurchasesReportFilters(props: {
   onSelectCallback: any;
 }) {
   const { onSelectCallback } = props;
-  const [projects, setProjects] = useState<project_type[]>();
+  const [projects, setProjects] = useState<project[]>();
   const [projectOptions, setProjectOptions] = useState<selectOption[]>([]);
 
-  const formatProjects = (projects: project_type[]): selectOption[] => {
+  const formatProjects = (projects: project[]): selectOption[] => {
     const formatted: selectOption[] = projects.map(
       ({ id, Status, project_id, project_name }) => ({
         id: id,
@@ -32,7 +34,7 @@ export default function PurchasesReportFilters(props: {
   };
 
   const getProjects = async () => {
-    const projects_found: project_type[] = await getAirtableProjects({
+    const projects_found: project[] = await getAirtableProjects({
       view: 'BI',
       formula: encodeURI(''),
       fields: [

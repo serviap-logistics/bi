@@ -25,11 +25,6 @@ dist-ssr
 
 # Enviroment
 .env
-.env.local
-.env.production
-.env.testing
-.env.production.local
-.env.development
 
 # Logs
 logs

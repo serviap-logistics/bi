@@ -1,9 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 import { CostAnalysisContext, ProjectContext } from '.';
-import { purchase_type } from '../../types/purchase.type';
 import { USDollar } from '../../utils';
 import Toast from '../utils/toast';
-import { getPurchases as getAirtablePurchases } from '../../api/purchases';
+import {
+  getPurchases as getAirtablePurchases,
+  purchase,
+} from '../../api/purchases';
 
 export default function PurchasesSummary(props: {
   onUpdateSubtotalCallback: any;
@@ -11,9 +13,9 @@ export default function PurchasesSummary(props: {
   const { onUpdateSubtotalCallback } = props;
   const project = useContext(ProjectContext);
   const costAnalysis = useContext(CostAnalysisContext);
-  const [purchases, setPurchases] = useState<purchase_type[]>([]);
+  const [purchases, setPurchases] = useState<purchase[]>([]);
   const getPurchases = async () => {
-    const purchases_found: purchase_type[] = await getAirtablePurchases({
+    const purchases_found: purchase[] = await getAirtablePurchases({
       view: 'BI',
       formula: project
         ? encodeURI(`{project_id}="${project.project_id}"`)

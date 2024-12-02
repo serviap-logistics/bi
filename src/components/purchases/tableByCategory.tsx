@@ -2,10 +2,10 @@ import { useContext, useEffect, useState } from 'react';
 import Table from '../utils/table';
 import { CostAnalysisContext } from '.';
 import { USDollar } from '../../utils';
-import { purchase_type } from '../../types/purchase.type';
 import Toast from '../utils/toast';
+import { purchase } from '../../api/purchases';
 
-export default function TableByCategory(props: { purchases: purchase_type[] }) {
+export default function TableByCategory(props: { purchases: purchase[] }) {
   const { purchases } = props;
   const costAnalysis = useContext(CostAnalysisContext);
   const [table, setTable] = useState<{ columns: string[]; rows: any[] }>({
@@ -42,40 +42,40 @@ export default function TableByCategory(props: { purchases: purchase_type[] }) {
     });
   };
   const updatePurchaseAmounts = (purchases) => {
-    const travel_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) => purchase.Category.includes('Travel'),
+    const travel_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) => purchase.Category.includes('Travel'),
     );
     const travel_total = travel_purchases.reduce((total, purchase) => {
       return total + purchase.total_cost;
     }, 0);
-    const tools_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) =>
+    const tools_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) =>
         purchase.Category.includes('Tools - Tools') ||
         purchase.Category.includes('Tools - Consumables'),
     );
     const tools_total = tools_purchases.reduce((total, purchase) => {
       return total + purchase.total_cost;
     }, 0);
-    const equipment_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) => purchase.Category.includes('Equipment'),
+    const equipment_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) => purchase.Category.includes('Equipment'),
     );
     const equipment_total = equipment_purchases.reduce((total, purchase) => {
       return total + purchase.total_cost;
     }, 0);
-    const lodging_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) => purchase.Category.includes('Lodging'),
+    const lodging_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) => purchase.Category.includes('Lodging'),
     );
     const lodging_total = lodging_purchases.reduce((total, purchase) => {
       return total + purchase.total_cost;
     }, 0);
-    const staffing_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) => purchase.Category.includes('Staffing'),
+    const staffing_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) => purchase.Category.includes('Staffing'),
     );
     const staffing_total = staffing_purchases.reduce((total, purchase) => {
       return total + purchase.total_cost;
     }, 0);
-    const subcontractor_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) => purchase.Category.includes('Subcontractor'),
+    const subcontractor_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) => purchase.Category.includes('Subcontractor'),
     );
     const subcontractor_total = subcontractor_purchases.reduce(
       (total, purchase) => {

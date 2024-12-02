@@ -9,9 +9,9 @@ import {
 import Toast from '../utils/toast';
 import { ReportTypeContext } from './reportByType';
 import { getRegistrationTimes } from '../../api/registration_times';
-import { cost_analysis_type } from '../../types/cost_analysis.type';
 import { getCALaborDetails } from '../../api/ca_labor_details';
 import { getTimesByDay, times_by_day } from '../../api/times_by_day';
+import { cost_analysis } from '../../api/cost_analysis';
 
 type report_data = {
   hours: number;
@@ -62,7 +62,7 @@ export default function HeadcountSummary() {
     });
   };
 
-  const updateBudget = async (costAnalysis: cost_analysis_type) => {
+  const updateBudget = async (costAnalysis: cost_analysis) => {
     // Se obtienen los Labors Details de la tabla CO Labor Details
     const budget_times = await getCALaborDetails({
       fields: ['cost_analysis_id', 'employee_role', 'people_quantity'],

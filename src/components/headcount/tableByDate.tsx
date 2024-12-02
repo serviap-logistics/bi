@@ -1,10 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 import Table from '../utils/table';
-import { getRegistrationTimes } from '../../api/registration_times';
-import { cost_analysis_type } from '../../types/cost_analysis.type';
+import {
+  getRegistrationTimes,
+  registration_time,
+} from '../../api/registration_times';
 import { CostAnalysisContext, ProjectContext } from '.';
 import { ReportTypeContext } from './reportByType';
-import { registration_time_type } from '../../types/registration_time.type';
 import {
   excel_column,
   getDateByTimestamp,
@@ -13,11 +14,11 @@ import {
   groupListBy,
   USDollar,
 } from '../../utils';
-import { getCALaborDetails } from '../../api/ca_labor_details';
-import { ca_labor_detail_type } from '../../types/ca_labor_detail.type';
+import { ca_labor_detail, getCALaborDetails } from '../../api/ca_labor_details';
 import Toast from '../utils/toast';
-import Alert from '../utils/alert';
 import { getTimesByDay, times_by_day } from '../../api/times_by_day';
+import Alert from '../utils/notifications/alert';
+import { cost_analysis } from '../../api/cost_analysis';
 
 type report_data = {
   date: string;
@@ -63,8 +64,8 @@ export default function HeadcountTableByDate(props: {
 
   const [indicators, setIndicators] = useState<day_result_type[]>([]);
 
-  const updateBudget = async (costAnalysis: cost_analysis_type) => {
-    const budget_times: ca_labor_detail_type[] = await getCALaborDetails({
+  const updateBudget = async (costAnalysis: cost_analysis) => {
+    const budget_times: ca_labor_detail[] = await getCALaborDetails({
       view: 'BI',
       fields: [
         'cost_analysis_id',
@@ -105,14 +106,14 @@ export default function HeadcountTableByDate(props: {
   };
 
   const updateRealByDate = async (project_id) => {
-    const real_times: registration_time_type[] = await getRegistrationTimes({
+    const real_times: registration_time[] = await getRegistrationTimes({
       worked: true,
       travel: true,
       waiting: true,
       project_id: project_id,
     });
     const times_formatted = real_times.map(
-      (time_registered: registration_time_type) => {
+      (time_registered: registration_time) => {
         return {
           date: getDateByTimestamp(time_registered.start_date),
           category: time_registered.category,
@@ -129,7 +130,6 @@ export default function HeadcountTableByDate(props: {
           hours: time_registered.total_hours,
           subtotal: time_registered.subtotal,
           week_hours: time_registered.week_hours,
-          perdiem: time_registered.perdiem,
         };
       },
     );

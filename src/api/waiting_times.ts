@@ -1,7 +1,9 @@
 import { ENVIROMENT } from '../settings/enviroment';
-import { airtable_request_type } from '../types/airtable_request.type';
-import { registration_time_type } from '../types/registration_time.type';
-import airtableRequest from './utils/run_airtable_request';
+import { registration_time } from './registration_times';
+import airtableRequest, {
+  airtable_request,
+} from './utils/run_airtable_request';
+
 const { AIRTABLE_HOST, USA_OPERATIONS_BASE, USA_WAITING_TIMES_TABLE } =
   ENVIROMENT;
 
@@ -10,6 +12,7 @@ export type waiting_time = {
   id: string;
   createdTime: string;
   project_id: string;
+  project_code: string;
   project_name: string;
   project_status: string;
   project_start_date: string;
@@ -42,8 +45,8 @@ export type waiting_time = {
 };
 
 export async function getWaitingTimes(
-  settings: airtable_request_type,
-): Promise<registration_time_type[]> {
+  settings: airtable_request,
+): Promise<registration_time[]> {
   const records = await airtableRequest(
     `${AIRTABLE_HOST}/${USA_OPERATIONS_BASE}/${USA_WAITING_TIMES_TABLE}`,
     settings,

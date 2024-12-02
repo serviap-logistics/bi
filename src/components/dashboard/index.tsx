@@ -1,35 +1,31 @@
 import { createContext, useEffect, useState } from 'react';
-import { project_type } from '../../types/project.type';
-import { cost_analysis_type } from '../../types/cost_analysis.type';
 import DashboardFilters from './filters';
-import { getCostAnalysis } from '../../api/cost_analysis';
+import { cost_analysis, getCostAnalysis } from '../../api/cost_analysis';
 import HeadcountSummary from './headcountSummary';
 import PurchasesSummary from './purchasesSummary';
 import ProjectDetails from './projectDetail';
 import FinanceSummary from './financeSummary';
 import DashboardAllProjects from './allProjects';
+import { project } from '../../api/projects';
 
-export const ProjectContext = createContext<project_type | undefined>(
+export const ProjectContext = createContext<project | undefined>(undefined);
+
+export const CostAnalysisContext = createContext<cost_analysis | undefined>(
   undefined,
 );
 
-export const CostAnalysisContext = createContext<
-  cost_analysis_type | undefined
->(undefined);
-
 export default function Dashboard() {
-  const [project, setProject] = useState<project_type | undefined>();
-  const [costAnalysis, setCostAnalysis] = useState<
-    cost_analysis_type | undefined
-  >();
+  const [project, setProject] = useState<project | undefined>();
+  const [costAnalysis, setCostAnalysis] = useState<cost_analysis | undefined>();
   const [headcountSubtotal, setHeadcountSubtotal] = useState<number>(0);
   const [purchasesSubtotal, setPurchasesSubtotal] = useState<number>(0);
 
   const updateCostAnalysis = async (cost_analysis_id: string) => {
-    const cost_analysis: cost_analysis_type[] = await getCostAnalysis({
+    const cost_analysis: cost_analysis[] = await getCostAnalysis({
       view: 'BI',
       fields: [
         'cost_analysis_id',
+        'cost_analysis_code',
         'total_labor_cost',
         'total_labor_hours',
         'start_date',

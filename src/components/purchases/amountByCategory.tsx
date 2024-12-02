@@ -8,10 +8,10 @@ import {
   UserGroupIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
-import { purchase_type } from '../../types/purchase.type';
+import { purchase } from '../../api/purchases';
 
 export default function PurchasesAmountsByCategory(props: {
-  purchases: purchase_type[];
+  purchases: purchase[];
 }) {
   const { purchases } = props;
   const [results, setResults] = useState({
@@ -60,25 +60,25 @@ export default function PurchasesAmountsByCategory(props: {
   });
 
   const updateResults = (purchases) => {
-    const travel_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) => purchase.Category.includes('Travel'),
+    const travel_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) => purchase.Category.includes('Travel'),
     );
-    const tools_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) =>
+    const tools_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) =>
         purchase.Category.includes('Tools - Tools') ||
         purchase.Category.includes('Tools - Consumables'),
     );
-    const equipment_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) => purchase.Category.includes('Equipment'),
+    const equipment_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) => purchase.Category.includes('Equipment'),
     );
-    const lodging_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) => purchase.Category.includes('Lodging'),
+    const lodging_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) => purchase.Category.includes('Lodging'),
     );
-    const staffing_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) => purchase.Category.includes('Staffing'),
+    const staffing_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) => purchase.Category.includes('Staffing'),
     );
-    const subcontractor_purchases: purchase_type[] = purchases.filter(
-      (purchase: purchase_type) => purchase.Category.includes('Subcontractor'),
+    const subcontractor_purchases: purchase[] = purchases.filter(
+      (purchase: purchase) => purchase.Category.includes('Subcontractor'),
     );
 
     const travel_total = travel_purchases.reduce((total, purchase) => {
