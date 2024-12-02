@@ -7,43 +7,6 @@ import airtableRequest, {
 const { AIRTABLE_HOST, USA_OPERATIONS_BASE, USA_WORKED_TIMES_TABLE } =
   ENVIROMENT;
 
-export type worked_time = {
-  category: 'WORKED';
-  id: string;
-  createdTime: string;
-  project_id: string;
-  project_code: string;
-  project_name: string;
-  project_status: string;
-  project_start_date: string;
-  project_end_date: string;
-  site_name: string;
-  site_address: string;
-
-  employee_id: string;
-  employee_role: string;
-
-  day: string;
-  start_date: string;
-  end_date: string;
-  week: string;
-  week_hours: number;
-
-  regular_hour_cost: number;
-  regular_hours: number;
-  regular_cost: number;
-
-  overtime_hour_cost: number;
-  overtime_hours: number;
-  overtime_cost: number;
-
-  total_cost: number;
-  total_hours: number;
-  subtotal: number;
-
-  perdiem: boolean;
-};
-
 export async function getWorkedTimes(
   settings: airtable_request,
 ): Promise<registration_time[]> {
@@ -52,7 +15,7 @@ export async function getWorkedTimes(
     settings,
   );
   return records.map(
-    (record): worked_time => ({
+    (record): registration_time => ({
       ...record,
       category: 'WORKED',
       regular_hour_cost: record.regular_hour_cost,

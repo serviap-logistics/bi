@@ -6,7 +6,6 @@ import { excel_column, generateExcel } from '../../utils';
 import { saveAs } from 'file-saver';
 import AllProjectsTableByAmounts from './allProjectsTableByAmounts';
 import AllProjectsTableByWeek from './allProjectsTableByWeek';
-import { useNotification } from '../utils/notifications/context';
 import { getProjects } from '../../api/projects';
 import { getCostAnalysis } from '../../api/cost_analysis';
 
@@ -96,7 +95,6 @@ export default function DashboardAllProjects() {
 
   const [excelRows, setExcelRows] = useState([]);
   const [excelColumns, setExcelColumns] = useState<excel_column[]>([]);
-  const { addNotification, removeNotification } = useNotification();
   const onChangeRows = (rows) => {
     setExcelRows(rows);
   };
@@ -105,7 +103,6 @@ export default function DashboardAllProjects() {
   };
 
   const handleExportAsExcel = async () => {
-    const alertID = addNotification({ label: 'Generating...', status: 'info' });
     const settings = { mergeCells: [] };
     const buffer = await generateExcel(
       [
@@ -117,12 +114,10 @@ export default function DashboardAllProjects() {
       ],
       settings,
     );
-    removeNotification(alertID);
     saveAs(
       new Blob([buffer as Buffer]),
       `AMOUNTS (${reportType.replace('_', ' ')}).xlsx`,
     );
-    addNotification({ label: 'Export complete!', status: 'success' });
   };
 
   useEffect(() => {
