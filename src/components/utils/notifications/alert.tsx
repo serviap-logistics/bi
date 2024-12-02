@@ -1,13 +1,14 @@
 import { XCircleIcon } from '@heroicons/react/20/solid';
-import { classNames } from '../../utils';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { classNames } from '../../../utils';
 
-export default function Alert(props: {
+export type alert = {
   status: 'success' | 'info' | 'warning' | 'error';
   label: string;
   details?: string | string[];
   buttons?: [{ label: string; action: any }];
-}) {
+};
+export default function Alert(props: alert) {
   const { status, label, details, buttons } = props;
   const status_color =
     status === 'success'
@@ -19,14 +20,23 @@ export default function Alert(props: {
           : status === 'error'
             ? 'red'
             : 'slate';
-  const bg_color = `bg-${status_color}-200`;
+  const bg_color =
+    status === 'success'
+      ? 'bg-teal-300'
+      : status === 'info'
+        ? 'bg-blue-300/100'
+        : status === 'warning'
+          ? 'yellow'
+          : status === 'error'
+            ? 'red'
+            : 'slate';
   const text_base_color = `text-${status_color}-400`;
   const text_bold_color = `text-${status_color}-700`;
   const text_heading_color = `text-${status_color}-800`;
 
   return (
-    <div className={classNames(`rounded-md p-4`, bg_color)}>
-      <div className="flex">
+    <div className={classNames(`z-50 rounded-md p-4`, bg_color)}>
+      <div className={classNames('flex')}>
         <div className="flex-shrink-0">
           {status === 'error' && (
             <XCircleIcon
@@ -66,11 +76,11 @@ export default function Alert(props: {
                       type="button"
                       className={classNames(
                         'rounded-md px-2 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2',
-                        `bg-${status_color}-50`,
-                        `text-${status_color}-800`,
-                        `hover:bg-${status_color}-100`,
-                        `focus:ring-${status_color}-600`,
-                        `focus:ring-offset-${status_color}-50`,
+                        // `bg-${status_color}-50`,
+                        // `text-${status_color}-800`,
+                        // `hover:bg-${status_color}-100`,
+                        // `focus:ring-${status_color}-600`,
+                        // `focus:ring-offset-${status_color}-50`,
                       )}
                     >
                       {button.label}

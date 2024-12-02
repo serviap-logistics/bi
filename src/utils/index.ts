@@ -87,6 +87,10 @@ export const isObjectArray = (arr) => {
   );
 };
 
+export const isReactComponent = (obj) => {
+  return React.isValidElement(obj);
+};
+
 import { v4 } from 'uuid';
 export const generateUUID = () => v4();
 
@@ -116,6 +120,7 @@ export const generateColorStatus = (value: number) => {
 };
 
 import ExcelJS from 'exceljs';
+import React from 'react';
 export type excel_column = { header: string; key: string; width: number };
 export type excel_cell = string | number;
 export type excel_page = {

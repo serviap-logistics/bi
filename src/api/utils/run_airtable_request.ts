@@ -1,7 +1,13 @@
 import { airtable_request_options } from '../../settings/airtableRequestSettings';
-import { airtable_request_type } from '../../types/airtable_request.type';
 
-export const generateEncode = (props: airtable_request_type) => {
+export type airtable_request = {
+  view: string;
+  fields: string[] | undefined;
+  formula?: string;
+  offset?: string | undefined;
+};
+
+export const generateEncode = (props: airtable_request) => {
   let encode =
     '?' +
     (props?.view != undefined ? `view=${props.view}&` : '') +
@@ -17,7 +23,7 @@ export const generateEncode = (props: airtable_request_type) => {
 
 export default async function airtableRequest(
   endpoint: string,
-  settings: airtable_request_type,
+  settings: airtable_request,
 ) {
   const records_found: any[] = [];
   try {

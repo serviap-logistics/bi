@@ -1,41 +1,83 @@
 import { useEffect, useState } from 'react';
-import Table, { group, row } from '../utils/table';
-import { getRegistrationTimes } from '../../api/registration_times';
-import { registration_time_type } from '../../types/registration_time.type';
+import Table, { group } from '../utils/table';
+import {
+  getRegistrationTimes,
+  registration_time,
+} from '../../api/registration_times';
 import { excel_cell, excel_column, groupListBy, USDollar } from '../../utils';
-import Alert from '../utils/alert';
-import { purchase_type } from '../../types/purchase.type';
-import { getPurchases as getAirtablePurchases } from '../../api/purchases';
+import {
+  getPurchases as getAirtablePurchases,
+  purchase,
+} from '../../api/purchases';
 import { tabs_menu_option_type } from '../utils/tabsMenu';
-// import { getSites } from '../../api/sites';
 import PillsMenu from '../utils/pillsMenu';
+import { getSites } from '../../api/sites';
+import Alert from '../utils/notifications/alert';
 
-/*
-function CustomCellData(props: {
-  site: string;
-  address: string;
+function ProjectData(props: {
+  project_code: string;
+  project_name: string;
+  status: string;
   start_date: string;
   end_date: string;
 }) {
   return (
     <div className="flex flex-col">
-      <span>{props.site}</span>
-      <span className="text-xs text-slate-400 text-wrap">{props.address}</span>
-      <span className="text-xs text-slate-400">Start: {props.start_date}</span>
-      <span className="text-xs text-slate-400">
-        Completion: {props.end_date}
+      <span className="text-slate-800">{props.project_code}</span>
+      <span className="text-xs text-slate-500 text-wrap">
+        {props.project_name}
       </span>
+      <span className="text-xs text-slate-700 text-wrap font-semibold">
+        {props.status ?? <p className="text-red-400">Status not specified</p>}
+      </span>
+      {props.start_date && (
+        <span className="text-xs text-slate-500">
+          Start: {props.start_date}
+        </span>
+      )}
+      {props.end_date && (
+        <span className="text-xs text-slate-500">
+          Completion: {props.end_date}
+        </span>
+      )}
     </div>
   );
 }
-*/
+
+function SiteData(props: { site: string; address: string }) {
+  return (
+    <div className="flex flex-col">
+      <span>{props.site}</span>
+      <span className="text-xs text-slate-400 text-wrap">{props.address}</span>
+    </div>
+  );
+}
 type display_types_available = 'BY_PROJECT' | 'BY_SITE';
 const DEFAULT_DISPLAY_OPTION = 'BY_PROJECT';
 
 export default function AllProjectsTableByWeek(props: {
   excelRowsCallback: any;
   excelColumnsCallback: any;
+  projects: object;
 }) {
+  const [sitesAvailable, setSitesAvailable] = useState<object>({});
+
+  const updateSitesAvailable = async () => {
+    const sitesFound = await getSites({
+      view: 'BI',
+      fields: ['site_id', 'site_code', 'site_address'],
+    });
+    const result = {};
+    sitesFound.map((site) => {
+      result[site.site_id] = {
+        site_code: site.site_code,
+        site_address: site.site_address,
+      };
+    });
+    console.log('Sites: ', result);
+    setSitesAvailable(result);
+  };
+
   const { excelRowsCallback, excelColumnsCallback } = props;
   const [displayOptions, setDisplayOptions] = useState<tabs_menu_option_type[]>(
     [
@@ -59,16 +101,10 @@ export default function AllProjectsTableByWeek(props: {
     }
   };
 
-  const getPurchases = async (): Promise<purchase_type[]> => {
-    const purchases_found: purchase_type[] = await getAirtablePurchases({
+  const getPurchases = async (): Promise<purchase[]> => {
+    const purchases_found: purchase[] = await getAirtablePurchases({
       view: 'BI',
-      fields: [
-        'project_id',
-        'week',
-        'site_name',
-        'status_request',
-        'total_cost',
-      ],
+      fields: ['project_id', 'week', 'site_id', 'status_request', 'total_cost'],
     });
     return purchases_found;
   };
@@ -94,15 +130,15 @@ export default function AllProjectsTableByWeek(props: {
     );
 
     // Calculando costos de horas POR proyecto.
-    const rawTimes: registration_time_type[] = await getRegistrationTimes({
+    const rawTimes: registration_time[] = await getRegistrationTimes({
       worked: true,
       travel: true,
       waiting: true,
     });
-    const times = rawTimes.map((time_registered: registration_time_type) => {
+    const times = rawTimes.map((time_registered: registration_time) => {
       return {
         project_id: time_registered.project_id,
-        site_name: time_registered.site_name,
+        site_id: time_registered.site_id,
         week: time_registered.week,
         subtotal: time_registered.subtotal,
       };
@@ -166,7 +202,6 @@ export default function AllProjectsTableByWeek(props: {
       ]
         .filter((week) => week !== 'undefined')
         .sort();
-      console.log('Weeks: ', weeks_available);
       const rows: string[][] = [];
       Object.entries(results_by_week).map(
         ([project_id, weeks]: [string, any]) => {
@@ -184,69 +219,85 @@ export default function AllProjectsTableByWeek(props: {
           rows.push(row);
         },
       );
-      console.log('Results: ', rows);
-      setRows(rows);
       setColumns(['Project', 'No date', ...weeks_available]);
+      setRows(
+        rows.map((cells) => [
+          <ProjectData
+            project_code={cells[0]}
+            project_name={props.projects[cells[0]]?.name}
+            status={props.projects[cells[0]]?.status}
+            start_date={props.projects[cells[0]]?.start_date}
+            end_date={props.projects[cells[0]]?.end_date}
+          />,
+          ...cells.slice(1),
+        ]),
+      );
       excel_columns = [
-        { header: 'Project ID', key: 'PROJECT_ID', width: 25 },
-        { header: 'No Date', key: 'NO DATE', width: 15 },
+        { header: 'Project ID', key: 'PROJECT_ID', width: 23 },
+        { header: 'Project Name', key: 'PROJECT_NAME', width: 28 },
+        { header: 'Status', key: 'PROJECT_STATUS', width: 20 },
+        { header: 'Start Project', key: 'PROJECT_START_DATE', width: 15 },
+        { header: 'End Project', key: 'PROJECT_END_DATE', width: 15 },
+        { header: 'No Date', key: 'NO_DATE', width: 15 },
         ...weeks_available.map((week) => ({
           header: week,
           key: week.toUpperCase(),
           width: 15,
         })),
       ];
-      excel_rows = rows;
+      excel_rows = rows.map((cells) => [
+        cells[0],
+        props.projects[cells[0]]?.name,
+        props.projects[cells[0]]?.status,
+        props.projects[cells[0]]?.start_date,
+        props.projects[cells[0]]?.end_date,
+        ...cells.slice(1),
+      ]);
     } else if (displayOption === 'BY_SITE') {
       let weeks_available: string[] = [];
-      // const allSites = async () =>
-      //   await getSites({
-      //     view: 'BI',
-      //     fields: ['site_name', 'site_address', 'customer_name'],
-      //   });
       Object.entries(expenses).map(
         ([project_id, project_data]: [string, any]) => {
-          // project_data: {purchases: [], times: []}
           if (!results_by_week[project_id]) results_by_week[project_id] = {};
           if (project_data?.purchases) {
             const purchases_by_site = groupListBy(
-              'site_name',
+              'site_id',
               project_data.purchases,
             );
             Object.entries(purchases_by_site).map(
-              ([site, purchases]: [string, any]) => {
-                if (!results_by_week[project_id][site])
-                  results_by_week[project_id][site] = {};
+              ([site_id, purchases]: [string, any]) => {
+                if (!results_by_week[project_id][site_id])
+                  results_by_week[project_id][site_id] = {};
                 const purchases_by_week = groupListBy('week', purchases);
                 Object.entries(purchases_by_week).map(
                   ([week, purchases]: [string, any]) => {
                     if (!weeks_available.includes(week))
                       weeks_available.push(week);
-                    results_by_week[project_id][site][week] = purchases.reduce(
-                      (total, purchase) => (total += purchase.total_cost),
-                      0,
-                    );
-                    console.log(results_by_week[project_id][site]);
+                    results_by_week[project_id][site_id][week] =
+                      purchases.reduce(
+                        (total, purchase) => (total += purchase.total_cost),
+                        0,
+                      );
                   },
                 );
               },
             );
           }
           if (project_data?.times) {
-            const times_by_site = groupListBy('site_name', project_data.times);
+            const times_by_site = groupListBy('site_id', project_data.times);
             Object.entries(times_by_site).map(
-              ([site, times]: [string, any]) => {
-                if (!results_by_week[project_id][site])
+              ([site_id, times]: [string, any]) => {
+                if (!results_by_week[project_id][site_id])
                   results_by_week[project_id][
-                    site !== 'undefined' ? site : 'No site'
+                    site_id !== 'undefined' ? site_id : 'No site'
                   ] = {};
                 const sites_by_week = groupListBy('week', times);
                 Object.entries(sites_by_week).map(
                   ([week, purchases]: [string, any]) => {
-                    results_by_week[project_id][site][week] = purchases.reduce(
-                      (total, purchase) => (total += purchase.subtotal),
-                      0,
-                    );
+                    results_by_week[project_id][site_id][week] =
+                      purchases.reduce(
+                        (total, purchase) => (total += purchase.subtotal),
+                        0,
+                      );
                   },
                 );
               },
@@ -257,13 +308,26 @@ export default function AllProjectsTableByWeek(props: {
       weeks_available = weeks_available
         .filter((week) => week !== 'undefined')
         .sort();
+      excel_columns = [
+        { header: 'Site', key: 'PROJECT_ID', width: 25 },
+        { header: 'No Date', key: 'NO DATE', width: 15 },
+        ...weeks_available.map((week) => ({
+          header: week,
+          key: week.toUpperCase(),
+          width: 15,
+        })),
+      ];
       const groups: group[] = [];
       Object.entries(results_by_week).map(
         ([project_id, sites]: [string, any]) => {
           // Se agrega al inicio del renglon, el ID de projecto.
-          const group_data: group = { name: project_id, rows: [] };
+          const group_data: group = {
+            name: `${project_id} - ${props.projects[project_id]?.name ?? 'Unnamed Project'}`,
+            rows: [],
+          };
+          excel_rows.push([project_id]);
           Object.entries(sites).map(([site, weeks]: [string, any]) => {
-            const row: row = [];
+            const row: excel_cell[] = [];
             // Se agrega el nombre del sitio.
             row.push(site);
             // Se agrega el total SIN fecha.
@@ -275,24 +339,26 @@ export default function AllProjectsTableByWeek(props: {
               if (!weeks[week]) row.push(USDollar.format(0));
               else row.push(USDollar.format(weeks[week]));
             });
+            excel_rows.push(row);
             group_data.rows.push(row);
           });
           groups.push(group_data);
         },
       );
-      console.log('Results: ', groups);
-      setRows(groups);
-      // setColumns(['Project', 'No date', ...weeks_available]);
-      // excel_columns = [
-      //   { header: 'Project ID', key: 'PROJECT_ID', width: 25 },
-      //   { header: 'No Date', key: 'NO DATE', width: 15 },
-      //   ...weeks_available.map((week) => ({
-      //     header: week,
-      //     key: week.toUpperCase(),
-      //     width: 15,
-      //   })),
-      // ];
-      // excel_rows = rows;
+      setColumns(['Project', 'No date', ...weeks_available]);
+      const formatted_groups = groups.map((group) => ({
+        name: group.name,
+        rows: group.rows.map((row) => [
+          <SiteData
+            site={sitesAvailable[row[0] as string]?.site_code}
+            address={sitesAvailable[row[0] as string]?.site_address}
+          />,
+          ...row.slice(1),
+        ]),
+      }));
+      console.log('Sites: ', sitesAvailable);
+      console.log('Results: ', formatted_groups);
+      setRows(formatted_groups);
     }
     excelColumnsCallback(excel_columns);
     excelRowsCallback(excel_rows);
@@ -307,6 +373,10 @@ export default function AllProjectsTableByWeek(props: {
   useEffect(() => {
     updateExpenses();
   }, []);
+
+  useEffect(() => {
+    if (displayOption === 'BY_SITE') updateSitesAvailable();
+  }, [displayOption]);
 
   return (
     <div className="max-w-full relative">

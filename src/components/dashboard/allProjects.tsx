@@ -1,11 +1,13 @@
 import { ArrowDownCircleIcon } from '@heroicons/react/24/outline';
 import PillsMenu from '../utils/pillsMenu';
 import { tabs_menu_option_type } from '../utils/tabsMenu';
-import { createContext, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { excel_column, generateExcel } from '../../utils';
 import { saveAs } from 'file-saver';
 import AllProjectsTableByAmounts from './allProjectsTableByAmounts';
 import AllProjectsTableByWeek from './allProjectsTableByWeek';
+import { getProjects } from '../../api/projects';
+import { getCostAnalysis } from '../../api/cost_analysis';
 
 type report_types_available = 'BY_WEEK' | 'BY_PROJECT';
 const DEFAULT_REPORT_TYPE = 'BY_PROJECT';
@@ -20,6 +22,64 @@ export default function DashboardAllProjects() {
     { key: 'BY_PROJECT', current: true, name: 'By Project', icon: undefined },
     { key: 'BY_WEEK', current: false, name: 'By Week', icon: undefined },
   ]);
+  const [projectsAvailable, setProjectsAvailable] = useState<object>({});
+
+  const updateProjectsAvailable = async () => {
+    const result = {};
+    const projectsFound = await getProjects({
+      view: 'BI',
+      fields: [
+        'project_id',
+        'project_name',
+        'customer_id',
+        'cost_analysis_id',
+        'Status',
+        'start_date',
+        'end_date',
+      ],
+    });
+
+    // Se obtienen almacenan los proyectos que si TIENEN UN analisis de costos
+    // además de guardarlos en el catálogo 'result'.
+    const usedAnalysis = projectsFound
+      .filter((project) => project.cost_analysis_id != undefined)
+      .map((project) => {
+        result[project.project_id] = {
+          name: project?.project_name,
+          status: project?.Status,
+          start_date: project?.start_date,
+          end_date: project?.end_date,
+          type: 'project',
+        };
+        return project.cost_analysis_id;
+      });
+
+    const analysisFound = await getCostAnalysis({
+      view: 'BI',
+      fields: [
+        'cost_analysis_id',
+        'project_name',
+        'Status',
+        'start_date',
+        'end_date',
+      ],
+    });
+
+    // Se obtienen todos los analisis de costos que NO esten asignados a un projecto.
+    analysisFound
+      .filter((analysis) => !usedAnalysis.includes(analysis.cost_analysis_id))
+      .map((analysis) => {
+        result[analysis.cost_analysis_id] = {
+          name: analysis.project_name,
+          status: analysis.Status,
+          start_date: analysis.start_date,
+          end_date: analysis.end_date,
+          type: 'cost_analysis',
+        };
+      });
+
+    setProjectsAvailable(result);
+  };
 
   const handleChangeReport = (tab: tabs_menu_option_type) => {
     if (reportType !== tab.key) {
@@ -60,6 +120,10 @@ export default function DashboardAllProjects() {
     );
   };
 
+  useEffect(() => {
+    updateProjectsAvailable();
+  }, []);
+
   return (
     <div className="overflow-hidden bg-white sm:rounded-md">
       <ul role="list" className="divide-y divide-gray-200">
@@ -93,7 +157,7 @@ export default function DashboardAllProjects() {
           </div>
         </li>
         {/* Seccion con titulo y la tabla de reporte. */}
-        <li className="px-2 py-4 flex flex-col justify-center">
+        <li className="py-4 flex flex-col justify-center">
           <span className="bg-white px-3 text-base text-center font-semibold leading-6 text-gray-900">
             {'Summary ' +
               reportTypes.find((tab) => tab.current)?.name.toLowerCase()}
@@ -102,12 +166,14 @@ export default function DashboardAllProjects() {
             <AllProjectsTableByAmounts
               excelRowsCallback={onChangeRows}
               excelColumnsCallback={onChangeColumns}
+              projects={projectsAvailable}
             />
           )}
           {reportType === 'BY_WEEK' && (
             <AllProjectsTableByWeek
               excelRowsCallback={onChangeRows}
               excelColumnsCallback={onChangeColumns}
+              projects={projectsAvailable}
             />
           )}
         </li>

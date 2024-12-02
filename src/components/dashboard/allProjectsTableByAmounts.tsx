@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
 import Table from '../utils/table';
-import { getRegistrationTimes } from '../../api/registration_times';
-import { cost_analysis_type } from '../../types/cost_analysis.type';
-import { registration_time_type } from '../../types/registration_time.type';
+import {
+  getRegistrationTimes,
+  registration_time,
+} from '../../api/registration_times';
 import {
   cloneObject,
   excel_column,
@@ -11,14 +12,17 @@ import {
   USDollar,
 } from '../../utils';
 import Toast from '../utils/toast';
-import Alert from '../utils/alert';
 import { ReportTypeContext } from './allProjects';
-import { purchase_type } from '../../types/purchase.type';
-import { getPurchases as getAirtablePurchases } from '../../api/purchases';
-import { getCostAnalysis } from '../../api/cost_analysis';
+import {
+  getPurchases as getAirtablePurchases,
+  purchase,
+} from '../../api/purchases';
+import { cost_analysis, getCostAnalysis } from '../../api/cost_analysis';
+import { getProjects } from '../../api/projects';
+import Alert from '../utils/notifications/alert';
 
 function CustomCellData(props: {
-  project_id: string;
+  project_code: string;
   project_name: string;
   start_date: string;
   end_date: string;
@@ -26,7 +30,7 @@ function CustomCellData(props: {
 }) {
   return (
     <div className="flex flex-col">
-      <span className="text-slate-800">{props.project_id}</span>
+      <span className="text-slate-800">{props.project_code}</span>
       <span className="text-xs text-slate-500 text-wrap">
         {props.project_name}
       </span>
@@ -50,6 +54,7 @@ function CustomCellData(props: {
 export default function AllProjectsTableByAmounts(props: {
   excelRowsCallback: any;
   excelColumnsCallback: any;
+  projects: object;
 }) {
   const { excelRowsCallback, excelColumnsCallback } = props;
   const reportType = useContext(ReportTypeContext);
@@ -60,16 +65,70 @@ export default function AllProjectsTableByAmounts(props: {
   const [indicators, setIndicators] = useState<object>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [projectsAvailable, setProjectsAvailable] = useState<object>({});
-  const [costAnalysisAvailable, setCostAnalysisAvailable] = useState<object>(
-    {},
-  );
 
-  const getPurchases = async (): Promise<purchase_type[]> => {
-    const purchases_found: purchase_type[] = await getAirtablePurchases({
+  const updateProjectsAvailable = async () => {
+    const result = {};
+    const projectsFound = await getProjects({
+      view: 'BI',
+      fields: [
+        'project_id',
+        'project_name',
+        'cost_analysis_id',
+        'Status',
+        'start_date',
+        'end_date',
+      ],
+    });
+
+    // Se obtienen almacenan los proyectos que si TIENEN UN analisis de costos
+    // además de guardarlos en el catálogo 'result'.
+    const usedAnalysis = projectsFound
+      .filter((project) => project.cost_analysis_id != undefined)
+      .map((project) => {
+        result[project.project_id] = {
+          name: project?.project_name,
+          status: project?.Status,
+          start_date: project?.start_date,
+          end_date: project?.end_date,
+          type: 'project',
+        };
+        return project.cost_analysis_id;
+      });
+
+    const analysisFound = await getCostAnalysis({
+      view: 'BI',
+      fields: [
+        'cost_analysis_id',
+        'project_name',
+        'Status',
+        'start_date',
+        'end_date',
+      ],
+    });
+
+    // Se obtienen todos los analisis de costos que NO esten asignados a un projecto.
+    analysisFound
+      .filter((analysis) => !usedAnalysis.includes(analysis.cost_analysis_id))
+      .map((analysis) => {
+        result[analysis.cost_analysis_id] = {
+          name: analysis.project_name,
+          status: analysis.Status,
+          start_date: analysis.start_date,
+          end_date: analysis.end_date,
+          type: 'cost_analysis',
+        };
+      });
+
+    setProjectsAvailable(result);
+  };
+
+  const getPurchases = async (): Promise<purchase[]> => {
+    const purchases_found: purchase[] = await getAirtablePurchases({
       view: 'BI',
       fields: [
         'cost_analysis_id',
         'project_id',
+        'project_code',
         'project_name',
         'project_status',
         'project_start_date',
@@ -83,10 +142,11 @@ export default function AllProjectsTableByAmounts(props: {
   };
 
   const updateBudget = async () => {
-    const budget_costs: cost_analysis_type[] = await getCostAnalysis({
+    const budget_costs: cost_analysis[] = await getCostAnalysis({
       view: 'BI',
       fields: [
         'cost_analysis_id',
+        'cost_analysis_code',
         'total_cost',
         'project_name',
         'start_date',
@@ -110,36 +170,14 @@ export default function AllProjectsTableByAmounts(props: {
     );
     const grouped_by_CA = groupListBy('cost_analysis_id', budget_formatted);
     const reduced_CA = cloneObject(grouped_by_CA);
-    const reduced_names_CA = cloneObject(grouped_by_CA);
     Object.entries(reduced_CA).map(
       ([cost_analysis_id, CAs_found]: [string, any]) => {
         reduced_CA[cost_analysis_id] = CAs_found.reduce(
           (total, cost_analysis) => cost_analysis.total_cost + total,
           0,
         );
-        // En teoria, todos los analisis de costos cuentan con un nombre aparte del ID de cotizacion
-        // por lo tanto, siempre habra al menos un dato.
-        reduced_names_CA[cost_analysis_id] = {
-          name: [
-            ...new Set(
-              CAs_found.map((cost_analysis) => cost_analysis.project_name),
-            ),
-          ][0],
-          start_date: [
-            ...new Set(
-              CAs_found.map((cost_analysis) => cost_analysis.start_date),
-            ),
-          ][0],
-          end_date: [
-            ...new Set(
-              CAs_found.map((cost_analysis) => cost_analysis.end_date),
-            ),
-          ][0],
-          status: 'On Quotation',
-        };
       },
     );
-    setCostAnalysisAvailable(reduced_names_CA);
     setBudgets(reduced_CA);
   };
 
@@ -148,40 +186,25 @@ export default function AllProjectsTableByAmounts(props: {
     const purchases = await getPurchases();
     const purchases_grouped_by_project = groupListBy('project_id', purchases);
     const reduced_purchases = cloneObject(purchases_grouped_by_project);
-    const project_names = cloneObject(purchases_grouped_by_project);
     Object.entries(reduced_purchases).map(
       ([project, purchases]: [string, any]) => {
         reduced_purchases[project] = purchases.reduce(
           (total, purchase) => purchase.total_cost + total,
           0,
         );
-        project_names[project] = {
-          name: [...new Set(purchases.map((record) => record.project_name))][0],
-          start_date: [
-            ...new Set(purchases.map((record) => record.project_start_date)),
-          ][0],
-          end_date: [
-            ...new Set(purchases.map((record) => record.project_end_date)),
-          ][0],
-          status: [
-            ...new Set(purchases.map((record) => record.project_status)),
-          ][0],
-        };
       },
     );
 
     // Calculando costos de horas POR proyecto.
-    const real_times: registration_time_type[] = await getRegistrationTimes({
+    const real_times: registration_time[] = await getRegistrationTimes({
       worked: true,
       travel: true,
       waiting: true,
     });
     const times_formatted = real_times.map(
-      (time_registered: registration_time_type) => {
+      (time_registered: registration_time) => {
         return {
           project_id: time_registered.project_id,
-          project_name: time_registered.project_name,
-          project_status: time_registered.project_status,
           project_start_date: time_registered.project_start_date,
           project_end_date: time_registered.project_end_date,
           subtotal: time_registered.subtotal,
@@ -196,20 +219,6 @@ export default function AllProjectsTableByAmounts(props: {
           (total, time_record) => time_record.subtotal + total,
           0,
         );
-        project_names[project] = {
-          name: [
-            ...new Set(times_found.map((record) => record.project_name)),
-          ][0],
-          start_date: [
-            ...new Set(times_found.map((record) => record.project_start_date)),
-          ][0],
-          end_date: [
-            ...new Set(times_found.map((record) => record.project_end_date)),
-          ][0],
-          status: [
-            ...new Set(times_found.map((record) => record.project_status)),
-          ][0],
-        };
       },
     );
 
@@ -224,7 +233,6 @@ export default function AllProjectsTableByAmounts(props: {
       if (!merged_totals[project]) merged_totals[project] = total;
       else merged_totals[project] += total;
     });
-    setProjectsAvailable(project_names);
     setReals(merged_totals);
   };
 
@@ -268,42 +276,35 @@ export default function AllProjectsTableByAmounts(props: {
     setIndicators(results);
   };
 
-  const formatAsTable = () => {
-    console.log('CA: ');
-    console.log(costAnalysisAvailable);
-    console.log('Projects: ');
-    console.log(projectsAvailable);
-    const project_names = { ...costAnalysisAvailable, ...projectsAvailable };
-    console.log('All projects: ');
-    console.log(project_names);
+  const formatAsTable = (projectsAvailable) => {
     // Se genera un arreglo que representa los renglones en la tabla.
     // Cada renglon tiene los totales POR DIA.
     const rows = Object.entries(indicators).map(([project_id, values]) => {
-      // Celda 1: Fecha
-      const project = project_id;
-      // Celda 2: Presupuesto (dependiendo del tipo de reporte)
-      const budget = USDollar.format(values.budget) + ' USD';
-      // Celda 3: Real (dependiendo del tipo de reporte)
-      const real = USDollar.format(values.real) + ' USD';
-      // Celda 4: Diferencia (dependiendo del tipo de reporte)
-      const difference = USDollar.format(values.difference) + ' USD';
-      // Celda 5: % Usado (dependiendo del tipo de reporte)
-      const percentage_used = values.percentage.value.toFixed(2);
       return [
+        // Celda 1: Datos del proyecto.
         <CustomCellData
-          project_id={project}
-          project_name={project_names[project].name}
-          start_date={project_names[project].start_date}
-          end_date={project_names[project].end_date}
-          status={project_names[project].status}
+          project_code={project_id ?? 'Project without code!'}
+          project_name={
+            projectsAvailable[project_id]?.name ??
+            `Unnamed ${projectsAvailable[project_id]?.type.replace('_', ' ')}`
+          }
+          start_date={projectsAvailable[project_id]?.start_date}
+          end_date={projectsAvailable[project_id]?.end_date}
+          status={projectsAvailable[project_id]?.status}
         />,
-        budget,
-        real,
-        difference,
+        // Celda 2: Presupuesto (dependiendo del tipo de reporte)
+        USDollar.format(values.budget) + ' USD',
+        // Celda 3: Real (dependiendo del tipo de reporte)
+        USDollar.format(values.real) + ' USD',
+        // Celda 4: Diferencia (dependiendo del tipo de reporte)
+        USDollar.format(values.difference) + ' USD',
+        // Celda 5: % Usado (dependiendo del tipo de reporte)
         <Toast
           text={
             values.percentage.status !== 'NO BUDGET!'
-              ? percentage_used + '% ' + values.percentage.status
+              ? values.percentage.value.toFixed(2) +
+                '% ' +
+                values.percentage.status
               : 'NO BUDGET!'
           }
           text_size="text-sm"
@@ -340,9 +341,9 @@ export default function AllProjectsTableByAmounts(props: {
 
   useEffect(() => {
     if (Object.keys(indicators).length > 0) {
-      formatAsTable();
+      formatAsTable(projectsAvailable);
     }
-  }, [indicators, reportType]);
+  }, [indicators, reportType, projectsAvailable]);
 
   useEffect(() => {
     if (Object.keys(budgets).length > 0 || Object.keys(reals).length > 0) {
@@ -351,20 +352,7 @@ export default function AllProjectsTableByAmounts(props: {
   }, [budgets, reals]);
 
   useEffect(() => {
-    if (Object.keys(costAnalysisAvailable).length > 0) {
-      // console.log('New CAs! ', costAnalysisAvailable);
-      // console.log('Count:', Object.keys(costAnalysisAvailable).length);
-    }
-  }, [costAnalysisAvailable]);
-
-  useEffect(() => {
-    if (Object.keys(projectsAvailable).length > 0) {
-      // console.log('New projects! ', projectsAvailable);
-      // console.log('Count:', Object.keys(projectsAvailable).length);
-    }
-  }, [projectsAvailable]);
-
-  useEffect(() => {
+    updateProjectsAvailable();
     updateBudget();
     updateReal();
   }, []);
