@@ -17,8 +17,8 @@ import {
 import { ca_labor_detail, getCALaborDetails } from '../../api/ca_labor_details';
 import Toast from '../utils/toast';
 import { getTimesByDay, times_by_day } from '../../api/times_by_day';
-import Alert from '../utils/notifications/alert';
 import { cost_analysis } from '../../api/cost_analysis';
+import Alert from '../utils/notifications/alert';
 
 type report_data = {
   date: string;

@@ -20,8 +20,8 @@ import {
   USDollar,
 } from '../../utils';
 import { ca_labor_detail, getCALaborDetails } from '../../api/ca_labor_details';
-import Alert from '../utils/notifications/alert';
 import { ReportTypeContext } from './reportByType';
+import Alert from '../utils/notifications/alert';
 
 type group_data = {
   Worked: object;
