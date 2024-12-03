@@ -17,6 +17,7 @@ export type registration_time = {
   site_id: string;
   site_name: string;
   site_address: string;
+  site_state: string;
   employee_id: string;
   employee_role: string;
   week: string;
@@ -107,6 +108,7 @@ export async function getRegistrationTimes(settings: {
         'site_id',
         'site_name',
         'site_address',
+        'site_state',
       ],
     });
     updateOvertimes(travel_times);
@@ -134,6 +136,7 @@ export async function getRegistrationTimes(settings: {
         'site_id',
         'site_name',
         'site_address',
+        'site_state',
       ],
     });
     updateOvertimes(worked_times);
@@ -161,6 +164,7 @@ export async function getRegistrationTimes(settings: {
         'site_id',
         'site_name',
         'site_address',
+        'site_state',
       ],
     });
     times_found.push(...waiting_times);

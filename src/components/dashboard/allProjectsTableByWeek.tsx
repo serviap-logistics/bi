@@ -14,6 +14,9 @@ import PillsMenu from '../utils/pillsMenu';
 import { getSites } from '../../api/sites';
 import Alert from '../utils/notifications/alert';
 
+type display_types_available = 'BY_PROJECT' | 'BY_SITE' | 'BY_STATE';
+const DEFAULT_DISPLAY_OPTION = 'BY_PROJECT';
+
 function ProjectData(props: {
   project_code: string;
   project_name: string;
@@ -43,7 +46,6 @@ function ProjectData(props: {
     </div>
   );
 }
-
 function SiteData(props: { site: string; address: string }) {
   return (
     <div className="flex flex-col">
@@ -52,14 +54,23 @@ function SiteData(props: { site: string; address: string }) {
     </div>
   );
 }
-type display_types_available = 'BY_PROJECT' | 'BY_SITE';
-const DEFAULT_DISPLAY_OPTION = 'BY_PROJECT';
 
 export default function AllProjectsTableByWeek(props: {
   excelRowsCallback: any;
   excelColumnsCallback: any;
   projects: object;
 }) {
+  const { excelRowsCallback, excelColumnsCallback } = props;
+  const [displayOptions, setDisplayOptions] = useState<tabs_menu_option_type[]>(
+    [
+      { key: 'BY_PROJECT', current: true, name: 'By Project', icon: undefined },
+      { key: 'BY_SITE', current: false, name: 'By Site', icon: undefined },
+      { key: 'BY_STATE', current: false, name: 'By State', icon: undefined },
+    ],
+  );
+  const [displayOption, setDisplayOption] = useState<string | undefined>(
+    DEFAULT_DISPLAY_OPTION,
+  );
   const [sitesAvailable, setSitesAvailable] = useState<object>({});
 
   const updateSitesAvailable = async () => {
@@ -74,20 +85,8 @@ export default function AllProjectsTableByWeek(props: {
         site_address: site.site_address,
       };
     });
-    console.log('Sites: ', result);
     setSitesAvailable(result);
   };
-
-  const { excelRowsCallback, excelColumnsCallback } = props;
-  const [displayOptions, setDisplayOptions] = useState<tabs_menu_option_type[]>(
-    [
-      { key: 'BY_PROJECT', current: true, name: 'By Project', icon: undefined },
-      { key: 'BY_SITE', current: false, name: 'By Site', icon: undefined },
-    ],
-  );
-  const [displayOption, setDisplayOption] = useState<string | undefined>(
-    DEFAULT_DISPLAY_OPTION,
-  );
 
   const handleChangeOption = (tab: tabs_menu_option_type) => {
     if (displayOption !== tab.key) {
@@ -104,7 +103,14 @@ export default function AllProjectsTableByWeek(props: {
   const getPurchases = async (): Promise<purchase[]> => {
     const purchases_found: purchase[] = await getAirtablePurchases({
       view: 'BI',
-      fields: ['project_id', 'week', 'site_id', 'status_request', 'total_cost'],
+      fields: [
+        'project_id',
+        'week',
+        'site_id',
+        'site_state',
+        'status_request',
+        'total_cost',
+      ],
     });
     return purchases_found;
   };
@@ -139,6 +145,7 @@ export default function AllProjectsTableByWeek(props: {
       return {
         project_id: time_registered.project_id,
         site_id: time_registered.site_id,
+        site_state: time_registered.site_state,
         week: time_registered.week,
         subtotal: time_registered.subtotal,
       };
@@ -350,15 +357,113 @@ export default function AllProjectsTableByWeek(props: {
         name: group.name,
         rows: group.rows.map((row) => [
           <SiteData
-            site={sitesAvailable[row[0] as string]?.site_code}
+            site={
+              sitesAvailable[row[0] as string]?.site_code ?? 'No Site Selected'
+            }
             address={sitesAvailable[row[0] as string]?.site_address}
           />,
           ...row.slice(1),
         ]),
       }));
-      console.log('Sites: ', sitesAvailable);
-      console.log('Results: ', formatted_groups);
       setRows(formatted_groups);
+    } else if (displayOption === 'BY_STATE') {
+      let weeks_available: string[] = [];
+      Object.entries(expenses).map(
+        ([project_id, project_data]: [string, any]) => {
+          if (!results_by_week[project_id]) results_by_week[project_id] = {};
+          if (project_data?.purchases) {
+            const purchases_by_state = groupListBy(
+              'site_state',
+              project_data.purchases,
+            );
+            Object.entries(purchases_by_state).map(
+              ([site_state, purchases]: [string, any]) => {
+                if (
+                  !results_by_week[project_id][
+                    site_state !== 'undefined' ? site_state : 'No state'
+                  ]
+                )
+                  results_by_week[project_id][site_state] = {};
+                const purchases_by_week = groupListBy('week', purchases);
+                Object.entries(purchases_by_week).map(
+                  ([week, purchases]: [string, any]) => {
+                    if (!weeks_available.includes(week))
+                      weeks_available.push(week);
+                    results_by_week[project_id][site_state][week] =
+                      purchases.reduce(
+                        (total, purchase) => (total += purchase.total_cost),
+                        0,
+                      );
+                  },
+                );
+              },
+            );
+          }
+          if (project_data?.times) {
+            const times_by_site = groupListBy('site_state', project_data.times);
+            Object.entries(times_by_site).map(
+              ([site_state, times]: [string, any]) => {
+                if (!results_by_week[project_id][site_state])
+                  results_by_week[project_id][
+                    site_state !== 'undefined' ? site_state : 'No state'
+                  ] = {};
+                const sites_by_week = groupListBy('week', times);
+                Object.entries(sites_by_week).map(
+                  ([week, purchases]: [string, any]) => {
+                    results_by_week[project_id][site_state][week] =
+                      purchases.reduce(
+                        (total, purchase) => (total += purchase.subtotal),
+                        0,
+                      );
+                  },
+                );
+              },
+            );
+          }
+        },
+      );
+      weeks_available = weeks_available
+        .filter((week) => week !== 'undefined')
+        .sort();
+      excel_columns = [
+        { header: 'Site', key: 'PROJECT_ID', width: 25 },
+        { header: 'No Date', key: 'NO DATE', width: 15 },
+        ...weeks_available.map((week) => ({
+          header: week,
+          key: week.toUpperCase(),
+          width: 15,
+        })),
+      ];
+      const groups: group[] = [];
+      Object.entries(results_by_week).map(
+        ([project_id, states]: [string, any]) => {
+          // Se agrega al inicio del renglon, el ID de projecto.
+          const group_data: group = {
+            name: `${project_id} - ${props.projects[project_id]?.name ?? 'Unnamed Project'}`,
+            rows: [],
+          };
+          excel_rows.push([project_id]);
+          Object.entries(states).map(([state, weeks]: [string, any]) => {
+            const row: excel_cell[] = [];
+            // Se agrega el nombre del sitio.
+            row.push(state);
+            // Se agrega el total SIN fecha.
+            if (weeks['undefined'])
+              row.push(USDollar.format(weeks['undefined']));
+            else row.push(USDollar.format(0));
+            // Se agrega el resto de semanas
+            weeks_available.map((week) => {
+              if (!weeks[week]) row.push(USDollar.format(0));
+              else row.push(USDollar.format(weeks[week]));
+            });
+            excel_rows.push(row);
+            group_data.rows.push(row);
+          });
+          groups.push(group_data);
+        },
+      );
+      setColumns(['Project', 'No date', ...weeks_available]);
+      setRows(groups);
     }
     excelColumnsCallback(excel_columns);
     excelRowsCallback(excel_rows);

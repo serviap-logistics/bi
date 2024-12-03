@@ -312,7 +312,6 @@ export default function AllProjectsTableByAmounts(props: {
         />,
       ];
     });
-    // console.log('Rows: ', rows);
     setRows(rows);
     setLoading(false);
     const columns: excel_column[] = [

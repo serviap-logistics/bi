@@ -76,7 +76,6 @@ export default function Purchases() {
   };
 
   const handleSelectProject = (project: project) => {
-    console.log('Changing project...', project);
     setProject(project);
   };
 
@@ -95,9 +94,7 @@ export default function Purchases() {
   }, [responses]);
 
   useEffect(() => {
-    console.log('Py: ', project);
     getPurchases();
-    console.log('Purchases: ', purchases);
     if (project?.cost_analysis_id) {
       getCostAnalysis();
     } else {

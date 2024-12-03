@@ -591,7 +591,6 @@ export default function HeadcountTableByRole(props: {
       reportDates.end_date &&
       reportDates.dates_beetween
     ) {
-      console.log('New budgets!', budgets);
       // Para este momento, budgets deberia existir con al menos un role y con todo en 0.
       const budget_roles_available = Object.values(budgets).map((roles) =>
         Object.keys(roles),
@@ -734,7 +733,6 @@ export default function HeadcountTableByRole(props: {
         final_results[group].push(row);
       }
     }
-    console.log('Final: ', final_results);
     setDisplayResults(final_results);
   };
 

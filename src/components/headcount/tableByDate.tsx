@@ -176,7 +176,6 @@ export default function HeadcountTableByDate(props: {
           : 0,
       }),
     );
-    console.log('Totals by Date (budget): ', totals_by_date);
     totals_by_date = totals_by_date.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
