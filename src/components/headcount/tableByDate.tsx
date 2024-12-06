@@ -151,7 +151,6 @@ export default function HeadcountTableByDate(props: {
     });
     const grouped_by_date = groupListBy('date', times_formatted);
     const perdiem_by_date = groupListBy('date', results_by_day);
-    console.log(`Perdiem by day (${project_id}): `, perdiem_by_date);
     let totals_by_date = Object.entries(grouped_by_date).map(
       ([date, records]: [string, any]): report_data => ({
         date: date,

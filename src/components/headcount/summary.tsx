@@ -10,8 +10,8 @@ import Toast from '../utils/toast';
 import { ReportTypeContext } from './reportByType';
 import { getRegistrationTimes } from '../../api/registration_times';
 import { getCALaborDetails } from '../../api/ca_labor_details';
-import { getTimesByDay, times_by_day } from '../../api/times_by_day';
 import { cost_analysis } from '../../api/cost_analysis';
+import getPerdiems from '../../api/perdiems';
 
 type report_data = {
   hours: number;
@@ -102,35 +102,20 @@ export default function HeadcountSummary() {
       waiting: true,
       project_id: project_id,
     });
-    const results_by_day: times_by_day[] = await getTimesByDay({
-      view: 'BI',
-      fields: [
-        'date',
-        'perdiem_per_project',
-        'perdiem_cost',
-        'worked_projects',
-        'travel_projects',
-      ],
-      formula: project_id
-        ? encodeURI(
-            `OR(FIND('${project_id}', worked_projects), FIND('${project_id}', travel_projects))`,
-          )
-        : undefined,
-      offset: undefined,
-    });
+    const perdiems = await getPerdiems(project_id);
     const total_cost =
       // Costo por horas
       real_times
         .map((record) => record.subtotal)
         .reduce((total: number, cost: any) => total + cost, 0) + // Costo por perdiems
-      results_by_day.reduce((total, record) => total + record.perdiem_cost, 0);
+      perdiems.reduce((total, record) => total + record.perdiem_cost, 0);
     const total_hours = real_times
       .map((record) => record.total_hours)
       .reduce((total, hours) => total + hours, 0);
     const total_employees = [
       ...new Set(real_times.map((record) => record.employee_id)),
     ].length;
-    const perdiems = results_by_day.reduce(
+    const total_perdiems = perdiems.reduce(
       (total, record) => total + record.perdiem_per_project,
       0,
     );
@@ -139,7 +124,7 @@ export default function HeadcountSummary() {
       hours: total_hours,
       cost: total_cost,
       people: total_employees,
-      perdiem: perdiems,
+      perdiem: total_perdiems,
     });
   };
 

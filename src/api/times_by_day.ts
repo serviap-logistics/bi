@@ -10,14 +10,19 @@ export type times_by_day = {
   id: string;
   createdTime: string;
   date: string;
+  employee_role: string;
   // Projects
-  worked_projects: string;
-  travel_projects: string;
+  day_projects: string;
   // Perdiem
   perdiem_per_project: number;
   perdiem_cost: number;
 };
 
+/**
+ * Función encargada de consultar la tabla "Hours Details", la cual tiene totales POR DÍA de los registros de hora.
+ * @param settings Configuración inicial de la petición, se indica la vista a buscar, los campos y la fórmula.
+ * @returns Lista de registros encontrados, utilizando la estructura "times_by_day"
+ */
 export async function getTimesByDay(
   settings: airtable_request,
 ): Promise<times_by_day[]> {

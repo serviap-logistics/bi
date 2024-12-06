@@ -22,6 +22,7 @@ import {
 import { ca_labor_detail, getCALaborDetails } from '../../api/ca_labor_details';
 import { ReportTypeContext } from './reportByType';
 import Alert from '../utils/notifications/alert';
+import getPerdiems, { perdiem } from '../../api/perdiems';
 
 type group_data = {
   Worked: object;
@@ -47,7 +48,8 @@ type cell_data = {
   people_quantity: number;
   subtotal: number;
   date?: string;
-  perdiem_count: 0;
+  perdiem_count: number;
+  perdiem_cost: number;
 };
 
 const empty_cell_data: cell_data = {
@@ -56,6 +58,7 @@ const empty_cell_data: cell_data = {
   people_quantity: 0,
   subtotal: 0,
   perdiem_count: 0,
+  perdiem_cost: 0,
 };
 
 type result_data = {
@@ -147,13 +150,16 @@ export default function HeadcountTableByRole(props: {
   };
 
   const updateBudget = async () => {
+    console.log('Updatin budgets...');
     if (
       !costAnalysis?.cost_analysis_id ||
       !reportDates?.start_date ||
       !reportDates?.end_date
     ) {
+      console.log('Empty...');
       setBudgets(empty_results);
     } else {
+      console.log('Calculating...');
       const budget_times: ca_labor_detail[] = await getCALaborDetails({
         view: 'BI',
         fields: [
@@ -174,6 +180,7 @@ export default function HeadcountTableByRole(props: {
           'subtotal_worked_overtime',
           'subtotal_travel_overtime',
           'perdiem_count',
+          'perdiem_cost',
         ],
         formula: encodeURI(
           `cost_analysis_id='${costAnalysis.cost_analysis_id}'`,
@@ -246,17 +253,22 @@ export default function HeadcountTableByRole(props: {
         perdiems_by_role[role] = {};
         records.map(
           (record) =>
-            (perdiems_by_role[role][record.date] = record.perdiem_count ?? 0),
+            (perdiems_by_role[role][record.date] = {
+              count: record.perdiem_count ?? 0,
+              subtotal: record.perdiem_cost ?? 0,
+            }),
         );
       });
-      setBudgets({
+      const updatedBudgets = {
         Worked: worked_by_role,
         'Worked Overtime': worked_overtime_by_role,
         Travel: travel_by_role,
         'Travel Overtime': travel_overtime_by_role,
         Waiting: {},
         Perdiems: perdiems_by_role,
-      });
+      };
+      console.log('Budget (updated): ', updatedBudgets);
+      setBudgets(updatedBudgets);
     }
   };
 
@@ -291,12 +303,12 @@ export default function HeadcountTableByRole(props: {
         week_hours: record.week_hours,
         // Perdiem
       }));
-      // Recalcular horas de acuerdo al acumulado por semana...
+
+      // Horas de acuerdo al acumulado por semana...
       // Travel & Worked < 40 = Regular, > 40 = Overtime
       const worked: any[] = [];
       const travel: any[] = [];
       const waiting: any[] = [];
-      const perdiems: any[] = [];
       // Separacion de datos por categoria WORKED y TRAVEL.
       times_formatted.map((record: any) => {
         if (record.category === 'WORKED') {
@@ -341,14 +353,6 @@ export default function HeadcountTableByRole(props: {
             employee_role: record.employee_role,
             hours: record.total_hours,
             subtotal: record.subtotal,
-          });
-        }
-        if (record.perdiem) {
-          perdiems.push({
-            date: record.date,
-            employee_id: record.employee_id,
-            employee_role: record.employee_role,
-            perdiem: record.perdiem,
           });
         }
       });
@@ -561,16 +565,27 @@ export default function HeadcountTableByRole(props: {
           };
         });
       });
+      // Calculo de perdiems por fecha, agrupado por role.
+      const perdiems: perdiem[] = await getPerdiems(project.project_id);
       const perdiem_by_role = groupListBy('employee_role', perdiems);
       const perdiems_by_role = {};
       Object.entries(perdiem_by_role).map(([role, records]: [string, any]) => {
         perdiems_by_role[role] = {};
         const records_by_day = groupListBy('date', records);
         Object.entries(records_by_day).map(
-          ([day, time_records]: [string, any]) => {
-            perdiems_by_role[role][day] = [
-              ...new Set(time_records.map((employee) => employee.employee_id)),
-            ].length;
+          ([day, day_perdiems]: [string, any]) => {
+            const count_perdiems = day_perdiems.reduce(
+              (total, perdiem: perdiem) => perdiem.perdiem_per_project + total,
+              0,
+            );
+            const cost_perdiems = day_perdiems.reduce(
+              (total, perdiem: perdiem) => perdiem.perdiem_cost + total,
+              0,
+            );
+            perdiems_by_role[role][day] = {
+              count: count_perdiems,
+              subtotal: cost_perdiems,
+            };
           },
         );
       });
@@ -626,7 +641,10 @@ export default function HeadcountTableByRole(props: {
                     ...empty_cell_data,
                   };
                 } else {
-                  budget_results[group][role][date] = 0;
+                  budget_results[group][role][date] = {
+                    count: 0,
+                    subtotal: 0,
+                  };
                 }
               });
             }
@@ -645,7 +663,10 @@ export default function HeadcountTableByRole(props: {
                     ...empty_cell_data,
                   };
                 } else {
-                  real_results[group][role][date] = 0;
+                  real_results[group][role][date] = {
+                    count: 0,
+                    subtotal: 0,
+                  };
                 }
               });
             }
@@ -667,6 +688,8 @@ export default function HeadcountTableByRole(props: {
       Waiting: [],
       Perdiems: [],
     };
+    console.log('Budgets: ', budgets);
+    console.log('Reals: ', reals);
     for (const group of Object.keys(budgets)) {
       for (const role of Object.keys(budgets[group])) {
         const row: table_row = [{ color: '', data: role }];
@@ -720,13 +743,13 @@ export default function HeadcountTableByRole(props: {
             row.push({
               color: generateColorStatus(
                 getPercentageUsed(
-                  budgets[group][role][date],
-                  reals[group][role][date],
+                  budgets[group][role][date].count ?? 0,
+                  reals[group][role][date].count ?? 0,
                 ).value,
               ),
               data: [
-                budgets['Perdiems'][role][date],
-                reals['Perdiems'][role][date],
+                budgets['Perdiems'][role][date].count ?? 0,
+                reals['Perdiems'][role][date].count ?? 0,
               ],
             });
         });
@@ -741,16 +764,19 @@ export default function HeadcountTableByRole(props: {
     const columns = ['Role', reportDates?.dates_beetween].flat();
     setColumns(columns);
     const filtered_results = cloneObject(results);
-    if (reportType === 'PEOPLE' || reportType === 'PERDIEM') {
+    if (reportType === 'PERDIEM') {
+      delete filtered_results['Worked'];
+      delete filtered_results['Worked Overtime'];
+      delete filtered_results['Travel'];
+      delete filtered_results['Travel Overtime'];
+      delete filtered_results['Waiting'];
+    }
+    if (reportType === 'PEOPLE') {
       delete filtered_results['Travel Overtime'];
       delete filtered_results['Worked Overtime'];
     }
-    if (reportType !== 'PERDIEM') {
+    if (reportType === 'PEOPLE' || reportType === 'HOURS') {
       delete filtered_results['Perdiems'];
-    } else {
-      delete filtered_results['Travel'];
-      delete filtered_results['Worked'];
-      delete filtered_results['Waiting'];
     }
     const table_rows = Object.entries(filtered_results).map(
       ([group, rows]) => ({
