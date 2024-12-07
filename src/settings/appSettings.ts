@@ -3,9 +3,9 @@ import {
   ShoppingBagIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
-import Purchases from '../components/purchases';
-import Headcount from '../components/headcount';
-import Dashboard from '../components/dashboard';
+import Purchases from '../modules/purchases/components';
+import Headcount from '../modules/headcount/components';
+import Dashboard from '../modules/dashboard/components';
 
 export const DEFAULT_MAIN_CONTENT = 'DASHBOARD';
 export const LOGIN_NEEDED = false;

@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from 'react';
-import Sidebar from './components/layout/Sidebar';
-import Topbar from './components/layout/Topbar';
-import Login from './components/login';
+import Sidebar from './modules/layout/components/Sidebar';
+import Topbar from './modules/layout/components/Topbar';
+import Login from './modules/login';
 import { useMsal } from '@azure/msal-react';
 import {
   APP_NAVIGATION,
