@@ -1,10 +1,9 @@
 import { Fragment } from 'react/jsx-runtime';
 import { notification, useNotification } from './context';
-import { useEffect } from 'react';
 import Alert from './alert';
 
 export default function NotificationsWrapper({ children }) {
-  const { notifications, removeNotification } = useNotification();
+  const { notifications } = useNotification();
   // useEffect(()=> {
   //   if(notifications.length > 0){
   //     const timeout = setTimeout(()=>{
