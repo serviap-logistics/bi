@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { MsalProvider } from '@azure/msal-react';
-import { msalInstance } from './settings/authSettings.ts';
+import { msalInstance } from './settings/authentication.ts';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

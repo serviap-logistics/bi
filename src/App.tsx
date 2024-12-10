@@ -3,11 +3,15 @@ import Sidebar from './modules/layout/components/Sidebar';
 import Topbar from './modules/layout/components/Topbar';
 import Login from './modules/login';
 import { useMsal } from '@azure/msal-react';
-import {
+import AppRoutes, {
   APP_NAVIGATION,
   app_navigation_option,
   DEFAULT_MAIN_CONTENT,
-} from './settings/appSettings';
+} from './settings/routes';
+import { ENVIROMENT } from './settings/enviroment';
+import { msalInstance } from './settings/authentication';
+import { AuthenticationResult } from '@azure/msal-browser';
+import { BrowserRouter } from 'react-router-dom';
 
 export const MainContentContext = createContext<string>('');
 export const SideBarContext = createContext<boolean>(false);
@@ -22,16 +26,14 @@ function App() {
     })),
   );
 
-  const [content, setContent] = useState<{ component: any }>({
-    component: navigation.find((option) => option.key === DEFAULT_MAIN_CONTENT)
-      ?.main_component,
-  });
   const { instance, accounts } = useMsal();
 
   const [isAuth, setIsAuth] = useState(false);
   const checkLogin = async () => {
-    setIsAuth(true);
-    return;
+    if (ENVIROMENT.LOGIN_REQUIRED !== 'TRUE') {
+      setIsAuth(true);
+      return;
+    }
     try {
       if (accounts.length > 0) {
         const silent_request = {
@@ -61,47 +63,54 @@ function App() {
   const handleSideBarChange = (key: string) => {
     updateNavigation(key);
     setMainContent(key);
-    setContent({
-      component: navigation.find((option) => option.key === key)
-        ?.main_component,
-    });
   };
 
   const handleShowSideBar = (open: boolean) => {
     setShowSideBar(open);
   };
 
+  const handleAuth = (response: AuthenticationResult) => {
+    console.log('Auth res: ', response);
+    if (response.account) {
+      msalInstance.setActiveAccount(response.account);
+    }
+    setIsAuth(response.account && true);
+  };
+
   useEffect(() => {
     checkLogin();
   });
+
   useEffect(() => {
     if (accounts.length == 0) setIsAuth(false);
   }, [instance, accounts]);
 
   return !isAuth ? (
-    <Login authCallback={setIsAuth} />
+    <Login authCallback={handleAuth} />
   ) : (
-    <MainContentContext.Provider value={mainContent}>
-      <SideBarContext.Provider value={showSideBar}>
-        <Topbar
-          showSideBar={showSideBar}
-          onChangeShowSideBar={handleShowSideBar}
-        />
-        <Sidebar
-          navigation={navigation}
-          onSelectCallback={handleSideBarChange}
-          onChangeShowSideBar={handleShowSideBar}
-        />
-        <div className="lg:pl-60">
-          {/* Main section */}
-          <section className="py-5">
-            <div className="px-4 sm:px-6 lg:px-8">
-              {content?.component && <content.component />}
-            </div>
-          </section>
-        </div>
-      </SideBarContext.Provider>
-    </MainContentContext.Provider>
+    <BrowserRouter>
+      <MainContentContext.Provider value={mainContent}>
+        <SideBarContext.Provider value={showSideBar}>
+          <Topbar
+            showSideBar={showSideBar}
+            onChangeShowSideBar={handleShowSideBar}
+          />
+          <Sidebar
+            navigation={navigation}
+            onSelectCallback={handleSideBarChange}
+            onChangeShowSideBar={handleShowSideBar}
+          />
+          <div className="lg:pl-60">
+            {/* Main section */}
+            <section className="py-5">
+              <div className="px-4 sm:px-6 lg:px-8">
+                <AppRoutes />
+              </div>
+            </section>
+          </div>
+        </SideBarContext.Provider>
+      </MainContentContext.Provider>
+    </BrowserRouter>
   );
 }
 

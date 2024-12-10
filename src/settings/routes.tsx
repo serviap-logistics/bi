@@ -1,3 +1,4 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import {
   PresentationChartLineIcon,
   ShoppingBagIcon,
@@ -7,16 +8,16 @@ import Purchases from '../modules/purchases/components';
 import Headcount from '../modules/headcount/components';
 import Dashboard from '../modules/dashboard/components';
 
-export const DEFAULT_MAIN_CONTENT = 'DASHBOARD';
-export const LOGIN_NEEDED = false;
-
 export type app_navigation_option = {
   key: string;
   name: string;
   icon?: any;
   current: boolean;
   main_component: any;
+  path: string;
 };
+
+export const DEFAULT_MAIN_CONTENT = 'DASHBOARD';
 export const APP_NAVIGATION = [
   {
     key: 'DASHBOARD',
@@ -24,6 +25,7 @@ export const APP_NAVIGATION = [
     icon: PresentationChartLineIcon,
     current: false,
     main_component: Dashboard,
+    path: '/',
   },
   {
     key: 'PURCHASES',
@@ -31,6 +33,7 @@ export const APP_NAVIGATION = [
     icon: ShoppingBagIcon,
     current: false,
     main_component: Purchases,
+    path: '/purchases',
   },
   {
     key: 'HEADCOUNT',
@@ -38,5 +41,20 @@ export const APP_NAVIGATION = [
     icon: UserGroupIcon,
     current: false,
     main_component: Headcount,
+    path: '/headcount',
   },
 ];
+
+export default function AppRoutes() {
+  return (
+    <Routes>
+      {APP_NAVIGATION.map((route, route_num) => (
+        <Route
+          key={route_num}
+          path={route.path}
+          element={<route.main_component />}
+        />
+      ))}
+    </Routes>
+  );
+}

@@ -5,7 +5,11 @@ import {
   MenuItems,
   Transition,
 } from '@headlessui/react';
-import { Bars3Icon, BellIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowRightStartOnRectangleIcon,
+  Bars3Icon,
+  BellIcon,
+} from '@heroicons/react/24/outline';
 import {
   ChevronDownIcon,
   MagnifyingGlassIcon,
@@ -15,6 +19,7 @@ import IMAGES from '../../../assets/images/urls';
 import { useMsal } from '@azure/msal-react';
 import { ENVIROMENT } from '../../../settings/enviroment';
 import { classNames } from '../../../utils';
+import { useNavigate } from 'react-router-dom';
 
 export default function Topbar(props: {
   showSideBar: boolean;
@@ -22,9 +27,11 @@ export default function Topbar(props: {
 }) {
   const { onChangeShowSideBar } = props;
   const { instance, accounts } = useMsal();
+  const navigate = useNavigate();
 
   const logout = async () => {
     try {
+      navigate('/');
       const activeAccount = instance.getActiveAccount() || accounts[0];
       if (activeAccount) {
         await instance.logoutPopup({
@@ -42,11 +49,12 @@ export default function Topbar(props: {
     await logout();
   };
 
-  const handleProfile = () => {};
-
   const userNavigation = [
-    { name: 'Your profile', action: handleProfile },
-    { name: 'Sign out', action: handleLogout },
+    {
+      name: 'Sign out',
+      action: handleLogout,
+      icon: ArrowRightStartOnRectangleIcon,
+    },
   ];
 
   const handleShowSideBar = () => onChangeShowSideBar(true);
@@ -113,7 +121,7 @@ export default function Topbar(props: {
                     className="ml-4 text-sm font-semibold leading-6 text-gray-900"
                     aria-hidden="true"
                   >
-                    Serviap Logistics
+                    {instance.getActiveAccount()?.name}
                   </span>
                   <ChevronDownIcon
                     className="ml-2 h-5 w-5 text-gray-400"
@@ -137,10 +145,16 @@ export default function Topbar(props: {
                         <button
                           className={classNames(
                             active ? 'bg-gray-50' : '',
-                            'block px-3 py-1 text-sm leading-6 text-gray-900',
+                            'flex w-full gap-1 px-3 py-1 text-sm leading-6 text-gray-900',
                           )}
                           onClick={item.action}
                         >
+                          {
+                            <item.icon
+                              className="h-6 w-6 shrink-0"
+                              aria-hidden="true"
+                            />
+                          }
                           {item.name}
                         </button>
                       )}

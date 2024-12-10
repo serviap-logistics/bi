@@ -8,8 +8,9 @@ import {
 import { Fragment, useContext } from 'react';
 import { classNames } from '../../../utils';
 import IMAGES from '../../../assets/images/urls';
-import { app_navigation_option } from '../../../settings/appSettings';
 import { MainContentContext, SideBarContext } from '../../../App';
+import { app_navigation_option } from '../../../settings/routes';
+import { Link } from 'react-router-dom';
 
 export default function Sidebar(props: {
   navigation: app_navigation_option[];
@@ -99,7 +100,8 @@ export default function Sidebar(props: {
                         <ul role="list" className="-mx-2 space-y-1">
                           {navigation.map((item) => (
                             <li key={item.name}>
-                              <a
+                              <Link
+                                to={item.path}
                                 className={classNames(
                                   item.current
                                     ? 'bg-gray-800 text-white'
@@ -116,7 +118,7 @@ export default function Sidebar(props: {
                                   aria-hidden="true"
                                 />
                                 {item.name}
-                              </a>
+                              </Link>
                             </li>
                           ))}
                         </ul>
@@ -159,7 +161,8 @@ export default function Sidebar(props: {
                 <ul role="list" className="-mx-2 space-y-1">
                   {navigation.map((item) => (
                     <li key={item.name}>
-                      <a
+                      <Link
+                        to={item.path}
                         className={classNames(
                           item.current
                             ? 'bg-gray-800 text-white'
@@ -174,7 +177,7 @@ export default function Sidebar(props: {
                           aria-hidden="true"
                         />
                         {item.name}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>

@@ -13,9 +13,9 @@ export default function Login(props: { authCallback: any }) {
     }
     // Si el proceso de Login no ha comenzado, se abre el Popup.
     instance
-      .loginPopup({ scopes: ['user.read'] })
-      .then(() => {
-        authCallback(true);
+      .loginPopup({ scopes: ['user.read'], prompt: 'select_account' })
+      .then((response) => {
+        authCallback(response);
       })
       .catch((error) => {
         if (
