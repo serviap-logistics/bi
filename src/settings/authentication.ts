@@ -16,4 +16,5 @@ const msalConfig: Configuration = {
 };
 
 export const msalInstance = new PublicClientApplication(msalConfig);
-await msalInstance.initialize();
+const initializeMsal = async () => await msalInstance.initialize();
+initializeMsal();
