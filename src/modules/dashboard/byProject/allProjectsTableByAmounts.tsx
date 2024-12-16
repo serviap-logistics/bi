@@ -347,7 +347,7 @@ export default function AllProjectsTableByAmounts(props: {
     ];
     excelColumnsCallback(columns);
     const table_rows = rows.map((row) => [
-      (row[0] as JSX.Element).props.project_id,
+      (row[0] as JSX.Element).props.project_code,
       (row[0] as JSX.Element).props.project_name,
       (row[0] as JSX.Element).props.status,
       (row[0] as JSX.Element).props.start_date,
