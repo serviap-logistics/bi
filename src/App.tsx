@@ -70,7 +70,6 @@ function App() {
   };
 
   const handleAuth = (response: AuthenticationResult) => {
-    console.log('Auth res: ', response);
     if (response.account) {
       msalInstance.setActiveAccount(response.account);
     }

@@ -4,7 +4,7 @@ export const ENVIROMENT = {
 
   // Authentication
   LOGIN_REQUIRED: import.meta.env.PROD
-    ? true
+    ? 'TRUE'
     : import.meta.env.VITE_LOGIN_REQUIRED,
   AIRTABLE_ACCESS_TOKEN: import.meta.env.VITE_AIRTABLE_ACCESS_TOKEN,
   AIRTABLE_HOST: import.meta.env.VITE_AIRTABLE_HOST,
