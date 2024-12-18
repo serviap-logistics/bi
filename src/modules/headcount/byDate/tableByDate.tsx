@@ -257,19 +257,19 @@ export default function HeadcountTableByDate(props: {
         day_results.percentage_hours = getPercentageUsed(
           day_results.budget_total_hours,
           day_results.real_total_hours,
-        ).value;
+        );
         day_results.percentage_cost = getPercentageUsed(
           day_results.budget_total_cost,
           day_results.real_total_cost,
-        ).value;
+        );
         day_results.percentage_people = getPercentageUsed(
           day_results.budget_total_people,
           day_results.real_total_people,
-        ).value;
+        );
         day_results.percentage_perdiem = getPercentageUsed(
           day_results.budget_total_perdiem,
           day_results.real_total_perdiem,
-        ).value;
+        );
 
         results.push(day_results);
       }
@@ -313,29 +313,37 @@ export default function HeadcountTableByDate(props: {
       // Celda 5: % Usado (dependiendo del tipo de reporte)
       const percentage_used =
         reportType === 'HOURS'
-          ? result.percentage_hours.toFixed(2)
+          ? (result.percentage_hours.status !== 'NO BUDGET!'
+              ? result.percentage_hours.value.toFixed(2) + '% '
+              : '') + result.percentage_hours.status
           : reportType === 'COST'
-            ? result.percentage_cost.toFixed(2)
+            ? (result.percentage_cost.status !== 'NO BUDGET!'
+                ? result.percentage_cost.value.toFixed(2) + '% '
+                : '') + result.percentage_cost.status
             : reportType === 'PEOPLE'
-              ? result.percentage_people.toFixed(2)
-              : result.percentage_perdiem.toFixed(2);
+              ? (result.percentage_people.status !== 'NO BUDGET!'
+                  ? result.percentage_people.value.toFixed(2) + '% '
+                  : '') + result.percentage_people.status
+              : (result.percentage_perdiem.status !== 'NO BUDGET!'
+                  ? result.percentage_perdiem.value.toFixed(2) + '% '
+                  : '') + result.percentage_perdiem.status;
+      const percentage_color =
+        reportType === 'HOURS'
+          ? result.percentage_hours.color
+          : reportType === 'COST'
+            ? result.percentage_cost.color
+            : reportType === 'PEOPLE'
+              ? result.percentage_people.color
+              : result.percentage_perdiem.color;
       return [
         date,
         budget,
         real,
         difference,
         <Toast
-          text={percentage_used + '%'}
+          text={percentage_used}
           text_size="text-sm"
-          color={
-            percentage_used <= 50
-              ? 'success'
-              : percentage_used <= 70
-                ? 'info'
-                : percentage_used <= 90
-                  ? 'warning'
-                  : 'error'
-          }
+          color={percentage_color}
         />,
       ];
     });
@@ -399,10 +407,7 @@ export default function HeadcountTableByDate(props: {
         0,
       );
     }
-    const summary_percentage = getPercentageUsed(
-      summary_budget,
-      summary_real,
-    ).value;
+    const summary_percentage = getPercentageUsed(summary_budget, summary_real);
     // Se genera una columna extra al final con los TOTALES de todos los dias (solo si el reporte no es de PEOPLE*).
     // * Cuando es de People, no se realiza una suma normal, ya que el conteo es por la cantidad de personas distintas.
     if (reportType !== 'PEOPLE')
@@ -418,17 +423,13 @@ export default function HeadcountTableByDate(props: {
           ? USDollar.format(summary_difference) + ' USD'
           : summary_difference.toFixed(2),
         <Toast
-          text={summary_percentage.toFixed(2) + '%'}
-          text_size="text-sm"
-          color={
-            summary_percentage <= 50
-              ? 'success'
-              : summary_percentage <= 70
-                ? 'info'
-                : summary_percentage <= 90
-                  ? 'warning'
-                  : 'error'
+          text={
+            (summary_percentage.status !== 'NO BUDGET!'
+              ? summary_percentage.value.toFixed(2) + '% '
+              : '') + summary_percentage.status
           }
+          text_size="text-sm"
+          color={summary_percentage.color}
         />,
       ]);
     setRows(rows);

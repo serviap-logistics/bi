@@ -2,8 +2,8 @@ import { useContext, useEffect, useState } from 'react';
 import { CostAnalysisContext, ProjectContext } from '.';
 import {
   getPercentageUsed,
-  getToastColor,
   groupListBy,
+  Indicator,
   USDollar,
 } from '../../../utils';
 import { ReportTypeContext } from './reportByType';
@@ -36,29 +36,27 @@ export default function HeadcountSummary() {
     people: 0,
     perdiem: 0,
   });
-  const [indicators, setIndicators] = useState({
-    hours_difference: 0,
-    hours_percentage_used: 0,
-    cost_difference: 0,
-    cost_percentage_used: 0,
-    people_difference: 0,
-    people_percentage_used: 0,
-    perdiem_difference: 0,
-    perdiem_percentage_used: 0,
-  });
+  const [indicators, setIndicators] = useState<{
+    hours_difference: string;
+    hours_percentage_used: Indicator;
+    cost_difference: string;
+    cost_percentage_used: Indicator;
+    people_difference: string;
+    people_percentage_used: Indicator;
+    perdiem_difference: string;
+    perdiem_percentage_used: Indicator;
+  }>();
 
   const updateDifference = (budget: report_data, real: report_data) => {
     setIndicators({
-      hours_difference: budget.hours - real.hours,
-      hours_percentage_used: getPercentageUsed(budget.hours, real.hours).value,
-      cost_difference: budget.cost - real.cost,
-      cost_percentage_used: getPercentageUsed(budget.cost, real.cost).value,
-      people_difference: budget.people - real.people,
-      people_percentage_used: getPercentageUsed(budget.people, real.people)
-        .value,
-      perdiem_difference: budget.perdiem - real.perdiem,
-      perdiem_percentage_used: getPercentageUsed(budget.perdiem, real.perdiem)
-        .value,
+      hours_difference: (budget.hours - real.hours).toFixed(2),
+      hours_percentage_used: getPercentageUsed(budget.hours, real.hours),
+      cost_difference: USDollar.format(budget.cost - real.cost),
+      cost_percentage_used: getPercentageUsed(budget.cost, real.cost),
+      people_difference: (budget.people - real.people).toFixed(2),
+      people_percentage_used: getPercentageUsed(budget.people, real.people),
+      perdiem_difference: (budget.perdiem - real.perdiem).toFixed(2),
+      perdiem_percentage_used: getPercentageUsed(budget.perdiem, real.perdiem),
     });
   };
 
@@ -184,13 +182,12 @@ export default function HeadcountSummary() {
               </p>
               <p className="text-lg text-gray-600">
                 {reportType === 'HOURS' &&
-                  indicators.hours_difference.toLocaleString() + ' hours'}
-                {reportType === 'COST' &&
-                  USDollar.format(indicators.cost_difference) + ' USD'}
+                  indicators?.hours_difference + ' hours'}
+                {reportType === 'COST' && indicators?.cost_difference + ' USD'}
                 {reportType === 'PEOPLE' &&
-                  indicators.people_difference + ' labors'}
+                  indicators?.people_difference + ' labors'}
                 {reportType === 'PERDIEM' &&
-                  indicators.perdiem_difference + ' perdiems'}
+                  indicators?.perdiem_difference + ' perdiems'}
               </p>
             </div>
             {/* % Used */}
@@ -202,25 +199,48 @@ export default function HeadcountSummary() {
                 {
                   <Toast
                     text={
-                      (reportType === 'HOURS'
-                        ? indicators.hours_percentage_used
+                      reportType === 'HOURS'
+                        ? (indicators?.hours_percentage_used.status !==
+                          'NO BUDGET!'
+                            ? indicators?.hours_percentage_used.value.toFixed(
+                                2,
+                              ) + '% '
+                            : '') + indicators?.hours_percentage_used.status
                         : reportType === 'COST'
-                          ? indicators.cost_percentage_used
+                          ? (indicators?.cost_percentage_used.status !==
+                            'NO BUDGET!'
+                              ? indicators?.cost_percentage_used.value.toFixed(
+                                  2,
+                                ) + '% '
+                              : '') + indicators?.cost_percentage_used.status
                           : reportType === 'PEOPLE'
-                            ? indicators.people_percentage_used
-                            : indicators.perdiem_percentage_used
-                      ).toFixed(2) + '%'
+                            ? (indicators?.people_percentage_used.status !==
+                              'NO BUDGET!'
+                                ? indicators?.people_percentage_used.value.toFixed(
+                                    2,
+                                  ) + '% '
+                                : '') +
+                              indicators?.people_percentage_used.status
+                            : (indicators?.perdiem_percentage_used.status !==
+                              'NO BUDGET!'
+                                ? indicators?.perdiem_percentage_used.value.toFixed(
+                                    2,
+                                  ) + '% '
+                                : '') +
+                              indicators?.perdiem_percentage_used.status
                     }
                     text_size="text-base"
-                    color={getToastColor(
+                    color={
                       reportType === 'HOURS'
-                        ? indicators.hours_percentage_used
+                        ? (indicators?.hours_percentage_used.color ?? 'error')
                         : reportType === 'COST'
-                          ? indicators.cost_percentage_used
+                          ? (indicators?.cost_percentage_used.color ?? 'error')
                           : reportType === 'PEOPLE'
-                            ? indicators.people_percentage_used
-                            : indicators.perdiem_percentage_used,
-                    )}
+                            ? (indicators?.people_percentage_used.color ??
+                              'error')
+                            : (indicators?.perdiem_percentage_used.color ??
+                              'error')
+                    }
                   />
                 }
               </p>

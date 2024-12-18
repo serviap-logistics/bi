@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { CostAnalysisContext, ProjectContext } from '.';
-import { getPercentageUsed, groupListBy } from '../../../utils';
+import { getPercentageUsed, groupListBy, Indicator } from '../../../utils';
 import { getRegistrationTimes } from '../services/registration_times';
 import { getCALaborDetails } from '../services/ca_labor_details';
 import { cost_analysis } from '../../services/cost_analysis';
@@ -16,16 +16,15 @@ export default function HeadcountProjectDetails() {
   const [real, setReal] = useState<report_data>({
     people: 0,
   });
-  const [indicators, setIndicators] = useState({
-    people_difference: 0,
-    people_percentage_used: 0,
-  });
+  const [indicators, setIndicators] = useState<{
+    people_difference: number;
+    people_percentage_used: Indicator;
+  }>();
 
   const updateDifference = (budget: report_data, real: report_data) => {
     setIndicators({
       people_difference: budget.people - real.people,
-      people_percentage_used: getPercentageUsed(budget.people, real.people)
-        .value,
+      people_percentage_used: getPercentageUsed(budget.people, real.people),
     });
   };
 
@@ -136,16 +135,12 @@ export default function HeadcountProjectDetails() {
             </div>
             <div className="col-span-2">
               <Toast
-                text={indicators.people_percentage_used.toFixed(2) + '%'}
-                color={
-                  indicators.people_percentage_used <= 50
-                    ? 'success'
-                    : indicators.people_percentage_used <= 70
-                      ? 'info'
-                      : indicators.people_percentage_used <= 90
-                        ? 'warning'
-                        : 'error'
+                text={
+                  (indicators?.people_percentage_used.status !== 'NO BUDGET!'
+                    ? indicators?.people_percentage_used.value.toFixed(2) + '% '
+                    : '') + indicators?.people_percentage_used.status
                 }
+                color={indicators?.people_percentage_used.color ?? 'error'}
               />
             </div>
           </div>
