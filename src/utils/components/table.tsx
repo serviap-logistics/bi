@@ -350,6 +350,7 @@ export default function Table(props: {
                                             .data as cell_data[]
                                         ).map((value, val_num) => (
                                           <div
+                                            key={generateUUID() + cell_num}
                                             className={classNames(
                                               'w-1/2 h-full flex justify-center items-center',
                                               val_num === 0
