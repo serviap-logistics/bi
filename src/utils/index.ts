@@ -92,7 +92,7 @@ export const generateUUID = () => v4();
 
 export const getToastColor = (
   value: number,
-): 'success' | 'warning' | 'info' | 'error' | 'secondary' | 'none' => {
+): 'success' | 'warning' | 'info' | 'error' | 'none' => {
   return value === 0
     ? 'none'
     : value <= 50

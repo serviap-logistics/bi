@@ -1,6 +1,6 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { CostAnalysisContext, ProjectContext } from '.';
-import { USDollar } from '../../../utils';
+import { getPercentageUsed, Indicator, USDollar } from '../../../utils';
 import { purchase } from '../services/purchases';
 import Toast from '../../../utils/components/toast';
 
@@ -8,6 +8,20 @@ export default function ProjectDetails(props: { purchases: purchase[] }) {
   const { purchases } = props;
   const project = useContext(ProjectContext);
   const costAnalysis = useContext(CostAnalysisContext);
+  const [indicator, setIndicator] = useState<Indicator>();
+
+  const updateIndicators = (purchases: purchase[]) => {
+    const indicator = getPercentageUsed(
+      costAnalysis?.total_cost ?? 0,
+      purchases.reduce((total, purchase) => total + purchase.total_cost, 0),
+    );
+    console.log(indicator);
+    setIndicator(indicator);
+  };
+
+  useEffect(() => {
+    updateIndicators(purchases);
+  }, [purchases]);
 
   return (
     <div className="overflow-hidden bg-white shadow sm:rounded-md">
@@ -90,71 +104,15 @@ export default function ProjectDetails(props: { purchases: purchase[] }) {
                   Status
                 </p>
                 <p className="text-lg text-gray-600">
-                  {costAnalysis != undefined &&
-                  (costAnalysis?.total_cost ?? 0) != 0 ? (
-                    <Toast
-                      text={
-                        (
-                          (purchases.reduce(
-                            (total, purchase) => total + purchase.total_cost,
-                            0,
-                          ) *
-                            100) /
-                          costAnalysis.total_cost
-                        ).toFixed(2) + '%'
-                      }
-                      text_size="text-base"
-                      color={
-                        (purchases.reduce(
-                          (total, purchase) => total + purchase.total_cost,
-                          0,
-                        ) *
-                          100) /
-                          costAnalysis.total_cost <=
-                        50
-                          ? 'success'
-                          : (purchases.reduce(
-                                (total, purchase) =>
-                                  total + purchase.total_cost,
-                                0,
-                              ) *
-                                100) /
-                                costAnalysis.total_cost <=
-                              70
-                            ? 'info'
-                            : (purchases.reduce(
-                                  (total, purchase) =>
-                                    total + purchase.total_cost,
-                                  0,
-                                ) *
-                                  100) /
-                                  costAnalysis.total_cost <=
-                                90
-                              ? 'warning'
-                              : 'error'
-                      }
-                    />
-                  ) : (
-                    <Toast
-                      text={
-                        purchases
-                          .reduce(
-                            (total, purchase) => total + purchase.total_cost,
-                            0,
-                          )
-                          .toFixed(2) + '%'
-                      }
-                      text_size="text-base"
-                      color={
-                        purchases.reduce(
-                          (total, purchase) => total + purchase.total_cost,
-                          0,
-                        ) > 0
-                          ? 'error'
-                          : 'success'
-                      }
-                    />
-                  )}
+                  <Toast
+                    text={
+                      (indicator?.status !== 'NO BUDGET!'
+                        ? indicator?.value.toFixed(2) + '% '
+                        : '') + indicator?.status
+                    }
+                    text_size="text-base"
+                    color={indicator?.color ?? 'error'}
+                  />
                 </p>
               </div>
             </>

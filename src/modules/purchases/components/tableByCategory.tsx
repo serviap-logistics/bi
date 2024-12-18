@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { CostAnalysisContext } from '.';
-import { USDollar } from '../../../utils';
+import { getPercentageUsed, USDollar } from '../../../utils';
 import { purchase } from '../services/purchases';
 import Toast from '../../../utils/components/toast';
 import Table from '../../../utils/components/table';
@@ -101,60 +101,45 @@ export default function TableByCategory(props: { purchases: purchase[] }) {
         budget: budgets['Tools'],
         real: results['Tools'],
         difference: budgets['Tools'] - results['Tools'],
-        used:
-          budgets['Tools'] > 0
-            ? (results['Tools'] * 100) / budgets['Tools']
-            : results['Tools'],
+        used: getPercentageUsed(budgets['Tools'], results['Tools']),
       },
       equipment: {
         name: 'Equipment',
         budget: budgets['Equipment'],
         real: results['Equipment'],
         difference: budgets['Equipment'] - results['Equipment'],
-        used:
-          budgets['Equipment'] > 0
-            ? (results['Equipment'] * 100) / budgets['Equipment']
-            : results['Equipment'],
+        used: getPercentageUsed(budgets['Equipment'], results['Equipment']),
       },
       subcontractor: {
         name: 'Subcontractor',
         budget: budgets['Subcontractor'],
         real: results['Subcontractor'],
         difference: budgets['Subcontractor'] - results['Subcontractor'],
-        used:
-          budgets['Subcontractor'] > 0
-            ? (results['Subcontractor'] * 100) / budgets['Subcontractor']
-            : results['Subcontractor'],
+        used: getPercentageUsed(
+          budgets['Subcontractor'],
+          results['Subcontractor'],
+        ),
       },
       lodging: {
         name: 'Lodging',
         budget: budgets['Lodging'],
         real: results['Lodging'],
         difference: budgets['Lodging'] - results['Lodging'],
-        used:
-          budgets['Lodging'] > 0
-            ? (results['Lodging'] * 100) / budgets['Lodging']
-            : results['Lodging'],
+        used: getPercentageUsed(budgets['Lodging'], results['Lodging']),
       },
       travel: {
         name: 'Travel',
         budget: budgets['Travel'],
         real: results['Travel'],
         difference: budgets['Travel'] - results['Travel'],
-        used:
-          budgets['Travel'] > 0
-            ? (results['Travel'] * 100) / budgets['Travel']
-            : results['Travel'],
+        used: getPercentageUsed(budgets['Travel'], results['Travel']),
       },
       staffing: {
         name: 'Staffing',
         budget: budgets['Staffing'],
         real: results['Staffing'],
         difference: budgets['Staffing'] - results['Staffing'],
-        used:
-          budgets['Staffing'] > 0
-            ? (results['Staffing'] * 100) / budgets['Staffing']
-            : results['Staffing'],
+        used: getPercentageUsed(budgets['Staffing'], results['Staffing']),
       },
     };
 
@@ -164,16 +149,12 @@ export default function TableByCategory(props: { purchases: purchase[] }) {
       USDollar.format(section.real) + ' USD', // Budget, Real
       USDollar.format(section.difference) + ' USD', // Difference
       <Toast
-        text={section.used.toFixed(2) + '%'} // % used
-        color={
-          section.used <= 50
-            ? 'success'
-            : section.used <= 70
-              ? 'info'
-              : section.used <= 90
-                ? 'warning'
-                : 'error'
-        }
+        text={
+          (section.used.status !== 'NO BUDGET!'
+            ? section.used.value.toFixed(2) + '% '
+            : '') + section.used.status
+        } // % used
+        color={section.used.color ?? 'error'}
       />,
     ]);
     setTable({
