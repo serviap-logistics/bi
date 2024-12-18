@@ -15,7 +15,6 @@ export default function ProjectDetails(props: { purchases: purchase[] }) {
       costAnalysis?.total_cost ?? 0,
       purchases.reduce((total, purchase) => total + purchase.total_cost, 0),
     );
-    console.log(indicator);
     setIndicator(indicator);
   };
 
