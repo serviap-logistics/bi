@@ -88,7 +88,10 @@ export default function HeadcountReportByType() {
       ],
       settings,
     );
-    saveAs(new Blob([buffer as Buffer]), `${project?.project_code}.xlsx`);
+    saveAs(
+      new Blob([buffer as Buffer]),
+      `${project?.project_id}-${reportType}_${summaryType}.xlsx`,
+    );
   };
 
   return (

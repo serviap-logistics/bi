@@ -434,14 +434,20 @@ export default function HeadcountTableByDate(props: {
       ]);
     setRows(rows);
     const columns: excel_column[] = [
+      { header: 'Project ID', key: 'PROJECT_ID', width: 20 },
+      { header: 'Project Name', key: 'PROJECT_NAME', width: 20 },
+      { header: 'Project Status', key: 'PROJECT_STATUS', width: 20 },
       { header: 'Date', key: 'DATE', width: 20 },
-      { header: 'Budget', key: 'DATE', width: 10 },
-      { header: 'Real', key: 'DATE', width: 10 },
-      { header: 'Difference', key: 'DATE', width: 10 },
+      { header: 'Budget', key: 'BUDGET', width: 10 },
+      { header: 'Real', key: 'REAL', width: 10 },
+      { header: 'Difference', key: 'DIFFERENCE', width: 10 },
       { header: 'Status', key: 'STATUS', width: 20 },
     ];
     excelColumnsCallback(columns);
     const table_rows = rows.map((row) => [
+      project?.project_id,
+      project?.project_name ?? 'Unnamed project',
+      project?.Status ?? '',
       ...row.slice(0, 4),
       (row[4] as JSX.Element).props.text,
     ]);
