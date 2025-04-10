@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { classNames, USDollar } from '../../../utils';
 import {
   BriefcaseIcon,
@@ -9,55 +9,59 @@ import {
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import { purchase } from '../services/purchases';
+import { CountryContext } from '../../../App';
+
+const DEFAULT_RESULTS = {
+  Travel: {
+    amount: 0,
+    icon: TruckIcon,
+    count: 0,
+    unit: '',
+    bgColor: 'bg-pink-600',
+  },
+  Lodging: {
+    amount: 0,
+    icon: HomeModernIcon,
+    count: 0,
+    unit: '',
+    bgColor: 'bg-yellow-500',
+  },
+  Equipment: {
+    amount: 0,
+    icon: ComputerDesktopIcon,
+    count: 0,
+    unit: '',
+    bgColor: 'bg-rose-500',
+  },
+  Subcontractor: {
+    amount: 0,
+    icon: BriefcaseIcon,
+    count: 0,
+    unit: '',
+    bgColor: 'bg-green-500',
+  },
+  Tools: {
+    amount: 0,
+    icon: WrenchScrewdriverIcon,
+    count: 0,
+    unit: '',
+    bgColor: 'bg-purple-600',
+  },
+  Staffing: {
+    amount: 0,
+    icon: UserGroupIcon,
+    count: 0,
+    unit: '',
+    bgColor: 'bg-cyan-500',
+  },
+};
 
 export default function PurchasesAmountsByCategory(props: {
   purchases: purchase[];
 }) {
   const { purchases } = props;
-  const [results, setResults] = useState({
-    Travel: {
-      amount: 0,
-      icon: TruckIcon,
-      count: 0,
-      unit: '',
-      bgColor: 'bg-pink-600',
-    },
-    Tools: {
-      amount: 0,
-      icon: WrenchScrewdriverIcon,
-      count: 0,
-      unit: '',
-      bgColor: 'bg-purple-600',
-    },
-    Lodging: {
-      amount: 0,
-      icon: HomeModernIcon,
-      count: 0,
-      unit: '',
-      bgColor: 'bg-yellow-500',
-    },
-    Staffing: {
-      amount: 0,
-      icon: UserGroupIcon,
-      count: 0,
-      unit: '',
-      bgColor: 'bg-cyan-500',
-    },
-    Equipment: {
-      amount: 0,
-      icon: ComputerDesktopIcon,
-      count: 0,
-      unit: '',
-      bgColor: 'bg-rose-500',
-    },
-    Subcontractor: {
-      amount: 0,
-      icon: BriefcaseIcon,
-      count: 0,
-      unit: '',
-      bgColor: 'bg-green-500',
-    },
-  });
+  const country = useContext(CountryContext);
+  const [results, setResults] = useState(DEFAULT_RESULTS);
 
   const updateResults = (purchases) => {
     const travel_purchases: purchase[] = purchases.filter(
@@ -102,7 +106,7 @@ export default function PurchasesAmountsByCategory(props: {
       },
       0,
     );
-    setResults({
+    const newResults = {
       ...results,
       Travel: {
         ...results['Travel'],
@@ -140,7 +144,8 @@ export default function PurchasesAmountsByCategory(props: {
         amount: staffing_total,
         unit: staffing_total > 1000 ? 'k' : '',
       },
-    });
+    };
+    setResults(newResults);
   };
 
   useEffect(() => {
@@ -177,7 +182,7 @@ export default function PurchasesAmountsByCategory(props: {
                     result.amount > 1000 ? result.amount / 1000 : result.amount,
                   ) +
                     result.unit +
-                    ' USD'}
+                    (country === 'USA' ? ' USD' : ' MXN')}
                 </p>
               </div>
             </div>

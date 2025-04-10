@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import PurchasesSummary from '../projectSummary/purchasesSummary';
 import ProjectDetails from '../projectSummary/projectDetail';
 import FinanceSummary from '../projectSummary/financeSummary';
@@ -7,6 +7,7 @@ import { project } from '../../services/projects';
 import DashboardFilters from './filters';
 import { cost_analysis, getCostAnalysis } from '../../services/cost_analysis';
 import HeadcountSummary from '../projectSummary/headcountSummary';
+import { CountryContext } from '../../../App';
 
 export const ProjectContext = createContext<project | undefined>(undefined);
 
@@ -15,13 +16,14 @@ export const CostAnalysisContext = createContext<cost_analysis | undefined>(
 );
 
 export default function Dashboard() {
+  const country = useContext(CountryContext);
   const [project, setProject] = useState<project | undefined>();
   const [costAnalysis, setCostAnalysis] = useState<cost_analysis | undefined>();
   const [headcountSubtotal, setHeadcountSubtotal] = useState<number>(0);
   const [purchasesSubtotal, setPurchasesSubtotal] = useState<number>(0);
 
   const updateCostAnalysis = async (cost_analysis_id: string) => {
-    const cost_analysis: cost_analysis[] = await getCostAnalysis({
+    const cost_analysis: cost_analysis[] = await getCostAnalysis(country, {
       view: 'BI',
       fields: [
         'cost_analysis_id',
@@ -53,15 +55,17 @@ export default function Dashboard() {
       <ProjectContext.Provider value={project}>
         <CostAnalysisContext.Provider value={costAnalysis}>
           <h3 className="text-base font-semibold leading-6 text-gray-900 mb-4">
-            Dashboard
+            {country === 'USA' ? 'Dashboard' : 'Resumen'}
           </h3>
           <DashboardFilters onChangeCallback={setProject} />
           {project && (
             <>
               <ProjectDetails />
-              <HeadcountSummary
-                onUpdateSubtotalCallback={setHeadcountSubtotal}
-              />
+              {country === 'USA' && (
+                <HeadcountSummary
+                  onUpdateSubtotalCallback={setHeadcountSubtotal}
+                />
+              )}
               <PurchasesSummary
                 onUpdateSubtotalCallback={setPurchasesSubtotal}
               />

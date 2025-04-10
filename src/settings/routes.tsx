@@ -10,38 +10,50 @@ import Dashboard from '../modules/dashboard/components';
 
 export type app_navigation_option = {
   key: string;
-  name: string;
+  name_en: string;
+  name_es: string;
+  name_pt: string;
   icon?: any;
   current: boolean;
   main_component: any;
   path: string;
+  countries: string[];
 };
 
 export const DEFAULT_MAIN_CONTENT = 'DASHBOARD';
+export const DEFAULT_COUNTRY = 'USA';
 export const APP_NAVIGATION = [
   {
     key: 'DASHBOARD',
-    name: 'Dashboard',
+    name_en: 'Dashboard',
+    name_es: 'Resumen',
+    name_pt: 'Resumo',
     icon: PresentationChartLineIcon,
     current: false,
     main_component: Dashboard,
     path: '/',
+    countries: ['MEX', 'USA', 'BRL'],
   },
   {
     key: 'PURCHASES',
-    name: 'Purchases',
+    name_en: 'Purchases',
+    name_es: 'Compras',
+    name_pt: 'Compras',
     icon: ShoppingBagIcon,
     current: false,
     main_component: Purchases,
     path: '/purchases',
+    countries: ['MEX', 'USA', 'BRL'],
   },
   {
     key: 'HEADCOUNT',
-    name: 'Headcount',
+    name_en: 'Headcount',
+    name_es: 'Headcount',
     icon: UserGroupIcon,
     current: false,
     main_component: Headcount,
     path: '/headcount',
+    countries: ['USA'],
   },
 ];
 

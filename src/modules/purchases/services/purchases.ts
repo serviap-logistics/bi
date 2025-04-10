@@ -1,7 +1,31 @@
 import { ENVIROMENT } from '../../../settings/enviroment';
 import { airtable_request } from '../../../utils/run_airtable_request';
 import airtableRequest from '../../../utils/run_airtable_request';
-const { AIRTABLE_HOST, USA_PURCHASES_BASE, USA_PURCHASES_TABLE } = ENVIROMENT;
+
+const {
+  AIRTABLE_HOST,
+  USA_PURCHASES_BASE,
+  USA_PURCHASES_TABLE,
+  MEX_PURCHASES_BASE,
+  MEX_PURCHASES_TABLE,
+  BRL_PURCHASES_BASE,
+  BRL_PURCHASES_TABLE,
+} = ENVIROMENT;
+
+const countryParameters = {
+  USA: {
+    base: USA_PURCHASES_BASE,
+    table: USA_PURCHASES_TABLE,
+  },
+  MEX: {
+    base: MEX_PURCHASES_BASE,
+    table: MEX_PURCHASES_TABLE,
+  },
+  BRL: {
+    base: BRL_PURCHASES_BASE,
+    table: BRL_PURCHASES_TABLE,
+  },
+};
 
 export type purchase = {
   id: string;
@@ -16,10 +40,9 @@ export type purchase = {
 };
 
 export async function getPurchases(
-  settings: airtable_request,
+  country: string,
+  parameters: airtable_request,
 ): Promise<purchase[]> {
-  return await airtableRequest(
-    `${AIRTABLE_HOST}/${USA_PURCHASES_BASE}/${USA_PURCHASES_TABLE}`,
-    settings,
-  );
+  const { base, table } = countryParameters[country];
+  return await airtableRequest(`${AIRTABLE_HOST}/${base}/${table}`, parameters);
 }

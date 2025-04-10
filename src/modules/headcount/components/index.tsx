@@ -1,8 +1,9 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import HeadcountFilters from './filters';
 import { cost_analysis, getCostAnalysis } from '../../services/cost_analysis';
 import HeadcountReportByType from './reportByType';
 import { project } from '../../services/projects';
+import { CountryContext } from '../../../App';
 
 export const ProjectContext = createContext<project | undefined>(undefined);
 
@@ -11,11 +12,12 @@ export const CostAnalysisContext = createContext<cost_analysis | undefined>(
 );
 
 export default function Headcount() {
+  const country = useContext(CountryContext);
   const [project, setProject] = useState<project | undefined>();
   const [costAnalysis, setCostAnalysis] = useState<cost_analysis | undefined>();
 
   const updateCostAnalysis = async (cost_analysis_id: string) => {
-    const cost_analysis: cost_analysis[] = await getCostAnalysis({
+    const cost_analysis: cost_analysis[] = await getCostAnalysis(country, {
       view: 'BI',
       fields: [
         'cost_analysis_id',

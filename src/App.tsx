@@ -6,6 +6,7 @@ import { useMsal } from '@azure/msal-react';
 import AppRoutes, {
   APP_NAVIGATION,
   app_navigation_option,
+  DEFAULT_COUNTRY,
   DEFAULT_MAIN_CONTENT,
 } from './settings/routes';
 import { ENVIROMENT } from './settings/enviroment';
@@ -15,10 +16,12 @@ import { BrowserRouter } from 'react-router-dom';
 
 export const MainContentContext = createContext<string>('');
 export const SideBarContext = createContext<boolean>(false);
+export const CountryContext = createContext<string>('');
 
 function App() {
   const [showSideBar, setShowSideBar] = useState(false);
   const [mainContent, setMainContent] = useState(DEFAULT_MAIN_CONTENT);
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [navigation, setNavigation] = useState<app_navigation_option[]>(
     APP_NAVIGATION.map((option) => ({
       ...option,
@@ -69,6 +72,10 @@ function App() {
     setShowSideBar(open);
   };
 
+  const handleCountryChange = (country: string) => {
+    setCountry(country);
+  };
+
   const handleAuth = (response: AuthenticationResult) => {
     if (response.account) {
       msalInstance.setActiveAccount(response.account);
@@ -90,23 +97,26 @@ function App() {
     <BrowserRouter>
       <MainContentContext.Provider value={mainContent}>
         <SideBarContext.Provider value={showSideBar}>
-          <Topbar
-            showSideBar={showSideBar}
-            onChangeShowSideBar={handleShowSideBar}
-          />
-          <Sidebar
-            navigation={navigation}
-            onSelectCallback={handleSideBarChange}
-            onChangeShowSideBar={handleShowSideBar}
-          />
-          <div className="lg:pl-60">
-            {/* Main section */}
-            <section className="py-5">
-              <div className="px-4 sm:px-6 lg:px-8">
-                <AppRoutes />
-              </div>
-            </section>
-          </div>
+          <CountryContext.Provider value={country}>
+            <Topbar
+              showSideBar={showSideBar}
+              onChangeShowSideBar={handleShowSideBar}
+            />
+            <Sidebar
+              navigation={navigation}
+              onSelectCallback={handleSideBarChange}
+              onChangeShowSideBar={handleShowSideBar}
+              onChangeCountry={handleCountryChange}
+            />
+            <div className="lg:pl-60">
+              {/* Main section */}
+              <section className="py-5">
+                <div className="px-4 sm:px-6 lg:px-8">
+                  <AppRoutes />
+                </div>
+              </section>
+            </div>
+          </CountryContext.Provider>
         </SideBarContext.Provider>
       </MainContentContext.Provider>
     </BrowserRouter>

@@ -7,28 +7,34 @@ import {
   Label,
 } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Toast from './toast';
 import { classNames } from '..';
 
-export type selectOption = {
+export type QuerySelectOption = {
   id: number | string;
   name: string;
   color: 'success' | 'warning' | 'error' | 'info';
   toast: string;
 };
 
-export default function Select(props: {
-  label: string;
-  options: selectOption[];
+export default function QuerySelect(props: {
+  label?: string;
+  options: QuerySelectOption[];
   onSelectCallback: any;
   width?: string;
+  setController: any;
 }) {
-  const { label, options, onSelectCallback, width = 'sm:w-80' } = props;
+  const {
+    label,
+    options,
+    onSelectCallback,
+    width = 'sm:w-80',
+    setController,
+  } = props;
   const [query, setQuery] = useState('');
-  const [selectedOption, setSelectedOption] = useState<selectOption | null>(
-    null,
-  );
+  const [selectedOption, setSelectedOption] =
+    useState<QuerySelectOption | null>(null);
 
   const filteredOptions =
     query === ''
@@ -37,28 +43,42 @@ export default function Select(props: {
           return person.name.toLowerCase().includes(query.toLowerCase());
         });
 
-  const handleSelect = (option: selectOption) => {
+  const handleSelect = (option: QuerySelectOption) => {
     setQuery('');
     setSelectedOption(option);
     onSelectCallback(option);
   };
 
+  const clearSelection = () => {
+    setQuery('');
+    setSelectedOption(null);
+    onSelectCallback(null);
+  };
+
+  useEffect(() => {
+    setController(clearSelection);
+  }, []);
+
   return (
     <Combobox
       as="div"
       value={selectedOption}
-      onChange={(option: selectOption) => handleSelect(option)}
+      onChange={(option: QuerySelectOption) => handleSelect(option)}
       className="z-40"
     >
-      <Label className="block text-sm font-medium leading-6 text-gray-900">
-        {label}
-      </Label>
-      <div className={classNames('relative mt-2 w-full', width)}>
+      {label ?? (
+        <Label className="block text-sm font-medium leading-6 text-gray-900">
+          {label}
+        </Label>
+      )}
+      <div
+        className={classNames('relative w-full', width, label ? 'mt-2' : '')}
+      >
         <ComboboxInput
           className="w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-12 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-yellow-400 sm:text-sm sm:leading-6"
           onChange={(event) => setQuery(event.target.value)}
           onBlur={() => setQuery('')}
-          displayValue={(option: selectOption) => option?.name}
+          displayValue={(option: QuerySelectOption) => option?.name}
         />
         <ComboboxButton className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
           <ChevronUpDownIcon

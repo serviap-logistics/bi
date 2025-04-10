@@ -4,10 +4,12 @@ import { getPercentageUsed, USDollar } from '../../../utils';
 import { purchase } from '../services/purchases';
 import Toast from '../../../utils/components/toast';
 import Table from '../../../utils/components/table';
+import { CountryContext } from '../../../App';
 
 export default function TableByCategory(props: { purchases: purchase[] }) {
   const { purchases } = props;
   const costAnalysis = useContext(CostAnalysisContext);
+  const country = useContext(CountryContext);
   const [table, setTable] = useState<{ columns: string[]; rows: any[] }>({
     columns: [],
     rows: [],
@@ -19,6 +21,7 @@ export default function TableByCategory(props: { purchases: purchase[] }) {
     Staffing: 0,
     Equipment: 0,
     Subcontractor: 0,
+    Bill: 0,
   };
   const [budgets, setBudgets] = useState(defaultBudgets);
   const defaultResults = {
@@ -28,6 +31,7 @@ export default function TableByCategory(props: { purchases: purchase[] }) {
     Staffing: 0,
     Equipment: 0,
     Subcontractor: 0,
+    Bill: 0,
   };
   const [results, setResults] = useState(defaultResults);
 
@@ -39,6 +43,7 @@ export default function TableByCategory(props: { purchases: purchase[] }) {
       Staffing: costAnalysis.total_labor_staffing_cost,
       Equipment: costAnalysis.total_equipment_cost,
       Subcontractor: costAnalysis.total_subcontractor_cost,
+      Bill: 0,
     });
   };
   const updatePurchaseAmounts = (purchases) => {
@@ -83,6 +88,12 @@ export default function TableByCategory(props: { purchases: purchase[] }) {
       },
       0,
     );
+    const bill_purchases: purchase[] = purchases.filter((purchase: purchase) =>
+      purchase.Category.includes('Bill.com'),
+    );
+    const bill_total = bill_purchases.reduce((total, purchase) => {
+      return total + purchase.total_cost;
+    }, 0);
 
     setResults({
       Travel: travel_total,
@@ -91,27 +102,35 @@ export default function TableByCategory(props: { purchases: purchase[] }) {
       Staffing: staffing_total,
       Equipment: equipment_total,
       Subcontractor: subcontractor_total,
+      Bill: bill_total,
     });
   };
 
   const formatAsTable = () => {
     const data = {
-      tools: {
-        name: 'Tools / Consumables',
-        budget: budgets['Tools'],
-        real: results['Tools'],
-        difference: budgets['Tools'] - results['Tools'],
-        used: getPercentageUsed(budgets['Tools'], results['Tools']),
+      travel: {
+        name: country === 'USA' ? 'Travel' : 'Gastos de viaje',
+        budget: budgets['Travel'],
+        real: results['Travel'],
+        difference: budgets['Travel'] - results['Travel'],
+        used: getPercentageUsed(budgets['Travel'], results['Travel']),
+      },
+      lodging: {
+        name: country === 'USA' ? 'Lodging' : 'Hospedaje',
+        budget: budgets['Lodging'],
+        real: results['Lodging'],
+        difference: budgets['Lodging'] - results['Lodging'],
+        used: getPercentageUsed(budgets['Lodging'], results['Lodging']),
       },
       equipment: {
-        name: 'Equipment',
+        name: country === 'USA' ? 'Equipment' : 'Equipo',
         budget: budgets['Equipment'],
         real: results['Equipment'],
         difference: budgets['Equipment'] - results['Equipment'],
         used: getPercentageUsed(budgets['Equipment'], results['Equipment']),
       },
       subcontractor: {
-        name: 'Subcontractor',
+        name: country == 'USA' ? 'Subcontractor' : 'Subcontratación',
         budget: budgets['Subcontractor'],
         real: results['Subcontractor'],
         difference: budgets['Subcontractor'] - results['Subcontractor'],
@@ -120,22 +139,25 @@ export default function TableByCategory(props: { purchases: purchase[] }) {
           results['Subcontractor'],
         ),
       },
-      lodging: {
-        name: 'Lodging',
-        budget: budgets['Lodging'],
-        real: results['Lodging'],
-        difference: budgets['Lodging'] - results['Lodging'],
-        used: getPercentageUsed(budgets['Lodging'], results['Lodging']),
+      tools: {
+        name:
+          country === 'USA'
+            ? 'Tools / Consumables'
+            : 'Herramientas / Consumibles',
+        budget: budgets['Tools'],
+        real: results['Tools'],
+        difference: budgets['Tools'] - results['Tools'],
+        used: getPercentageUsed(budgets['Tools'], results['Tools']),
       },
-      travel: {
-        name: 'Travel',
-        budget: budgets['Travel'],
-        real: results['Travel'],
-        difference: budgets['Travel'] - results['Travel'],
-        used: getPercentageUsed(budgets['Travel'], results['Travel']),
+      bill: {
+        name: 'Bill.com',
+        budget: budgets['Bill'],
+        real: results['Bill'],
+        difference: budgets['Bill'] - results['Bill'],
+        used: getPercentageUsed(budgets['Bill'], results['Bill']),
       },
       staffing: {
-        name: 'Staffing',
+        name: country === 'USA' ? 'Staffing' : 'Contratación de personal',
         budget: budgets['Staffing'],
         real: results['Staffing'],
         difference: budgets['Staffing'] - results['Staffing'],
@@ -145,9 +167,10 @@ export default function TableByCategory(props: { purchases: purchase[] }) {
 
     const rows = Object.values(data).map((section) => [
       section.name,
-      USDollar.format(section.budget) + ' USD',
-      USDollar.format(section.real) + ' USD', // Budget, Real
-      USDollar.format(section.difference) + ' USD', // Difference
+      USDollar.format(section.budget) + (country === 'USA' ? ' USD' : ' MXN'),
+      USDollar.format(section.real) + (country === 'USA' ? ' USD' : ' MXN'), // Budget, Real
+      USDollar.format(section.difference) +
+        (country === 'USA' ? ' USD' : ' MXN'), // Difference
       <Toast
         text={
           (section.used.status !== 'NO BUDGET!'
@@ -158,7 +181,13 @@ export default function TableByCategory(props: { purchases: purchase[] }) {
       />,
     ]);
     setTable({
-      columns: ['Category', 'Budget', 'Real', 'Difference', 'Status'],
+      columns: [
+        country === 'USA' ? 'Category' : 'Categoría',
+        country === 'USA' ? 'Budget' : 'Presupuestado',
+        'Real',
+        country === 'USA' ? 'Difference' : 'Diferencia',
+        'Status',
+      ],
       rows: rows,
     });
   };

@@ -1,13 +1,14 @@
 import { ArrowDownCircleIcon } from '@heroicons/react/24/outline';
 import PillsMenu from '../../../utils/components/pillsMenu';
 import { tabs_menu_option_type } from '../../../utils/components/tabsMenu';
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { saveAs } from 'file-saver';
 import AllProjectsTableByAmounts from '../byProject/allProjectsTableByAmounts';
 import AllProjectsTableByWeek from '../byWeek/allProjectsTableByWeek';
 import { getProjects } from '../../services/projects';
 import { getCostAnalysis } from '../../services/cost_analysis';
 import { excel_column, generateExcel } from '../../../utils/excel';
+import { CountryContext } from '../../../App';
 
 type report_types_available = 'BY_WEEK' | 'BY_PROJECT';
 const DEFAULT_REPORT_TYPE = 'BY_PROJECT';
@@ -16,6 +17,7 @@ export const ReportTypeContext =
   createContext<report_types_available>(DEFAULT_REPORT_TYPE);
 
 export default function DashboardAllProjects() {
+  const country = useContext(CountryContext);
   const [reportType, setReportType] =
     useState<report_types_available>(DEFAULT_REPORT_TYPE);
   const [reportTypes, setReportTypes] = useState<tabs_menu_option_type[]>([
@@ -26,7 +28,7 @@ export default function DashboardAllProjects() {
 
   const updateProjectsAvailable = async () => {
     const result = {};
-    const projectsFound = await getProjects({
+    const projectsFound = await getProjects(country, {
       view: 'BI',
       fields: [
         'project_id',
@@ -54,7 +56,7 @@ export default function DashboardAllProjects() {
         return project.cost_analysis_id;
       });
 
-    const analysisFound = await getCostAnalysis({
+    const analysisFound = await getCostAnalysis(country, {
       view: 'BI',
       fields: [
         'cost_analysis_id',
@@ -131,7 +133,8 @@ export default function DashboardAllProjects() {
         <li className="px-4 py-4 sm:px-6 lg:px-10 flex justify-center">
           <div>
             <p className="order-first text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
-              All projects
+              {country === 'USA' ? 'All projects' : 'Todos los proyectos'} (
+              {country})
             </p>
           </div>
         </li>

@@ -6,6 +6,7 @@ import {
   purchase,
 } from '../../purchases/services/purchases';
 import Toast from '../../../utils/components/toast';
+import { CountryContext } from '../../../App';
 
 export default function PurchasesSummary(props: {
   onUpdateSubtotalCallback: any;
@@ -13,9 +14,11 @@ export default function PurchasesSummary(props: {
   const { onUpdateSubtotalCallback } = props;
   const project = useContext(ProjectContext);
   const costAnalysis = useContext(CostAnalysisContext);
+  const country = useContext(CountryContext);
   const [purchases, setPurchases] = useState<purchase[]>([]);
+
   const getPurchases = async () => {
-    const purchases_found: purchase[] = await getAirtablePurchases({
+    const purchases_found: purchase[] = await getAirtablePurchases(country, {
       view: 'BI',
       formula: project
         ? encodeURI(`{project_id}="${project.project_id}"`)

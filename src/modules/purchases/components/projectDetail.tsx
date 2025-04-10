@@ -3,11 +3,13 @@ import { CostAnalysisContext, ProjectContext } from '.';
 import { getPercentageUsed, Indicator, USDollar } from '../../../utils';
 import { purchase } from '../services/purchases';
 import Toast from '../../../utils/components/toast';
+import { CountryContext } from '../../../App';
 
 export default function ProjectDetails(props: { purchases: purchase[] }) {
   const { purchases } = props;
   const project = useContext(ProjectContext);
   const costAnalysis = useContext(CostAnalysisContext);
+  const country = useContext(CountryContext);
   const [indicator, setIndicator] = useState<Indicator>();
 
   const updateIndicators = (purchases: purchase[]) => {
@@ -30,7 +32,11 @@ export default function ProjectDetails(props: { purchases: purchase[] }) {
       >
         <li className="px-4 py-4 sm:px-6 flex flex-col grap-y-4">
           <p className="order-first text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">
-            {project?.project_id ? project?.project_id : 'ALL PROJECTS'}
+            {project?.project_id
+              ? project?.project_id
+              : country === 'USA'
+                ? 'ALL PROJECTS (USA)'
+                : 'TODOS LOS PROYECTOS (MEX)'}
           </p>
           {project && project.customer_name && (
             <div>
@@ -52,23 +58,25 @@ export default function ProjectDetails(props: { purchases: purchase[] }) {
               {/* Cost Analysis TOTAL */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">
-                  Cost Analysis
+                  {country === 'USA' ? 'Cost Analysis' : 'Análisis de costos'}
                 </p>
                 <p className="text-lg text-gray-600">
                   {USDollar.format(
                     costAnalysis != undefined
                       ? (costAnalysis.total_purchases_cost ?? 0)
                       : 0,
-                  ) + ' USD'}
+                  ) + (country === 'USA' ? ' USD' : ' MXN')}
                 </p>
                 <p className="text-xs text-gray-600">
-                  (Only purchases amounts)
+                  {country === 'USA'
+                    ? '(Only purchases amounts)'
+                    : '(Solo gastos en compras)'}
                 </p>
               </div>
               {/* Purchases TOTAL */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">
-                  Purchases
+                  {country === 'USA' ? 'Purchases' : 'Compras'}
                 </p>
                 <p className="text-lg text-gray-600">
                   {USDollar.format(
@@ -76,16 +84,16 @@ export default function ProjectDetails(props: { purchases: purchase[] }) {
                       (total, purchase) => total + purchase.total_cost,
                       0,
                     ),
-                  ) + ' USD'}
+                  ) + (country === 'USA' ? ' USD' : ' MXN')}
                 </p>
                 <p className="text-xs text-gray-600">
-                  ({purchases.length} items)
+                  {`(${purchases.length} ${country === 'USA' ? 'items' : 'elementos'}) `}
                 </p>
               </div>
               {/* Difference */}
               <div>
                 <p className="text-base leading-7 font-semibold text-gray-600">
-                  Difference
+                  {country === 'USA' ? 'Difference' : 'Diferencia'}
                 </p>
                 <p className="text-lg text-gray-600">
                   {USDollar.format(
@@ -94,7 +102,7 @@ export default function ProjectDetails(props: { purchases: purchase[] }) {
                         (total, purchase) => total + purchase.total_cost,
                         0,
                       ),
-                  ) + ' USD'}
+                  ) + (country === 'USA' ? ' USD' : ' MXN')}
                 </p>
               </div>
               {/* % Used */}

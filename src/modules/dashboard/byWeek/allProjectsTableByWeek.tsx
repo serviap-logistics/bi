@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   getRegistrationTimes,
   registration_time,
@@ -15,6 +15,7 @@ import PillsMenu, {
   pill_menu_option_type,
 } from '../../../utils/components/pillsMenu';
 import Alert from '../../../utils/components/notifications/alert';
+import { CountryContext } from '../../../App';
 
 type display_types_available = 'BY_PROJECT' | 'BY_SITE' | 'BY_STATE';
 const DEFAULT_DISPLAY_OPTION = 'BY_PROJECT';
@@ -63,6 +64,7 @@ export default function AllProjectsTableByWeek(props: {
   projects: object;
 }) {
   const { excelRowsCallback, excelColumnsCallback } = props;
+  const country = useContext(CountryContext);
   const [displayOptions, setDisplayOptions] = useState<pill_menu_option_type[]>(
     [
       { key: 'BY_PROJECT', current: true, name: 'By Project', icon: undefined },
@@ -103,7 +105,7 @@ export default function AllProjectsTableByWeek(props: {
   };
 
   const getPurchases = async (): Promise<purchase[]> => {
-    const purchases_found: purchase[] = await getAirtablePurchases({
+    const purchases_found: purchase[] = await getAirtablePurchases(country, {
       view: 'BI',
       fields: [
         'project_id',

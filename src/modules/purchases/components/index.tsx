@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import PurchasesReportFilters from './filters';
 import PurchasesAmountsByCategory from './amountByCategory';
 import PurchasesAmountsByCategoryGraph from './amountByCategoryGraph';
@@ -13,6 +13,7 @@ import {
   getCostAnalysis as getAirtableCostAnalysis,
 } from '../../services/cost_analysis';
 import { project } from '../../services/projects';
+import { CountryContext } from '../../../App';
 
 export const ProjectContext = createContext<project | undefined>(undefined);
 
@@ -26,11 +27,12 @@ export default function Purchases() {
   const [costAnalysis, setCostAnalysis] = useState<cost_analysis | undefined>();
   const [requestCounter, setRequestCounter] = useState(0);
   const [responses, setResponses] = useState<object>({});
+  const country = useContext(CountryContext);
 
   const getPurchases = async () => {
     const currentRequest = requestCounter + 1;
     setRequestCounter(currentRequest);
-    const purchases_found: purchase[] = await getAirtablePurchases({
+    const purchases_found: purchase[] = await getAirtablePurchases(country, {
       view: 'BI',
       formula: project
         ? encodeURI(`{project_id}="${project.project_id}"`)
@@ -51,7 +53,7 @@ export default function Purchases() {
   };
 
   const getCostAnalysis = async () => {
-    const ca_found: cost_analysis[] = await getAirtableCostAnalysis({
+    const ca_found: cost_analysis[] = await getAirtableCostAnalysis(country, {
       view: 'BI',
       formula: encodeURI(`{cost_analysis_id}='${project?.cost_analysis_id}'`),
       fields: [
@@ -100,14 +102,14 @@ export default function Purchases() {
     } else {
       setCostAnalysis(undefined);
     }
-  }, [project]);
+  }, [project, country]);
 
   return (
     <div id="purchase__section">
       <ProjectContext.Provider value={project}>
         <CostAnalysisContext.Provider value={costAnalysis}>
           <h3 className="text-base font-semibold leading-6 text-gray-900 mb-4">
-            Purchases Summary
+            {country === 'USA' ? 'Purchases Summary' : 'Resumen de compras'}
           </h3>
           <PurchasesReportFilters onSelectCallback={handleSelectProject} />
           <ProjectDetails purchases={purchases} />

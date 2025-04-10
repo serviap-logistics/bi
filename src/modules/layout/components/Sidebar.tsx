@@ -8,22 +8,36 @@ import {
 import { Fragment, useContext } from 'react';
 import { classNames } from '../../../utils';
 import IMAGES from '../../../assets/images/urls';
-import { MainContentContext, SideBarContext } from '../../../App';
+import {
+  CountryContext,
+  MainContentContext,
+  SideBarContext,
+} from '../../../App';
 import { app_navigation_option } from '../../../settings/routes';
 import { Link } from 'react-router-dom';
+import SimpleSelect from '../../../utils/components/simpleSelect';
 
 export default function Sidebar(props: {
   navigation: app_navigation_option[];
   onSelectCallback: any;
   onChangeShowSideBar: (open: boolean) => void;
+  onChangeCountry: any;
 }) {
-  const { navigation, onSelectCallback, onChangeShowSideBar } = props;
+  const { navigation, onSelectCallback, onChangeShowSideBar, onChangeCountry } =
+    props;
   const currentSection = useContext(MainContentContext);
   const showSideBar = useContext(SideBarContext);
+  const country = useContext(CountryContext);
 
   const handleOptionClick = (key: string) => {
     if (key !== currentSection) {
       onSelectCallback(key);
+    }
+  };
+
+  const handleCountryClick = (key: string) => {
+    if (key !== country) {
+      onChangeCountry(key);
     }
   };
 
@@ -99,7 +113,7 @@ export default function Sidebar(props: {
                       <li>
                         <ul role="list" className="-mx-2 space-y-1">
                           {navigation.map((item) => (
-                            <li key={item.name}>
+                            <li key={item.key}>
                               <Link
                                 to={item.path}
                                 className={classNames(
@@ -117,7 +131,9 @@ export default function Sidebar(props: {
                                   className="h-6 w-6 shrink-0"
                                   aria-hidden="true"
                                 />
-                                {item.name}
+                                {country === 'USA'
+                                  ? item.name_en
+                                  : item.name_es}
                               </Link>
                             </li>
                           ))}
@@ -148,38 +164,73 @@ export default function Sidebar(props: {
       <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-60 lg:flex-col">
         {/* Sidebar component, swap this element with another sidebar if you like */}
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-800 px-6 pb-4">
-          <div className="flex h-16 shrink-0 items-center">
+          <div className="flex h-16 shrink-0 items-center justify-start gap-2">
             <img
               className="h-8 w-auto"
               src={IMAGES.favicon}
               alt="Serviap Logistics Logo"
+            />
+            <SimpleSelect
+              defaultID={country}
+              options={[
+                {
+                  id: 'USA',
+                  name: '🇺🇸 USA',
+                },
+                {
+                  id: 'MEX',
+                  name: '🇲🇽 Mexico',
+                },
+                {
+                  id: 'BRL',
+                  name: '🇧🇷 Brazil',
+                },
+              ]}
+              onSelectCallback={handleCountryClick}
+              styles={{
+                width: 'w-32',
+                colors: {
+                  input: {
+                    text: 'text-white',
+                    background: 'bg-gray-700',
+                    outline: 'outline-gray-700',
+                    outlineFocus: 'outline-gray-400',
+                  },
+                  options: {
+                    text: 'text-white',
+                    background: 'bg-gray-700',
+                  },
+                },
+              }}
             />
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
               <li>
                 <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        to={item.path}
-                        className={classNames(
-                          item.current
-                            ? 'bg-gray-800 text-white'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                          'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
-                          'hover:cursor-pointer',
-                        )}
-                        onClick={() => handleOptionClick(item.key)}
-                      >
-                        <item.icon
-                          className="h-6 w-6 shrink-0"
-                          aria-hidden="true"
-                        />
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
+                  {navigation
+                    .filter((link) => link.countries.includes(country))
+                    .map((item) => (
+                      <li key={item.key}>
+                        <Link
+                          to={item.path}
+                          className={classNames(
+                            item.current
+                              ? 'bg-gray-800 text-white'
+                              : 'text-gray-400 hover:text-white hover:bg-gray-800',
+                            'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
+                            'hover:cursor-pointer',
+                          )}
+                          onClick={() => handleOptionClick(item.key)}
+                        >
+                          <item.icon
+                            className="h-6 w-6 shrink-0"
+                            aria-hidden="true"
+                          />
+                          {country === 'USA' ? item.name_en : item.name_es}
+                        </Link>
+                      </li>
+                    ))}
                 </ul>
               </li>
               <li className="mt-auto">

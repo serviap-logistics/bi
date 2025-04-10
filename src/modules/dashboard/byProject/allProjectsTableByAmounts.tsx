@@ -21,6 +21,7 @@ import Toast from '../../../utils/components/toast';
 import { excel_column } from '../../../utils/excel';
 import Table from '../../../utils/components/table';
 import Alert from '../../../utils/components/notifications/alert';
+import { CountryContext } from '../../../App';
 
 function CustomCellData(props: {
   project_code: string;
@@ -59,6 +60,7 @@ export default function AllProjectsTableByAmounts(props: {
 }) {
   const { excelRowsCallback, excelColumnsCallback } = props;
   const reportType = useContext(ReportTypeContext);
+  const country = useContext(CountryContext);
 
   const [budgets, setBudgets] = useState<object>({});
   const [reals, setReals] = useState<object>({});
@@ -69,7 +71,7 @@ export default function AllProjectsTableByAmounts(props: {
 
   const updateProjectsAvailable = async () => {
     const result = {};
-    const projectsFound = await getProjects({
+    const projectsFound = await getProjects(country, {
       view: 'BI',
       fields: [
         'project_id',
@@ -96,7 +98,7 @@ export default function AllProjectsTableByAmounts(props: {
         return project.cost_analysis_id;
       });
 
-    const analysisFound = await getCostAnalysis({
+    const analysisFound = await getCostAnalysis(country, {
       view: 'BI',
       fields: [
         'cost_analysis_id',
@@ -124,7 +126,7 @@ export default function AllProjectsTableByAmounts(props: {
   };
 
   const getPurchases = async (): Promise<purchase[]> => {
-    const purchases_found: purchase[] = await getAirtablePurchases({
+    const purchases_found: purchase[] = await getAirtablePurchases(country, {
       view: 'BI',
       fields: [
         'cost_analysis_id',
@@ -143,7 +145,7 @@ export default function AllProjectsTableByAmounts(props: {
   };
 
   const updateBudget = async () => {
-    const budget_costs: cost_analysis[] = await getCostAnalysis({
+    const budget_costs: cost_analysis[] = await getCostAnalysis(country, {
       view: 'BI',
       fields: [
         'cost_analysis_id',
@@ -303,7 +305,12 @@ export default function AllProjectsTableByAmounts(props: {
       return [
         // Celda 1: Datos del proyecto.
         <CustomCellData
-          project_code={project_id ?? 'Project without code!'}
+          project_code={
+            project_id ??
+            (country === 'USA'
+              ? 'Project without code!'
+              : 'Proyecto sin código')
+          }
           project_name={
             projectsAvailable[project_id]?.name ??
             `Unnamed ${projectsAvailable[project_id]?.type.replace('_', ' ')}`
@@ -313,11 +320,14 @@ export default function AllProjectsTableByAmounts(props: {
           status={projectsAvailable[project_id]?.status}
         />,
         // Celda 2: Presupuesto (dependiendo del tipo de reporte)
-        USDollar.format(values.budget) + ' USD',
+        USDollar.format(values.budget) +
+          (country === 'USA' ? ' USD' : country === 'MEX' ? 'MXN' : 'BRL'),
         // Celda 3: Real (dependiendo del tipo de reporte)
-        USDollar.format(values.real) + ' USD',
+        USDollar.format(values.real) +
+          (country === 'USA' ? ' USD' : country === 'MEX' ? 'MXN' : 'BRL'),
         // Celda 4: Diferencia (dependiendo del tipo de reporte)
-        USDollar.format(values.difference) + ' USD',
+        USDollar.format(values.difference) +
+          (country === 'USA' ? ' USD' : country === 'MEX' ? 'MXN' : 'BRL'),
         // Celda 5: % Usado (dependiendo del tipo de reporte)
         <Toast
           text={
@@ -335,15 +345,47 @@ export default function AllProjectsTableByAmounts(props: {
     setRows(rows);
     setLoading(false);
     const columns: excel_column[] = [
-      { header: 'Project ID', key: 'PROJECT_ID', width: 25 },
-      { header: 'Project Name', key: 'PROJECT_NAME', width: 40 },
-      { header: 'Status', key: 'PROJECT_STATUS', width: 20 },
-      { header: 'Start Date', key: 'START_DATE', width: 20 },
-      { header: 'End Date', key: 'END_DATE', width: 20 },
-      { header: 'Budget', key: 'BUDGET', width: 18 },
+      {
+        header: country === 'USA' ? 'Project ID' : 'ID de Proyecto',
+        key: 'PROJECT_ID',
+        width: 25,
+      },
+      {
+        header: country === 'USA' ? 'Project Name' : 'Nombre de proyecto',
+        key: 'PROJECT_NAME',
+        width: 40,
+      },
+      {
+        header: country === 'USA' ? 'Proyect Status' : 'Estatus del proyecto',
+        key: 'PROJECT_STATUS',
+        width: 20,
+      },
+      {
+        header: country === 'USA' ? 'Start Date' : 'Fecha de inicio',
+        key: 'START_DATE',
+        width: 20,
+      },
+      {
+        header: country === 'USA' ? 'End Date' : 'Fecha de término',
+        key: 'END_DATE',
+        width: 20,
+      },
+      {
+        header: country === 'USA' ? 'Budget' : 'Presupuesto',
+        key: 'BUDGET',
+        width: 18,
+      },
       { header: 'Real', key: 'REAL', width: 18 },
-      { header: 'Difference', key: 'DIFF', width: 18 },
-      { header: 'Status', key: 'USED', width: 13 },
+      {
+        header: country === 'USA' ? 'Difference' : 'Diferencia',
+        key: 'DIFF',
+        width: 18,
+      },
+      {
+        header: country === 'USA' ? 'Budget Status' : 'Estatus del presupuesto',
+        key: 'USED',
+        width: 13,
+      },
     ];
     excelColumnsCallback(columns);
     const table_rows = rows.map((row) => [
@@ -383,13 +425,21 @@ export default function AllProjectsTableByAmounts(props: {
           <Alert
             status="warning"
             label="Loading"
-            details="Generating, this could take a few seconds."
+            details={
+              country === 'USA'
+                ? 'Generating, this could take a few seconds.'
+                : 'Generando, esto podría tardar algunos segundos.'
+            }
           />
         </div>
       )}
       {!loading && (
         <Table
-          columns={['Project', 'Budget', 'Real', 'Difference', 'Status']}
+          columns={
+            country === 'USA'
+              ? ['Project', 'Budget', 'Real', 'Difference', 'Status']
+              : ['Proyecto', 'Presupuesto', 'Real', 'Diferencia', 'Estatus']
+          }
           rows={rows}
           styles={{
             vertical_lines: true,

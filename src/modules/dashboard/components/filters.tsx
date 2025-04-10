@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { getProjects, project } from '../../services/projects';
-import Select, { selectOption } from '../../../utils/components/select';
+import QuerySelect, {
+  QuerySelectOption,
+} from '../../../utils/components/querySelect';
+import { CountryContext } from '../../../App';
 
 export default function DashboardFilters(props: { onChangeCallback: any }) {
   const { onChangeCallback } = props;
+  const country = useContext(CountryContext);
   const [projects, setProjects] = useState<project[]>();
-  const [projectOptions, setProjectOptions] = useState<selectOption[]>([]);
+  const [projectOptions, setProjectOptions] = useState<QuerySelectOption[]>([]);
+  const clearSelection = useRef<() => void>();
 
-  const formatProjects = (projects: project[]): selectOption[] => {
-    const formatted: selectOption[] = projects.map(
+  const formatProjects = (projects: project[]): QuerySelectOption[] => {
+    const formatted: QuerySelectOption[] = projects.map(
       ({ id, Status, project_id, project_name }) => ({
         id: id,
         name: `${project_id} (${project_name})`,
@@ -29,7 +34,7 @@ export default function DashboardFilters(props: { onChangeCallback: any }) {
   };
 
   const updateProjects = async () => {
-    const projects_found: project[] = await getProjects({
+    const projects_found: project[] = await getProjects(country, {
       view: 'BI',
       fields: [
         'project_id',
@@ -52,27 +57,35 @@ export default function DashboardFilters(props: { onChangeCallback: any }) {
     onChangeCallback(projects?.find((project) => project.id === project_id));
   };
 
-  const handleSelectProject = (selected: selectOption) => {
+  const handleSelectProject = (selected: QuerySelectOption | null) => {
     updateProject(selected !== null ? selected.id : undefined);
   };
 
-  useEffect(() => {
-    updateProjects();
-  }, []);
   useEffect(() => {
     const projects_formatted = formatProjects(projects ?? []);
     setProjectOptions(projects_formatted);
   }, [projects]);
 
+  useEffect(() => {
+    console.log('Loading proyects...', country);
+    updateProjects();
+  }, [country]);
+
+  useEffect(() => {
+    handleSelectProject(null);
+    if (clearSelection.current) clearSelection.current();
+  }, [country]);
+
   return (
     <>
       <div className="rounded-md border-solid border-4 border-gray-100 bg-gray-100 px-6 py-5 sm:flex sm:items-start sm:justify-between z-20">
         <div className="sm:flex sm:items-start">
-          <Select
-            label="Project"
+          <QuerySelect
+            label={country === 'USA' ? 'Project' : 'Proyecto'}
             options={projectOptions}
             onSelectCallback={handleSelectProject}
             width="sm:w-[40rem]"
+            setController={() => {}}
           />
         </div>
       </div>

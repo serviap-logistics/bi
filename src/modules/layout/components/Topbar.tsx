@@ -14,12 +14,13 @@ import {
   ChevronDownIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/react/20/solid';
-import { Fragment } from 'react';
+import { Fragment, useContext } from 'react';
 import IMAGES from '../../../assets/images/urls';
 import { useMsal } from '@azure/msal-react';
 import { ENVIROMENT } from '../../../settings/enviroment';
 import { classNames } from '../../../utils';
 import { useNavigate } from 'react-router-dom';
+import { CountryContext } from '../../../App';
 
 export default function Topbar(props: {
   showSideBar: boolean;
@@ -28,6 +29,7 @@ export default function Topbar(props: {
   const { onChangeShowSideBar } = props;
   const { instance, accounts } = useMsal();
   const navigate = useNavigate();
+  const country = useContext(CountryContext);
 
   const logout = async () => {
     try {
@@ -68,7 +70,9 @@ export default function Topbar(props: {
           className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
           onClick={handleShowSideBar}
         >
-          <span className="sr-only">Open sidebar</span>
+          <span className="sr-only">
+            {country === 'USA' ? 'Open sidebar' : 'Abrir barra lateral'}
+          </span>
           <Bars3Icon className="h-6 w-6" aria-hidden="true" />
         </button>
 
@@ -78,7 +82,7 @@ export default function Topbar(props: {
         <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 lg:pl-8">
           <form className="relative flex flex-1" action="#" method="GET">
             <label htmlFor="search-field" className="sr-only">
-              Search
+              {country === 'USA' ? 'Search' : 'Búsqueda'}
             </label>
             <MagnifyingGlassIcon
               className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400"
@@ -87,7 +91,7 @@ export default function Topbar(props: {
             <input
               id="search-field"
               className="block h-full w-full border-0 py-0 pl-8 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
-              placeholder="Search..."
+              placeholder={country === 'USA' ? 'Search...' : 'Busca algo...'}
               type="search"
               name="search"
             />
@@ -97,7 +101,11 @@ export default function Topbar(props: {
               type="button"
               className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
             >
-              <span className="sr-only">View notifications</span>
+              <span className="sr-only">
+                {country === 'USA'
+                  ? 'View notifications'
+                  : 'Ver notificaciones'}
+              </span>
               <BellIcon className="h-6 w-6" aria-hidden="true" />
             </button>
 
@@ -110,7 +118,9 @@ export default function Topbar(props: {
             {/* Profile dropdown */}
             <Menu as="div" className="relative">
               <MenuButton className="-m-1.5 flex items-center p-1.5">
-                <span className="sr-only">Open user menu</span>
+                <span className="sr-only">
+                  {country === 'USA' ? 'Open user menu' : 'Abrir menú'}
+                </span>
                 <img
                   className="h-8 w-8 rounded-full bg-gray-50"
                   src={IMAGES.favicon}
