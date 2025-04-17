@@ -78,7 +78,7 @@ export default function AllProjectsTableByWeek(props: {
   const [sitesAvailable, setSitesAvailable] = useState<object>({});
 
   const updateSitesAvailable = async () => {
-    const sitesFound = await getSites({
+    const sitesFound = await getSites(country, {
       view: 'BI',
       fields: ['site_id', 'site_code', 'site_address'],
     });
@@ -125,6 +125,7 @@ export default function AllProjectsTableByWeek(props: {
   const [loading, setLoading] = useState<boolean>(true);
 
   const updateExpenses = async () => {
+    setExpenses({});
     // Calculando costos de compras POR proyecto.
     // Objetivo: Tener un objeto donde la clave sea el ID del proyecto y su valor sea otro objeto con las siguientes propiedades.
     //           {purchases: [], registration_times: []}
@@ -482,7 +483,7 @@ export default function AllProjectsTableByWeek(props: {
   useEffect(() => {
     updateSitesAvailable();
     updateExpenses();
-  }, []);
+  }, [country]);
 
   return (
     <div className="max-w-full relative">

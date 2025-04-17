@@ -71,6 +71,7 @@ export default function AllProjectsTableByAmounts(props: {
 
   const updateProjectsAvailable = async () => {
     const result = {};
+    setProjectsAvailable({});
     const projectsFound = await getProjects(country, {
       view: 'BI',
       fields: [
@@ -82,6 +83,7 @@ export default function AllProjectsTableByAmounts(props: {
         'end_date',
       ],
     });
+    console.log('Projects found: ', projectsFound);
 
     // Se obtienen almacenan los proyectos que si TIENEN UN analisis de costos
     // además de guardarlos en el catálogo 'result'.
@@ -108,6 +110,7 @@ export default function AllProjectsTableByAmounts(props: {
         'end_date',
       ],
     });
+    console.log('Analysis found: ', analysisFound);
 
     // Se obtienen todos los analisis de costos que NO esten asignados a un projecto.
     analysisFound
@@ -145,6 +148,7 @@ export default function AllProjectsTableByAmounts(props: {
   };
 
   const updateBudget = async () => {
+    setBudgets({});
     const budget_costs: cost_analysis[] = await getCostAnalysis(country, {
       view: 'BI',
       fields: [
@@ -185,6 +189,7 @@ export default function AllProjectsTableByAmounts(props: {
   };
 
   const updateReal = async () => {
+    setReals({});
     // Calculando costos de compras POR proyecto.
     const purchases = await getPurchases();
     const purchases_grouped_by_project = groupListBy('project_id', purchases);
@@ -265,6 +270,7 @@ export default function AllProjectsTableByAmounts(props: {
    */
   const mergeResults = () => {
     const results = {};
+    setIndicators({});
     // Se agregan los resultados de budgets.
     Object.entries(budgets).map(([project, budget_total]) => {
       results[project] = {
@@ -416,7 +422,7 @@ export default function AllProjectsTableByAmounts(props: {
     updateProjectsAvailable();
     updateBudget();
     updateReal();
-  }, []);
+  }, [country]);
 
   return (
     <div className="max-w-full relative">
